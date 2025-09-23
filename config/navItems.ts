@@ -22,9 +22,9 @@ export const navItems: NavItem[] = [
     permission: "alerts.view_alert",
   },
   {
-    href: "/dashboard/inventory",
+    href: "/dashboard/products",
     icon: Package,
-    label: "Inventory",
+    label: "Products",
     permission: "inventory.can_view_products",
   },
   {
