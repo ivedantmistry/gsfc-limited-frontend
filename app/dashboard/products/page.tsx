@@ -82,7 +82,7 @@ const ProductRow = ({
         </td>
         <td className="px-6 py-4">
           {canManage && (
-            <Link href={`/dashboard/inventory/${product.id}`}>
+            <Link href={`/dashboard/products/${product.id}`}>
               <span
                 className="p-2 rounded-md hover:bg-gray-200 inline-block"
                 title="View/Edit Product"
@@ -129,6 +129,7 @@ export default function InventoryPage() {
     isLoading,
     mutate,
   } = useSWR<PaginatedResponse<Product>>("/inventory/products/", fetcher);
+
   const products = paginatedData?.results;
   const canManageProducts = useHasPermission("inventory.can_manage_products");
 
