@@ -3,11 +3,10 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
-import api from "@/lib/api";
 import { Product } from "@/lib/types/products";
 import { PaginatedResponse } from "@/lib/types";
 import { useHasPermission } from "@/hooks/useHasPermission";
-import AddProductModal from "@/components/inventory/AddProductModal"; // Import the modal
+import AddProductModal from "@/components/inventory/AddProductModal"; ``
 import {
   HardDrive,
   PlusCircle,
@@ -16,9 +15,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-// The fetcher function and other components (SkeletonRow, ProductRow) remain the same...
-
-const fetcher = (url: string) => api.get(url).then((res) => res.data);
 
 const SkeletonRow = () => (
   <tr className="animate-pulse">
@@ -123,12 +119,16 @@ const ProductRow = ({
 
 export default function InventoryPage() {
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control the modal
-  const {
+
+    const {
     data: paginatedData,
     error,
     isLoading,
     mutate,
-  } = useSWR<PaginatedResponse<Product>>("/inventory/products/", fetcher);
+  } = useSWR<PaginatedResponse<Product>>(
+    "/inventory/products/",
+    getProducts // UPDATE: Use the imported getProducts function here
+  );
 
   const products = paginatedData?.results;
   const canManageProducts = useHasPermission("inventory.can_manage_products");
