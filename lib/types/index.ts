@@ -33,7 +33,7 @@ export interface User {
   date_joined: string; // ISO 8601 date string
   last_login: string | null; // Can be null
   groups: Group[];
-  user_permissions: Permission[];
+  all_permissions: string[];
 }
 
 /**
