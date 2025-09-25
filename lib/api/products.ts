@@ -1,41 +1,34 @@
 import useSWR from "swr";
-import api from "@/lib/api";
+import api from "@/lib/api"; // Your configured Axios instance
 import { PaginatedResponse } from "@/lib/types";
 import { Product } from "@/lib/types/products";
 
-// The actual API endpoint is now a private constant within this file
+// The endpoint path is now a private implementation detail of this file.
+// The UI component will never see it.
 const PRODUCTS_ENDPOINT = "/inventory/products/";
 
-// The fetcher function is also kept private here
+/**
+ * This is the private fetcher function. It uses your global `api` instance.
+ * SWR will call this with the endpoint path.
+ */
 const fetcher = async (url: string): Promise<PaginatedResponse<Product>> => {
-  const response = await api.get<PaginatedResponse<Product>>(url);
+  const response = await api.get(url);
   return response.data;
 };
 
 /**
- * Custom hook to fetch the list of products.
- * This encapsulates all the data-fetching logic (SWR, endpoint, fetcher).
+ * ✅ This is the custom hook your component will use.
+ * It handles all the logic: fetching, caching, loading states, and errors.
+ * It completely hides the endpoint path and SWR from the UI.
  */
 export function useProducts() {
   const { data, error, isLoading, mutate } = useSWR(PRODUCTS_ENDPOINT, fetcher);
 
+  // We return a clean object with everything the component needs
   return {
-    paginatedData: data,
     products: data?.results,
     isLoading,
     error,
     mutate,
   };
 }
-
-// The createProduct function can remain the same
-type CreateProductData = Pick<Product, "name" | "product_id"> & {
-  grades?: Pick<Product["grades"][0], "name" | "description">[];
-};
-
-export const createProduct = async (
-  productData: CreateProductData
-): Promise<Product> => {
-  const response = await api.post<Product>(PRODUCTS_ENDPOINT, productData);
-  return response.data;
-};

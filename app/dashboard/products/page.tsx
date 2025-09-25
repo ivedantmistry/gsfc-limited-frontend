@@ -1,10 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
 import Link from "next/link";
-import useSWR from "swr";
-import { Product } from "@/lib/types/products";
-import { PaginatedResponse } from "@/lib/types";
+import React, { useState } from "react";
+import { useProducts } from "@/lib/api/products";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import AddProductModal from "@/components/inventory/AddProductModal"; ``
 import {
@@ -118,30 +116,19 @@ const ProductRow = ({
 };
 
 export default function InventoryPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to control the modal
+  const [isModalOpen, setIsModalOpen] = useState(false); 
 
-    const {
-    data: paginatedData,
-    error,
-    isLoading,
-    mutate,
-  } = useSWR<PaginatedResponse<Product>>(
-    "/inventory/products/",
-    getProducts // UPDATE: Use the imported getProducts function here
-  );
+  const { products, isLoading, error, mutate } = useProducts();
 
-  const products = paginatedData?.results;
   const canManageProducts = useHasPermission("inventory.can_manage_products");
 
-  // Function to handle closing the modal and refreshing the product list
   const handleModalClose = () => {
     setIsModalOpen(false);
-    mutate(); // Re-fetch the product list to show the new entry
+    mutate(); 
   };
 
   return (
     <>
-      {/* The modal is now part of the page, but only visible when isModalOpen is true */}
       <AddProductModal isOpen={isModalOpen} onClose={handleModalClose} />
 
       <div className="space-y-6">
@@ -155,7 +142,6 @@ export default function InventoryPage() {
             </p>
           </div>
           {canManageProducts && (
-            // This button now opens the modal instead of being a Link
             <button
               onClick={() => setIsModalOpen(true)}
               className="inline-flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-lg font-medium shadow transition-transform hover:scale-105"
@@ -166,7 +152,6 @@ export default function InventoryPage() {
           )}
         </header>
 
-        {/* The rest of the table remains the same... */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
           <table className="w-full text-sm text-left text-gray-600">
             <thead className="bg-gray-100 text-xs text-gray-700 uppercase tracking-wider">

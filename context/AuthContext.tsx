@@ -1,4 +1,3 @@
-// context/AuthContext.tsx
 "use client";
 
 import React, { createContext, useState, useEffect, ReactNode } from "react";
@@ -33,6 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(storedUser);
         } catch (error) {
           console.error("Failed to parse user from localStorage", error);
+          // Clear invalid auth data
           localStorage.removeItem("accessToken");
           localStorage.removeItem("refreshToken");
           localStorage.removeItem("user");
@@ -45,6 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    // This event listener is triggered by your api.ts interceptor after a token refresh
     const handleUserUpdate = () => {
       console.log("AuthContext: Detected user update from storage.");
       const userJSON = localStorage.getItem("user");
@@ -67,7 +68,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       window.removeEventListener("user-updated", handleUserUpdate);
     };
   }, []);
+
   const login = async (data: any) => {
+    // FIX: Added a trailing slash to match the standard DRF Simple JWT endpoint.
     const response = await api.post<LoginResponse>("/auth/token/", data);
     const { access, refresh, user: loggedInUser } = response.data;
 
@@ -83,6 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const refreshToken = localStorage.getItem("refreshToken");
     if (refreshToken) {
       try {
+        // This endpoint depends on your backend setup (e.g., using drf-simple-jwt-blacklist)
         await api.post("/auth/logout/", { refresh_token: refreshToken });
       } catch (error) {
         console.error("Logout failed", error);
