@@ -1,16 +1,15 @@
 import useSWR from "swr";
 import api from "@/lib/api";
 import { PaginatedResponse } from "@/lib/types";
-import { Product, ParameterDefinition } from "@/lib/types/";
+import { Product, ParameterDefinition, ProductGrade } from "@/lib/types/";
 
 // --- Endpoints ---
 const PRODUCTS_ENDPOINT = "/inventory/products/";
+const GRADES_ENDPOINT = "/inventory/grades/";
 const PARAMETERS_ENDPOINT = "/inventory/parameters/";
 
 // --- Fetcher Functions ---
-// Use for SWR keys that expect a paginated list response
 const listFetcher = (url: string) => api.get(url).then((res) => res.data);
-// Use for SWR keys that expect a single object response
 const singleFetcher = (url: string) => api.get(url).then((res) => res.data);
 
 // --- Hooks ---
@@ -91,3 +90,28 @@ export function useParameters(filters: {
     mutate,
   };
 }
+
+// Define the type for the data needed to create a new grade
+type CreateGradeData = {
+  name: string;
+  description?: string;
+};
+
+/**
+ * Creates a new Product Grade and associates it with a product.
+ * @param productId The ID of the product this grade belongs to.
+ * @param gradeData The data for the new grade (name, description).
+ * @returns The newly created ProductGrade object.
+ */
+export const createProductGrade = async (
+  productId: string | number,
+  gradeData: CreateGradeData
+) => {
+  const payload = {
+    ...gradeData,
+    product: productId, // Add the product ID to the payload
+  };
+  const response = await api.post<ProductGrade>(GRADES_ENDPOINT, payload);
+  return response.data;
+};
+// --- END: NEW API FUNCTION ---
