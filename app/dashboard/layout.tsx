@@ -9,7 +9,6 @@ import { LogOut, Settings } from "lucide-react";
 import { navItems } from "@/config/navItems";
 
 // A reusable component for sidebar navigation links
-// A reusable component for sidebar navigation links
 const SidebarLink = ({
   href,
   icon: Icon,
@@ -20,19 +19,17 @@ const SidebarLink = ({
   label: string;
 }) => {
   const pathname = usePathname();
-
   const isActive =
-    href === "/dashboard"
-      ? pathname === href
-      : pathname.startsWith(href);
+    href === "/dashboard" ? pathname === href : pathname.startsWith(href);
 
   return (
-    <Link href={href}>
+    <Link href={href} className="block">
+      {/* STYLE: Refined active link state for a subtle, modern look */}
       <span
-        className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+        className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ${
           isActive
-            ? "bg-gray-300 text-gray-900"
-            : "text-gray-600 hover:bg-gray-300/70 hover:text-gray-900"
+            ? "bg-gray-200/70 text-gray-900 font-semibold"
+            : "text-gray-600 hover:bg-gray-200/70 hover:text-gray-900"
         }`}
       >
         <Icon className="w-5 h-5" />
@@ -47,7 +44,8 @@ const Sidebar = () => {
   const hasPermission = useHasPermission;
 
   return (
-    <aside className="fixed top-0 left-0 h-full w-72 bg-gray-200/90 backdrop-blur-sm border-r border-gray-300/50 flex flex-col z-40 shadow-md">
+    // STYLE: Lighter, cleaner sidebar with a refined glass effect
+    <aside className="fixed top-0 left-0 h-full w-72 bg-gray-100/80 backdrop-blur-lg border-r border-gray-200/60 flex flex-col z-40">
       {/* Header */}
       <div className="flex items-center gap-3 h-20 border-b border-gray-300/50 px-6">
         <svg
@@ -68,13 +66,9 @@ const Sidebar = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-4 space-y-1">
+      <nav className="flex-1 px-4 py-4 space-y-1.5">
         {navItems
-          .filter(
-            (item) =>
-              // An item is shown if it has NO permission OR the user has the required permission.
-              !item.permission || hasPermission(item.permission)
-          )
+          .filter((item) => !item.permission || hasPermission(item.permission))
           .map((item) => (
             <SidebarLink
               key={item.href}
@@ -86,29 +80,29 @@ const Sidebar = () => {
       </nav>
 
       {/* Footer / User Area */}
-      <div className="mt-auto p-6 border-t border-gray-300/50">
-        <div className="space-y-4">
+      <div className="mt-auto p-4 border-t border-gray-200/60">
+        <div className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-200/70 transition-colors">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-medium text-base">
+            <div className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-medium text-sm">
               {user?.username.charAt(0).toUpperCase()}
             </div>
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-semibold text-gray-800">
               {user?.username}
             </span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex items-center gap-1">
             <button
-              className="p-2 rounded-xl hover:bg-gray-300/70"
+              className="p-2 rounded-md hover:bg-gray-300/70"
               title="Settings"
             >
-              <Settings className="w-5 h-5 text-gray-600" />
+              <Settings className="w-4 h-4 text-gray-600" />
             </button>
             <button
               onClick={logout}
-              className="p-2 rounded-xl hover:bg-red-100/70"
+              className="p-2 rounded-md hover:bg-red-100"
               title="Sign Out"
             >
-              <LogOut className="w-5 h-5 text-red-600" />
+              <LogOut className="w-4 h-4 text-red-600" />
             </button>
           </div>
         </div>
@@ -128,13 +122,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }, [isLoading, user, router]);
 
   if (isLoading || !user) {
-    return <div className="min-h-screen bg-gray-50"></div>;
+    // STYLE: Softer background for a premium feel
+    return <div className="min-h-screen bg-gray-100"></div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-gray-100 font-sans">
       <Sidebar />
-      <main className="ml-72 p-10">{children}</main>
+      <main className="ml-72 p-8">{children}</main>
     </div>
   );
 }
