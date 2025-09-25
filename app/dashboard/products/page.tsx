@@ -1,145 +1,26 @@
 "use client";
 
-import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useProducts } from "@/lib/api/products";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import AddProductModal from "@/components/inventory/AddProductModal";
-``;
-import {
-  HardDrive,
-  PlusCircle,
-  Edit,
-  ChevronRight,
-  ChevronDown,
-  Search,
-} from "lucide-react";
-
-const SkeletonRow = () => (
-  <tr className="animate-pulse">
-    <td className="p-4 w-12">
-      <div className="h-5 w-5 bg-gray-200 rounded"></div>
-    </td>
-    <td className="px-6 py-4">
-      <div className="h-4 bg-gray-200 rounded w-2/4"></div>
-    </td>
-    <td className="px-6 py-4">
-      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-    </td>
-    <td className="px-6 py-4">
-      <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-    </td>
-    <td className="px-6 py-4">
-      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-    </td>
-    <td className="px-6 py-4">
-      <div className="h-8 w-8 bg-gray-200 rounded"></div>
-    </td>
-  </tr>
-);
-
-const ProductRow = ({
-  product,
-  canManage,
-}: {
-  product: product;
-  canManage: boolean;
-}) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  return (
-    <>
-      <tr className="bg-white border-b hover:bg-gray-50/70">
-        <td className="px-4 py-2 text-center">
-          {product.grades.length > 0 && (
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="p-1 rounded-full hover:bg-gray-200"
-            >
-              {isExpanded ? (
-                <ChevronDown size={16} />
-              ) : (
-                <ChevronRight size={16} />
-              )}
-            </button>
-          )}
-        </td>
-        <td className="px-6 py-4 font-mono text-gray-800">
-          {product.product_id}
-        </td>
-        <td className="px-6 py-4 font-medium text-gray-900">{product.name}</td>
-        {/* <td className="px-6 py-4 text-gray-500">
-          {product.grades.length > 0
-            ? `${product.grades.length} Grade(s)`
-            : "No Grades"}
-        </td> */}
-        <td className="px-6 py-4 text-gray-500">
-          {new Date(product.created_at).toLocaleDateString()}
-        </td>
-        <td className="px-6 py-4">
-          {canManage && (
-            <Link href={`/dashboard/products/${product.id}`}>
-              <span
-                className="p-2 rounded-md hover:bg-gray-200 inline-block"
-                title="View/Edit Product"
-              >
-                <Edit className="w-4 h-4 text-gray-600" />
-              </span>
-            </Link>
-          )}
-        </td>
-      </tr>
-      {isExpanded && product.grades.length > 0 && (
-        <tr className="bg-gray-50">
-          <td colSpan={6} className="p-0">
-            <div className="px-10 py-4">
-              <h4 className="font-semibold text-xs text-gray-600 uppercase mb-2">
-                Associated Grades
-              </h4>
-              <ul className="divide-y divide-gray-200">
-                {product.grades.map((grade) => (
-                  <li
-                    key={grade.id}
-                    className="py-2 flex justify-between items-center"
-                  >
-                    <span className="text-sm text-gray-800">{grade.name}</span>
-                    <span className="text-xs text-gray-500">
-                      {grade.description || "No description"}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </td>
-        </tr>
-      )}
-    </>
-  );
-};
+import { ProductTable } from "@/components/inventory/products/ProductTable";
+import { Search, PlusCircle } from "lucide-react";
 
 export default function InventoryPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // --- START: SEARCH STATE MANAGEMENT ---
   const [searchTerm, setSearchTerm] = useState("");
-  // This state holds the debounced value that is passed to the API hook
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
-  // Debounce effect: waits 300ms after the user stops typing to update the search term
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
     }, 300);
-
-    return () => {
-      clearTimeout(timer);
-    };
+    return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Pass the debounced search term to the hook
   const { products, isLoading, error, mutate } =
     useProducts(debouncedSearchTerm);
-  // --- END: SEARCH STATE MANAGEMENT ---
-
   const canManageProducts = useHasPermission("inventory.can_manage_products");
 
   const handleModalClose = () => {
@@ -171,78 +52,26 @@ export default function InventoryPage() {
             </button>
           )}
         </header>
-        {/* --- START: SEARCH BAR UI --- */}
+
         <div className="relative">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
           </div>
           <input
             type="text"
-            name="search"
-            id="search"
             className="block w-full rounded-md border-0 bg-gray-100/70 py-2.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
             placeholder="Search by name or id..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        {/* --- END: SEARCH BAR UI --- */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
-          <table className="w-full text-sm text-left text-gray-600">
-            <thead className="bg-gray-100 text-xs text-gray-700 uppercase tracking-wider">
-              <tr>
-                <th scope="col" className="w-12 p-4"></th>
-                <th scope="col" className="px-6 py-3">
-                  Product ID
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Name
-                </th>
-                {/* <th scope="col" className="px-6 py-3">
-                  Grades
-                </th> */}
-                <th scope="col" className="px-6 py-3">
-                  Created
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading &&
-                Array.from({ length: 5 }).map((_, i) => (
-                  <SkeletonRow key={i} />
-                ))}
-              {error && (
-                <tr>
-                  <td colSpan={6} className="text-center py-10 text-red-500">
-                    Failed to load products.
-                  </td>
-                </tr>
-              )}
-              {!isLoading && products && products.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="text-center py-16 text-gray-500">
-                    <HardDrive className="mx-auto w-12 h-12 text-gray-300 mb-4" />
-                    <h3 className="font-medium">No products found.</h3>
-                    <p className="text-xs mt-1">
-                      Get started by adding a new product.
-                    </p>
-                  </td>
-                </tr>
-              )}
-              {!isLoading &&
-                products?.map((product) => (
-                  <ProductRow
-                    key={product.id}
-                    product={product}
-                    canManage={canManageProducts}
-                  />
-                ))}
-            </tbody>
-          </table>
-        </div>
+
+        <ProductTable
+          products={products}
+          isLoading={isLoading}
+          error={error}
+          canManage={canManageProducts}
+        />
       </div>
     </>
   );
