@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -124,183 +125,220 @@ export default function AddParameterModal({
   };
 
   const inputStyles =
-    "w-full rounded-md border-0 bg-gray-100/70 px-3 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm";
+    "block w-full rounded-md border-0 bg-gray-100 py-2.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0071e3] sm:text-sm transition-shadow duration-150";
+
+      const selectTriggerStyles = `${inputStyles} flex items-center justify-between`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Add New Parameter</DialogTitle>
+      <DialogContent className="sm:max-w-lg bg-gray-50">
+        <DialogHeader className="px-1 pt-1">
+          <DialogTitle className="text-lg font-semibold text-gray-900">
+            Define a New Parameter
+          </DialogTitle>
+          <DialogDescription className="text-gray-500">
+            Specify the details and constraints for this quality parameter.
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 py-2"
+            className="space-y-6 pt-2"
           >
-            {/* --- Always Visible Fields --- */}
-
-            <FormField
-              name="name"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Parameter Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Viscosity" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              name="unit"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem className="col-span-1">
-                  <FormLabel>Unit</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., cP" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              name="data_type"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Data Type</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className={inputStyles}>
-                        <SelectValue placeholder="Select a data type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {DATA_TYPE_CHOICES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* --- Conditional Fields --- */}
-            {/* Min/Max for Numeric Types */}
-            {(dataType === "DECIMAL" || dataType === "INTEGER") && (
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  name="min_value"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Min Value</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          className={inputStyles}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  name="max_value"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Max Value</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          className={inputStyles}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-
-            {/* Options for ENUM Type */}
-            {dataType === "ENUM" && (
+            <div className="space-y-4 px-1 max-h-[60vh] overflow-y-auto pr-4">
               <FormField
-                name="enum_options"
+                name="name"
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Enum Options</FormLabel>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Parameter Name
+                    </FormLabel>
                     <FormControl>
                       <Input
+                        placeholder="e.g., Viscosity"
                         className={inputStyles}
-                        placeholder="e.g., Pass, Fail, Retest"
                         {...field}
                       />
                     </FormControl>
-                    <p className="text-xs text-gray-500">
-                      Enter options separated by a comma.
-                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            )}
+              <FormField
+                name="data_type"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Data Type
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className={selectTriggerStyles}>
+                          <SelectValue placeholder="Select a data type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {DATA_TYPE_CHOICES.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="unit"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Unit (Optional)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., cP, %, ppm"
+                        className={inputStyles}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Labels for BOOLEAN Type */}
-            {dataType === "BOOLEAN" && (
-              <div className="grid grid-cols-2 gap-4">
+              {(dataType === "DECIMAL" || dataType === "INTEGER") && (
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    name="min_value"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-gray-700">
+                          Min Value
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            className={inputStyles}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    name="max_value"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-gray-700">
+                          Max Value
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            className={inputStyles}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+
+              {dataType === "ENUM" && (
                 <FormField
-                  name="boolean_true_label"
+                  name="enum_options"
                   control={form.control}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>'True' Label</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Enum Options
+                      </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="e.g., Present"
+                          placeholder="e.g., Pass, Fail, Retest"
                           className={inputStyles}
                           {...field}
                         />
                       </FormControl>
+                      <p className="text-xs text-gray-500 px-1">
+                        Enter options separated by a comma.
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  name="boolean_false_label"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>'False' Label</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="e.g., Absent"
-                          className={inputStyles}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              )}
+
+              {dataType === "BOOLEAN" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    name="boolean_true_label"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-gray-700">
+                          'True' Label
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., Present"
+                            className={inputStyles}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    name="boolean_false_label"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-gray-700">
+                          'False' Label
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., Absent"
+                            className={inputStyles}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+            </div>
+
+            {apiError && (
+              <p className="text-sm text-red-600 px-1">{apiError}</p>
             )}
 
-            {apiError && <p className="text-sm text-red-500">{apiError}</p>}
-            <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={isSubmitting}>
+            <div className="flex justify-end items-center gap-4 bg-gray-100 p-4 -m-6 mt-6 rounded-b-lg">
+              <Button type="button" variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-gray-900 text-white hover:bg-gray-800"
+              >
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}

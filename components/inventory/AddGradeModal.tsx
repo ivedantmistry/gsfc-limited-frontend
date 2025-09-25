@@ -57,8 +57,8 @@ export default function AddGradeModal({
     setApiError(null);
     try {
       await createProductGrade(productId, values);
-      onSuccess(); // Re-fetch the product data to show the new grade
-      onClose(); // Close the modal
+      onSuccess();
+      onClose();
     } catch (error: any) {
       if (error.response?.data?.name) {
         setApiError(`Error: ${error.response.data.name[0]}`);
@@ -68,59 +68,80 @@ export default function AddGradeModal({
     }
   };
 
+  const inputStyles =
+    "block w-full rounded-md border-0 bg-gray-100 py-2.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0071e3] sm:text-sm transition-shadow duration-150";
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Add New Grade</DialogTitle>
-          <DialogDescription>
-            Enter the details for the new product grade.
+      <DialogContent className="sm:max-w-lg bg-gray-50">
+        <DialogHeader className="px-1 pt-1">
+          <DialogTitle className="text-lg font-semibold text-gray-900">
+            Create a New Grade
+          </DialogTitle>
+          <DialogDescription className="text-gray-500">
+            Define a new quality tier for this product.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 py-2"
+            className="space-y-6 pt-2"
           >
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Grade Name</FormLabel>
-                  <FormControl>
-                    {/* STYLE: Applied consistent Apple-like focus ring and border styles */}
-                    <Input
-                      placeholder="e.g., Grade A - Premium"
-                      className="w-full rounded-md border-0 bg-gray-100/70 px-3 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description (Optional)</FormLabel>
-                  <FormControl>
-                    {/* STYLE: Applied consistent Apple-like focus ring and border styles */}
-                    <Textarea
-                      placeholder="Enter a brief description of this grade"
-                      className="w-full rounded-md border-0 bg-gray-100/70 px-3 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {apiError && <p className="text-sm text-red-500">{apiError}</p>}
-            <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={isSubmitting}>
+            <div className="space-y-4 px-1">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Grade Name
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., Grade A - Premium"
+                        className={inputStyles}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Description (Optional)
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="A brief summary of this grade's characteristics."
+                        className={`${inputStyles} resize-none`}
+                        rows={3}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {apiError && (
+              <p className="text-sm text-red-600 px-1">{apiError}</p>
+            )}
+
+            <div className="flex justify-end items-center gap-4 bg-gray-100 p-4 -m-6 mt-6 rounded-b-lg">
+              <Button type="button" variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-gray-900 text-white hover:bg-gray-800"
+              >
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
