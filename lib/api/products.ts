@@ -119,8 +119,10 @@ export const createProductGrade = async (
 // Define the type for the data needed to create a new parameter
 type CreateParameterData = Omit<
   ParameterDefinition,
-  "id" | "product" | "product_grade"
->;
+  "id" | "product" | "product_grade" | "enum_options"
+> & {
+  enum_options?: string; // Form will provide a comma-separated string
+};
 
 /**
  * Creates a new Parameter Definition.
@@ -136,6 +138,10 @@ export const createParameter = async (
     ...parameterData,
     product: scope.productId || null,
     product_grade: scope.gradeId || null,
+    // Convert comma-separated string to an array of strings for the backend
+    enum_options: parameterData.enum_options
+      ? parameterData.enum_options.split(",").map((s) => s.trim())
+      : null,
   };
   const response = await api.post<ParameterDefinition>(
     PARAMETERS_ENDPOINT,
@@ -143,4 +149,3 @@ export const createParameter = async (
   );
   return response.data;
 };
-// --- END: NEW API FUNCTION ---

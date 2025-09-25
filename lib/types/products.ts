@@ -30,9 +30,12 @@ export interface ParameterDefinition {
   id: number;
   name: string;
   unit: string | null;
-  min_value: string | null; // Decimal is a string
-  max_value: string | null; // Decimal is a string
+  min_value: string | null;
+  max_value: string | null;
   data_type: "INTEGER" | "DECIMAL" | "STRING" | "BOOLEAN" | "ENUM";
   product: number | null;
   product_grade: number | null;
+  enum_options: string[] | null;
+  boolean_true_label: string | null;
+  boolean_false_label: string | null;
 }
