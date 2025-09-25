@@ -1,5 +1,5 @@
 // lib/types/index.ts
-
+export * from "./products"; 
 /**
  * Represents the structure of a Permission object.
  * Based on authentication.serializers.PermissionSerializer

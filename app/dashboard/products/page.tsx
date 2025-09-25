@@ -1,18 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useProducts } from "@/lib/api/products";
 import { useHasPermission } from "@/hooks/useHasPermission";
-import AddProductModal from "@/components/inventory/AddProductModal"; ``
+import AddProductModal from "@/components/inventory/AddProductModal";
+``;
 import {
   HardDrive,
   PlusCircle,
   Edit,
   ChevronRight,
   ChevronDown,
+  Search,
 } from "lucide-react";
-
 
 const SkeletonRow = () => (
   <tr className="animate-pulse">
@@ -41,7 +42,7 @@ const ProductRow = ({
   product,
   canManage,
 }: {
-  product: Product;
+  product: product;
   canManage: boolean;
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -66,11 +67,11 @@ const ProductRow = ({
           {product.product_id}
         </td>
         <td className="px-6 py-4 font-medium text-gray-900">{product.name}</td>
-        <td className="px-6 py-4 text-gray-500">
+        {/* <td className="px-6 py-4 text-gray-500">
           {product.grades.length > 0
             ? `${product.grades.length} Grade(s)`
             : "No Grades"}
-        </td>
+        </td> */}
         <td className="px-6 py-4 text-gray-500">
           {new Date(product.created_at).toLocaleDateString()}
         </td>
@@ -116,15 +117,34 @@ const ProductRow = ({
 };
 
 export default function InventoryPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { products, isLoading, error, mutate } = useProducts();
+  // --- START: SEARCH STATE MANAGEMENT ---
+  const [searchTerm, setSearchTerm] = useState("");
+  // This state holds the debounced value that is passed to the API hook
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+  // Debounce effect: waits 300ms after the user stops typing to update the search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchTerm]);
+
+  // Pass the debounced search term to the hook
+  const { products, isLoading, error, mutate } =
+    useProducts(debouncedSearchTerm);
+  // --- END: SEARCH STATE MANAGEMENT ---
 
   const canManageProducts = useHasPermission("inventory.can_manage_products");
 
   const handleModalClose = () => {
     setIsModalOpen(false);
-    mutate(); 
+    mutate();
   };
 
   return (
@@ -151,7 +171,22 @@ export default function InventoryPage() {
             </button>
           )}
         </header>
-
+        {/* --- START: SEARCH BAR UI --- */}
+        <div className="relative">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
+          </div>
+          <input
+            type="text"
+            name="search"
+            id="search"
+            className="block w-full rounded-md border-0 bg-gray-100/70 py-2.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+            placeholder="Search by name or id..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        {/* --- END: SEARCH BAR UI --- */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
           <table className="w-full text-sm text-left text-gray-600">
             <thead className="bg-gray-100 text-xs text-gray-700 uppercase tracking-wider">
@@ -163,9 +198,9 @@ export default function InventoryPage() {
                 <th scope="col" className="px-6 py-3">
                   Name
                 </th>
-                <th scope="col" className="px-6 py-3">
+                {/* <th scope="col" className="px-6 py-3">
                   Grades
-                </th>
+                </th> */}
                 <th scope="col" className="px-6 py-3">
                   Created
                 </th>
