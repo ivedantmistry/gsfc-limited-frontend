@@ -9,6 +9,7 @@ import { LogOut, Settings } from "lucide-react";
 import { navItems } from "@/config/navItems";
 
 // A reusable component for sidebar navigation links
+// A reusable component for sidebar navigation links
 const SidebarLink = ({
   href,
   icon: Icon,
@@ -19,7 +20,11 @@ const SidebarLink = ({
   label: string;
 }) => {
   const pathname = usePathname();
-  const isActive = pathname === href;
+
+  const isActive =
+    href === "/dashboard"
+      ? pathname === href
+      : pathname.startsWith(href);
 
   return (
     <Link href={href}>
