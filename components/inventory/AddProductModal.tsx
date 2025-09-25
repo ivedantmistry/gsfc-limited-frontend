@@ -101,7 +101,12 @@ export default function AddProductModal({
                 <FormItem>
                   <FormLabel>Product Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Ammonia" {...field} />
+                    {/* STYLE: Applied consistent Apple-like focus ring and border styles */}
+                    <Input
+                      placeholder="e.g., Ammonia"
+                      className="w-full rounded-md border-0 bg-gray-100/70 px-3 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -114,9 +119,10 @@ export default function AddProductModal({
                 <FormItem>
                   <FormLabel>Description (Optional)</FormLabel>
                   <FormControl>
+                    {/* STYLE: Applied consistent Apple-like focus ring and border styles */}
                     <Textarea
                       placeholder="Enter a brief description of the product"
-                      className="resize-none"
+                      className="w-full rounded-md border-0 bg-gray-100/70 px-3 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm resize-none"
                       {...field}
                     />
                   </FormControl>

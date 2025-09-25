@@ -115,8 +115,6 @@ export default function ProductParametersPage({
   }
 
   // Case 3: The product is completely empty.
-  // Case 3: The product is completely empty.
-  // We need to modify EmptyState to accept an onClick handler
   return (
     <>
       <AddGradeModal

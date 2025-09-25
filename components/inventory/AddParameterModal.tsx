@@ -123,6 +123,9 @@ export default function AddParameterModal({
     }
   };
 
+  const inputStyles =
+    "w-full rounded-md border-0 bg-gray-100/70 px-3 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm";
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -173,7 +176,7 @@ export default function AddParameterModal({
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className={inputStyles}>
                         <SelectValue placeholder="Select a data type" />
                       </SelectTrigger>
                     </FormControl>
@@ -201,7 +204,11 @@ export default function AddParameterModal({
                     <FormItem>
                       <FormLabel>Min Value</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} />
+                        <Input
+                          type="number"
+                          className={inputStyles}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -214,7 +221,11 @@ export default function AddParameterModal({
                     <FormItem>
                       <FormLabel>Max Value</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} />
+                        <Input
+                          type="number"
+                          className={inputStyles}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -233,6 +244,7 @@ export default function AddParameterModal({
                     <FormLabel>Enum Options</FormLabel>
                     <FormControl>
                       <Input
+                        className={inputStyles}
                         placeholder="e.g., Pass, Fail, Retest"
                         {...field}
                       />
@@ -256,7 +268,11 @@ export default function AddParameterModal({
                     <FormItem>
                       <FormLabel>'True' Label</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Present" {...field} />
+                        <Input
+                          placeholder="e.g., Present"
+                          className={inputStyles}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -269,7 +285,11 @@ export default function AddParameterModal({
                     <FormItem>
                       <FormLabel>'False' Label</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Absent" {...field} />
+                        <Input
+                          placeholder="e.g., Absent"
+                          className={inputStyles}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
