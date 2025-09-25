@@ -1,33 +1,91 @@
 import useSWR from "swr";
-import api from "@/lib/api"; // Your configured Axios instance
+import api from "@/lib/api";
 import { PaginatedResponse } from "@/lib/types";
-import { Product } from "@/lib/types/products";
+import { Product, ParameterDefinition } from "@/lib/types/";
 
+// --- Endpoints ---
 const PRODUCTS_ENDPOINT = "/inventory/products/";
+const PARAMETERS_ENDPOINT = "/inventory/parameters/";
 
-const fetcher = async (url: string): Promise<PaginatedResponse<Product>> => {
-  const response = await api.get(url);
-  return response.data;
-};
+// --- Fetcher Functions ---
+// Use for SWR keys that expect a paginated list response
+const listFetcher = (url: string) => api.get(url).then((res) => res.data);
+// Use for SWR keys that expect a single object response
+const singleFetcher = (url: string) => api.get(url).then((res) => res.data);
+
+// --- Hooks ---
 
 /**
- * Custom hook to fetch products, now with search functionality.
- * @param searchTerm The string to search for in product name or description.
+ * Fetches a paginated list of all products, with optional search.
+ * Used for the main inventory page.
+ * @param searchTerm The string to search for.
  */
 export function useProducts(searchTerm: string) {
-  // If a search term exists, append it as a query parameter.
-  // Your Django backend is already configured to handle this with SearchFilter.
   const searchUrl = searchTerm
     ? `${PRODUCTS_ENDPOINT}?search=${encodeURIComponent(searchTerm)}`
     : PRODUCTS_ENDPOINT;
 
-  const { data, error, isLoading, mutate } = useSWR(searchUrl, fetcher, {
-    // Keep previous data while new data is loading for a smoother experience
-    keepPreviousData: true,
-  });
+  const { data, error, isLoading, mutate } = useSWR<PaginatedResponse<Product>>(
+    searchUrl,
+    listFetcher,
+    {
+      keepPreviousData: true,
+    }
+  );
 
   return {
     products: data?.results,
+    isLoading,
+    error,
+    mutate,
+  };
+}
+
+/**
+ * Fetches a single product by its ID.
+ * Used for the product detail page header.
+ * @param productId The ID of the product to fetch.
+ */
+export function useProduct(productId: string | number) {
+  // SWR will not fetch if productId is null/undefined
+  const { data, error, isLoading, mutate } = useSWR<Product>(
+    productId ? `${PRODUCTS_ENDPOINT}${productId}/` : null,
+    singleFetcher
+  );
+
+  return {
+    product: data,
+    isLoading,
+    error,
+    mutate,
+  };
+}
+
+/**
+ * Fetches a list of parameters, filtered by EITHER a productId or a gradeId.
+ * Used on the product detail page to show specs.
+ * @param filters An object containing either a productId or a gradeId.
+ */
+export function useParameters(filters: {
+  productId?: string | number;
+  gradeId?: string | number;
+}) {
+  let url = null;
+  // Construct the correct URL based on the provided filter
+  if (filters.productId) {
+    url = `${PARAMETERS_ENDPOINT}?product=${filters.productId}`;
+  } else if (filters.gradeId) {
+    url = `${PARAMETERS_ENDPOINT}?product_grade=${filters.gradeId}`;
+  }
+
+  // SWR will not begin fetching if the key (url) is null
+  const { data, error, isLoading, mutate } = useSWR<ParameterDefinition[]>(
+    url,
+    listFetcher
+  );
+
+  return {
+    parameters: data,
     isLoading,
     error,
     mutate,
