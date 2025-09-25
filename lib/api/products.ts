@@ -80,9 +80,10 @@ export function useParameters(filters: {
   // SWR will not begin fetching if the key (url) is null
   const { data, error, isLoading, mutate } = useSWR<ParameterDefinition[]>(
     url,
-    listFetcher
+    listFetcher // The listFetcher still works perfectly
   );
 
+  // We now return 'data' directly, as it's the array we need.
   return {
     parameters: data,
     isLoading,
@@ -112,6 +113,34 @@ export const createProductGrade = async (
     product: productId, // Add the product ID to the payload
   };
   const response = await api.post<ProductGrade>(GRADES_ENDPOINT, payload);
+  return response.data;
+};
+
+// Define the type for the data needed to create a new parameter
+type CreateParameterData = Omit<
+  ParameterDefinition,
+  "id" | "product" | "product_grade"
+>;
+
+/**
+ * Creates a new Parameter Definition.
+ * It's associated with either a product or a grade based on the scope.
+ * @param parameterData The data for the new parameter.
+ * @param scope An object containing either a productId or a gradeId.
+ */
+export const createParameter = async (
+  parameterData: CreateParameterData,
+  scope: { productId?: string | number; gradeId?: string | number }
+) => {
+  const payload = {
+    ...parameterData,
+    product: scope.productId || null,
+    product_grade: scope.gradeId || null,
+  };
+  const response = await api.post<ParameterDefinition>(
+    PARAMETERS_ENDPOINT,
+    payload
+  );
   return response.data;
 };
 // --- END: NEW API FUNCTION ---
