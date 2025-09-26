@@ -123,28 +123,35 @@ export default function InventoryPage() {
             <h1 className="text-3xl font-bold text-slate-900">
               Product Inventory
             </h1>
-            {isLoading && (
-              <div className="h-7 w-20 bg-slate-200 rounded-full animate-pulse"></div>
-            )}
+            
+          </div>
+
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            {/* Total Count beside the search bar */}
             {!isLoading && totalCount !== undefined && (
-              <span className="bg-slate-200 text-slate-700 text-sm font-medium px-3 py-1 rounded-full">
-                {totalCount} Total
+              <span className="bg-slate-200 text-slate-700 text-sm font-medium px-3 py-1 rounded-full whitespace-nowrap">
+                Total Products: {totalCount} 
               </span>
             )}
-          </div>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+            {isLoading && (
+              <div className="h-7 w-20 bg-slate-200 rounded-full animate-pulse" />
+            )}
+
+            {/* Search Input */}
             <div className="relative flex-grow">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                 <Search className="h-4 w-4 text-slate-400" aria-hidden="true" />
               </div>
               <input
                 type="text"
-                className="block w-full rounded-md border-0 bg-white py-2 pl-9 pr-3 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 sm:text-sm"
+                className="block w-full rounded-md border-0 bg-white py-2 pl-9 pr-3 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 sm:text-sm transition-shadow duration-150"
                 placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+
+            {/* Add Product Button */}
             {canManageProducts && (
               <button
                 onClick={() => setIsModalOpen(true)}
