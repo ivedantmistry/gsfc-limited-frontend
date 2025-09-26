@@ -20,8 +20,8 @@ export default function ProductDetailLayout({
       {/* REVAMPED: Header and breadcrumbs updated to the new theme */}
       <header className="space-y-1">
         <div className="flex items-center text-sm text-slate-500">
-          <Link href="/dashboard/inventory">
-            <span className="hover:underline">Inventory</span>
+          <Link href="/dashboard/products">
+            <span className="hover:underline">Products</span>
           </Link>
           <ChevronRight className="w-4 h-4 mx-1" />
           {isLoading ? (

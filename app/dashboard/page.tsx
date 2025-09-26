@@ -80,7 +80,7 @@ export default function DashboardPage() {
             />
             <QuickActionButton
               icon={BarChart}
-              label="View Inventory"
+              label="View Products"
               description="Browse all products."
             />
             <QuickActionButton

@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "GSFC LTD Laboratory Portal",
-  description: "Chemical Analysis and Inventory Management System",
+  description: "Chemical Analysis and Product Management System",
 };
 
 export default function RootLayout({
