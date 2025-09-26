@@ -17,8 +17,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      {/* STYLE: Apply a clean, light gray background to the entire app */}
-      <body className={`${inter.className} bg-gray-100`}>
+      {/* REVAMPED: Switched to the softer 'bg-slate-50' and set a default text color for the app */}
+      <body className={`${inter.className} bg-slate-50 text-slate-800`}>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

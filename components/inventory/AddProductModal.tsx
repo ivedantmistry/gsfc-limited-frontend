@@ -13,6 +13,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -61,51 +62,45 @@ export default function AddProductModal({
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setApiError(null);
     try {
-      // The backend ProductViewSet handles the POST request to create a new product
       const response = await api.post<Product>("/inventory/products/", values);
       const newProduct = response.data;
-
-      // Close the modal
       onClose();
-
-      // Redirect to the new product's detail page
       router.push(`/dashboard/products/${newProduct.id}`);
     } catch (error: any) {
-      // Handle potential API errors (e.g., duplicate name)
-      if (error.response && error.response.data && error.response.data.name) {
+      if (error.response?.data?.name) {
         setApiError(`Error: ${error.response.data.name[0]}`);
       } else {
         setApiError("An unexpected error occurred. Please try again.");
       }
     }
   };
+
+  // REVAMPED: Centralized input styles to match our new theme
   const inputStyles =
-    "block w-full rounded-md border-0 bg-gray-100 py-2.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0071e3] sm:text-sm transition-shadow duration-150";
+    "block w-full rounded-lg border-0 bg-white py-2.5 px-4 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 sm:text-sm transition-shadow duration-150";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      {/* Increased max-width for better spacing */}
-      <DialogContent className="sm:max-w-lg bg-gray-50">
-        <DialogHeader className="px-1 pt-1">
-          <DialogTitle className="text-lg font-semibold text-gray-900">
+      {/* REVAMPED: Using a crisp white background for the modal */}
+      <DialogContent className="sm:max-w-lg bg-white">
+        {/* REVAMPED: Header typography updated */}
+        <DialogHeader>
+          <DialogTitle className="text-lg font-semibold text-slate-900">
             Create a New Product
           </DialogTitle>
-          <DialogDescription className="text-gray-500">
+          <DialogDescription className="text-slate-600">
             Provide a name and an optional description for your new product.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6 pt-2"
-          >
-            <div className="space-y-4 px-1">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-4">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">
+                    <FormLabel className="text-sm font-medium text-slate-700">
                       Product Name
                     </FormLabel>
                     <FormControl>
@@ -124,12 +119,12 @@ export default function AddProductModal({
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">
+                    <FormLabel className="text-sm font-medium text-slate-700">
                       Description (Optional)
                     </FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="A brief summary of what this product is and its primary use cases."
+                        placeholder="A brief summary of what this product is..."
                         className={`${inputStyles} resize-none`}
                         rows={3}
                         {...field}
@@ -141,26 +136,24 @@ export default function AddProductModal({
               />
             </div>
 
-            {apiError && (
-              <p className="text-sm text-red-600 px-1">{apiError}</p>
-            )}
-
-            {/* Revamped footer with better spacing and button styles */}
-            <div className="flex justify-end items-center gap-4 bg-gray-100 p-4 -m-6 mt-6 rounded-b-lg">
+            {apiError && <p className="text-sm text-red-600">{apiError}</p>}
+            
+            {/* REVAMPED: Footer with better contrast and themed buttons */}
+            <DialogFooter className="bg-slate-50 p-4 -mx-6 -mb-6 mt-6 rounded-b-xl sm:justify-end">
               <Button type="button" variant="ghost" onClick={onClose}>
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-gray-900 text-white hover:bg-gray-800"
+                className="bg-slate-800 text-white hover:bg-slate-700"
               >
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
                 Save Product
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

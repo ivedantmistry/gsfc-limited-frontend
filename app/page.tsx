@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image"; // 1. Import the Next.js Image component
+import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { User, KeyRound, Eye, EyeOff } from "lucide-react";
+import { User, KeyRound, Eye, EyeOff, LoaderCircle } from "lucide-react";
 import logo from "@/public/logo.png";
 
 export default function LoginPage() {
@@ -40,35 +40,42 @@ export default function LoginPage() {
   };
 
   if (isLoading || (!isLoading && user)) {
-    return <div className="min-h-screen bg-gray-100"></div>;
+    // REVAMPED: A more engaging loading spinner that matches the theme
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <LoaderCircle className="w-10 h-10 text-indigo-500 animate-spin" />
+      </div>
+    );
   }
 
-  // STYLE: Consistent styles for form inputs with blue focus ring
+  // REVAMPED: Input styles updated to match the new slate/indigo theme
   const inputStyles =
-    "block w-full rounded-md border-0 bg-white py-3 pl-12 pr-4 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0071e3] sm:text-sm transition-shadow duration-150";
+    "block w-full rounded-lg border-0 bg-white py-3 pl-12 pr-4 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 sm:text-sm transition-shadow duration-150";
 
   return (
-    <main className="flex items-center justify-center min-h-screen w-full p-4">
-      <div className="w-full max-w-sm mx-auto p-8 bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg shadow-gray-200/50">
+    // REVAMPED: Added a subtle decorative background gradient
+    <main className="flex items-center justify-center min-h-screen w-full p-4 bg-slate-50 relative overflow-hidden">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60rem] h-[60rem] bg-indigo-500/5 rounded-full blur-3xl"></div>
+      <div className="relative w-full max-w-sm mx-auto p-8 bg-white/60 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200/50">
         <div className="text-center mb-10">
           <div className="mb-6">
             <Image
               src={logo}
               alt="GSFC LTD Logo"
-              width={250} // You can increase/decrease as needed
+              width={250}
               height={250}
               className="mx-auto object-contain"
+              priority // Prioritize loading the logo
             />
           </div>
-
-          {/* STYLE: Refined header typography */}
-          <h1 className="text-2xl font-semibold text-gray-800">GSFC LTD</h1>
-          <p className="text-gray-500 mt-1 text-sm">Laboratory Portal</p>
+          {/* REVAMPED: Header typography using the new color scheme */}
+          <h1 className="text-2xl font-bold text-slate-900">GSFC LTD</h1>
+          <p className="text-slate-500 mt-1 text-sm">Laboratory Portal</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <User className="w-4 h-4 text-gray-400" />
+              <User className="w-5 h-5 text-slate-400" />
             </div>
             <input
               type="text"
@@ -82,7 +89,7 @@ export default function LoginPage() {
           </div>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <KeyRound className="w-4 h-4 text-gray-400" />
+              <KeyRound className="w-5 h-5 text-slate-400" />
             </div>
             <input
               type={showPassword ? "text" : "password"}
@@ -91,17 +98,17 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               required
-              className={`${inputStyles} pr-12`} // Add extra padding for the button
+              className={`${inputStyles} pr-12`}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
             >
               {showPassword ? (
-                <EyeOff className="w-4 h-4" />
+                <EyeOff className="w-5 h-5" />
               ) : (
-                <Eye className="w-4 h-4" />
+                <Eye className="w-5 h-5" />
               )}
             </button>
           </div>
@@ -111,12 +118,13 @@ export default function LoginPage() {
             </div>
           )}
           <div>
-            {/* STYLE: Consistent primary action button */}
+            {/* REVAMPED: Primary button now uses the dark slate color from the sidebar */}
             <button
               type="submit"
               disabled={isLoggingIn}
-              className="w-full font-medium py-3 px-4 text-white rounded-lg transition duration-200 ease-in-out bg-gray-900 hover:bg-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0071e3] disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full font-medium py-3 px-4 text-white rounded-lg transition-all duration-200 ease-in-out bg-slate-800 hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
+              {isLoggingIn && <LoaderCircle className="w-5 h-5 animate-spin" />}
               {isLoggingIn ? "Signing In..." : "Sign In"}
             </button>
           </div>

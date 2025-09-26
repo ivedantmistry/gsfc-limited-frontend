@@ -2,13 +2,14 @@
 
 import React, { ReactNode, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useHasPermission } from "@/hooks/useHasPermission";
-import Link from "next/link";
-import { LogOut, Settings } from "lucide-react";
 import { navItems } from "@/config/navItems";
+import { LogOut, Settings, Bell } from "lucide-react";
 
-// A reusable component for sidebar navigation links
+// --- Re-engineered Components for macOS Style ---
+
 const SidebarLink = ({
   href,
   icon: Icon,
@@ -23,19 +24,17 @@ const SidebarLink = ({
     href === "/dashboard" ? pathname === href : pathname.startsWith(href);
 
   return (
-    <Link href={href} className="block">
-      {/* REVAMPED: Active link style is more pronounced with a background and a side indicator. */}
+    <Link href={href} className="block px-3">
+      {/* REVAMPED: macOS-style active state - a subtle, rounded background fill */}
       <span
-        className={`relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
+        className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${
           isActive
-            ? "bg-slate-700 text-white"
-            : "text-slate-400 hover:bg-slate-700/50 hover:text-slate-200"
+            ? "bg-slate-200/70 text-slate-800"
+            : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-800"
         }`}
       >
-        {/* NEW: Active state indicator bar for a modern look */}
-        {isActive && <div className="absolute left-0 h-6 w-1 bg-indigo-400 rounded-r-full"></div>}
         <Icon className="w-5 h-5" />
-        {label}
+        <span>{label}</span>
       </span>
     </Link>
   );
@@ -46,95 +45,79 @@ const Sidebar = () => {
   const hasPermission = useHasPermission;
 
   return (
-    // REVAMPED: Darker sidebar for better contrast and a premium feel.
-    <aside className="fixed top-0 left-0 h-full w-72 bg-slate-800 border-r border-slate-700/60 flex flex-col z-40">
+    // REVAMPED: macOS-style sidebar with a light, semi-transparent "material" effect
+    <aside className="h-full w-64 bg-slate-100/80 backdrop-blur-md border-r border-slate-200/80 flex flex-col">
       {/* Header */}
-      <div className="flex items-center gap-3 h-20 border-b border-slate-700/50 px-6">
-        <svg
-          className="w-8 h-8 text-indigo-400" // NEW: Added an accent color to the logo
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-          />
-        </svg>
-        <span className="font-semibold text-xl text-slate-100">GSFC LTD</span>
+      <div className="flex items-center gap-2.5 h-16 border-b border-slate-200/80 px-4">
+        <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold text-sm">
+          {user?.username.charAt(0).toUpperCase()}
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-slate-800">
+            {user?.username}
+          </p>
+          <p className="text-xs text-slate-500">GSFC LTD</p>
+        </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-2">
+      <nav className="flex-1 py-4 space-y-1">
         {navItems
           .filter((item) => !item.permission || hasPermission(item.permission))
           .map((item) => (
-            <SidebarLink
-              key={item.href}
-              href={item.href}
-              icon={item.icon}
-              label={item.label}
-            />
+            <SidebarLink key={item.href} {...item} />
           ))}
       </nav>
 
-      {/* Footer / User Area */}
-      <div className="mt-auto p-4 border-t border-slate-700/50">
-        <div className="flex items-center justify-between p-2">
-          <div className="flex items-center gap-3">
-             {/* REVAMPED: User avatar with accent color */}
-            <div className="w-9 h-9 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold text-sm">
-              {user?.username.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex flex-col">
-                <span className="text-sm font-semibold text-slate-100">
-                  {user?.username}
-                </span>
-                <span className="text-xs text-slate-400">{user?.email || 'user@email.com'}</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              className="p-2 rounded-lg text-slate-400 hover:bg-slate-700/50 hover:text-slate-200 transition-colors"
-              title="Settings"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
-            <button
-              onClick={logout}
-              className="p-2 rounded-lg text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-colors"
-              title="Sign Out"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+      {/* Footer Actions */}
+      <div className="p-4 border-t border-slate-200/80">
+        <button
+          onClick={logout}
+          className="flex items-center gap-3 text-sm font-medium w-full text-slate-600 hover:text-red-600 transition-colors"
+        >
+          <LogOut className="w-5 h-5" />
+          Sign Out
+        </button>
       </div>
     </aside>
   );
 };
 
-// NEW: A simple skeleton loader component
+const AppToolbar = () => {
+  // This toolbar would contain the page title and global actions
+  return (
+    <header className="flex-shrink-0 flex items-center justify-between h-16 bg-white/60 backdrop-blur-md border-b border-slate-200/80 px-6">
+      <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
+      <div className="flex items-center gap-2">
+        {/* macOS-style borderless icon buttons for primary actions */}
+        <button className="p-2 rounded-full text-slate-500 hover:bg-slate-200/60 hover:text-slate-700 transition-colors">
+          <Bell className="w-5 h-5" />
+        </button>
+        <button className="p-2 rounded-full text-slate-500 hover:bg-slate-200/60 hover:text-slate-700 transition-colors">
+          <Settings className="w-5 h-5" />
+        </button>
+      </div>
+    </header>
+  );
+};
+
+// --- Skeleton Loader Updated for the New Layout ---
+
 const DashboardSkeleton = () => (
-    <div className="min-h-screen bg-slate-50 font-sans">
-        <aside className="fixed top-0 left-0 h-full w-72 bg-slate-200 animate-pulse"></aside>
-        <main className="ml-72 p-8">
-            <div className="space-y-8">
-                <div>
-                    <div className="h-8 w-1/3 bg-slate-200 rounded-lg animate-pulse mb-3"></div>
-                    <div className="h-4 w-1/2 bg-slate-200 rounded-lg animate-pulse"></div>
-                </div>
-                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="h-32 bg-slate-200 rounded-2xl animate-pulse"></div>
-                    <div className="h-32 bg-slate-200 rounded-2xl animate-pulse"></div>
-                    <div className="h-32 bg-slate-200 rounded-2xl animate-pulse"></div>
-                </div>
-            </div>
-        </main>
+  <div className="h-screen w-screen flex bg-slate-100 font-sans">
+    <aside className="h-full w-64 bg-slate-200 border-r border-slate-300 animate-pulse"></aside>
+    <div className="flex-1 flex flex-col">
+      <header className="flex-shrink-0 h-16 bg-slate-200 border-b border-slate-300 animate-pulse"></header>
+      <main className="flex-1 p-8 space-y-8 animate-pulse">
+        <div className="h-10 w-1/3 bg-slate-300 rounded-lg"></div>
+        <div className="grid grid-cols-2 gap-6">
+          <div className="h-48 col-span-2 bg-slate-300 rounded-xl"></div>
+          <div className="h-48 bg-slate-300 rounded-xl"></div>
+          <div className="h-48 bg-slate-300 rounded-xl"></div>
+        </div>
+      </main>
     </div>
+  </div>
 );
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -148,15 +131,17 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }, [isLoading, user, router]);
 
   if (isLoading || !user) {
-    // REVAMPED: Using a skeleton loader for a better loading experience
     return <DashboardSkeleton />;
   }
 
   return (
-    // REVAMPED: Changed background for a softer, cleaner look
-    <div className="min-h-screen bg-slate-50 font-sans">
+    // REVAMPED: Main layout now a flex container mimicking a desktop app window
+    <div className="h-screen w-screen flex bg-slate-100 font-sans overflow-hidden">
       <Sidebar />
-      <main className="ml-72 p-8">{children}</main>
+      <div className="flex-1 flex flex-col">
+        <AppToolbar />
+        <main className="flex-1 overflow-y-auto p-8">{children}</main>
+      </div>
     </div>
   );
 }
