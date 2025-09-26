@@ -40,7 +40,6 @@ export default function LoginPage() {
   };
 
   if (isLoading || (!isLoading && user)) {
-    // REVAMPED: A more engaging loading spinner that matches the theme
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <LoaderCircle className="w-10 h-10 text-indigo-500 animate-spin" />
@@ -48,15 +47,19 @@ export default function LoginPage() {
     );
   }
 
-  // REVAMPED: Input styles updated to match the new slate/indigo theme
   const inputStyles =
     "block w-full rounded-lg border-0 bg-white py-3 pl-12 pr-4 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 sm:text-sm transition-shadow duration-150";
 
   return (
-    // REVAMPED: Added a subtle decorative background gradient
     <main className="flex items-center justify-center min-h-screen w-full p-4 bg-slate-50 relative overflow-hidden">
+      {/* This background is consistent with our standalone pages like 404 */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60rem] h-[60rem] bg-indigo-500/5 rounded-full blur-3xl"></div>
-      <div className="relative w-full max-w-sm mx-auto p-8 bg-white/60 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200/50">
+
+      {/* REVAMPED: Panel styling adjusted to match the macOS widget aesthetic.
+          - Softer rounding (rounded-xl)
+          - More subtle shadow (shadow-lg shadow-slate-900/5)
+          - Cleaner border (border-slate-200/70) */}
+      <div className="relative w-full max-w-sm mx-auto p-8 bg-white/80 backdrop-blur-xl rounded-xl border border-slate-200/70 shadow-lg shadow-slate-900/5">
         <div className="text-center mb-10">
           <div className="mb-6">
             <Image
@@ -65,11 +68,12 @@ export default function LoginPage() {
               width={250}
               height={250}
               className="mx-auto object-contain"
-              priority // Prioritize loading the logo
+              priority
             />
           </div>
-          {/* REVAMPED: Header typography using the new color scheme */}
-          <h1 className="text-2xl font-bold text-slate-900">GSFC LTD</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            GSFC LTD
+          </h1>
           <p className="text-slate-500 mt-1 text-sm">Laboratory Portal</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -118,7 +122,6 @@ export default function LoginPage() {
             </div>
           )}
           <div>
-            {/* REVAMPED: Primary button now uses the dark slate color from the sidebar */}
             <button
               type="submit"
               disabled={isLoggingIn}
