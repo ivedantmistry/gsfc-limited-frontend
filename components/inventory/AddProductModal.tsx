@@ -77,24 +77,23 @@ export default function AddProductModal({
 
   // REVAMPED: Centralized input styles to match our new theme
   const inputStyles =
-    "block w-full rounded-lg border-0 bg-white py-2.5 px-4 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 sm:text-sm transition-shadow duration-150";
+    "block w-full rounded-md border-0 bg-white py-2.5 px-4 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 sm:text-sm transition-shadow duration-150";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      {/* REVAMPED: Using a crisp white background for the modal */}
-      <DialogContent className="sm:max-w-lg bg-white">
-        {/* REVAMPED: Header typography updated */}
-        <DialogHeader>
+      
+      <DialogContent className="sm:max-w-lg bg-slate-50 p-0 rounded-xl border border-slate-200/80">
+        <DialogHeader className="p-6 pb-4 border-b border-slate-200/80">
           <DialogTitle className="text-lg font-semibold text-slate-900">
-            Create a New Product
+            Add New Product
           </DialogTitle>
           <DialogDescription className="text-slate-600">
-            Provide a name and an optional description for your new product.
+            Fill in the details for the new product below.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="p-6 space-y-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -134,26 +133,31 @@ export default function AddProductModal({
                   </FormItem>
                 )}
               />
+              {apiError && (
+                <p className="text-sm text-red-600 pt-2">{apiError}</p>
+              )}
             </div>
 
-            {apiError && <p className="text-sm text-red-600">{apiError}</p>}
-            
-            {/* REVAMPED: Footer with better contrast and themed buttons */}
-            <DialogFooter className="bg-slate-50 p-4 -mx-6 -mb-6 mt-6 rounded-b-xl sm:justify-end">
-              <Button type="button" variant="ghost" onClick={onClose}>
+            {/* REVAMPED: macOS-style footer with a distinct background and themed buttons. */}
+            <div className="flex justify-end gap-3 p-4 bg-slate-200/60 border-t border-slate-200/80">
+              <Button
+                type="button"
+                onClick={onClose}
+                className="bg-white text-slate-800 ring-1 ring-slate-300 hover:bg-slate-100"
+              >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-slate-800 text-white hover:bg-slate-700"
+                className="bg-indigo-600 text-white hover:bg-indigo-700"
               >
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Save Product
+                Create Product
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </Form>
       </DialogContent>

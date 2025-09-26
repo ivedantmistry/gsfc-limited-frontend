@@ -124,34 +124,33 @@ export default function AddParameterModal({
     }
   };
 
+  // REVAMPED: Consistent input styles from our new theme
   const inputStyles =
-    "block w-full rounded-md border-0 bg-gray-100 py-2.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0071e3] sm:text-sm transition-shadow duration-150";
-
-      const selectTriggerStyles = `${inputStyles} flex items-center justify-between`;
-
+    "block w-full rounded-md border-0 bg-white py-2.5 px-4 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 sm:text-sm transition-shadow duration-150";
+ const selectTriggerStyles = `${inputStyles} flex items-center justify-between`;
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg bg-gray-50">
-        <DialogHeader className="px-1 pt-1">
-          <DialogTitle className="text-lg font-semibold text-gray-900">
+      {/* REVAMPED: Modal content uses the new theme's structure and styling */}
+      <DialogContent className="sm:max-w-lg bg-slate-50 p-0 rounded-xl border border-slate-200/80">
+        {/* NEW: Tighter header spacing */}
+        <DialogHeader className="p-6 pb-4 border-b border-slate-200/80">
+          <DialogTitle className="text-lg font-semibold text-slate-900">
             Define a New Parameter
           </DialogTitle>
-          <DialogDescription className="text-gray-500">
+          <DialogDescription className="text-slate-600">
             Specify the details and constraints for this quality parameter.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6 pt-2"
-          >
-            <div className="space-y-4 px-1 max-h-[60vh] overflow-y-auto pr-4">
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            {/* NEW: Form body is padded and scrollable */}
+            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto pr-4">
               <FormField
                 name="name"
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">
+                    <FormLabel className="text-sm font-medium text-slate-700">
                       Parameter Name
                     </FormLabel>
                     <FormControl>
@@ -170,7 +169,7 @@ export default function AddParameterModal({
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">
+                    <FormLabel className="text-sm font-medium text-slate-700">
                       Data Type
                     </FormLabel>
                     <Select
@@ -178,6 +177,7 @@ export default function AddParameterModal({
                       defaultValue={field.value}
                     >
                       <FormControl>
+                        {/* REVAMPED: Select trigger now uses the consistent input style */}
                         <SelectTrigger className={selectTriggerStyles}>
                           <SelectValue placeholder="Select a data type" />
                         </SelectTrigger>
@@ -185,7 +185,7 @@ export default function AddParameterModal({
                       <SelectContent>
                         {DATA_TYPE_CHOICES.map((type) => (
                           <SelectItem key={type} value={type}>
-                            {type}
+                            {type.charAt(0) + type.slice(1).toLowerCase()}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -199,7 +199,7 @@ export default function AddParameterModal({
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">
+                    <FormLabel className="text-sm font-medium text-slate-700">
                       Unit (Optional)
                     </FormLabel>
                     <FormControl>
@@ -221,7 +221,7 @@ export default function AddParameterModal({
                     control={form.control}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-gray-700">
+                        <FormLabel className="text-sm font-medium text-slate-700">
                           Min Value
                         </FormLabel>
                         <FormControl>
@@ -240,7 +240,7 @@ export default function AddParameterModal({
                     control={form.control}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-gray-700">
+                        <FormLabel className="text-sm font-medium text-slate-700">
                           Max Value
                         </FormLabel>
                         <FormControl>
@@ -263,7 +263,7 @@ export default function AddParameterModal({
                   control={form.control}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">
+                      <FormLabel className="text-sm font-medium text-slate-700">
                         Enum Options
                       </FormLabel>
                       <FormControl>
@@ -273,7 +273,7 @@ export default function AddParameterModal({
                           {...field}
                         />
                       </FormControl>
-                      <p className="text-xs text-gray-500 px-1">
+                      <p className="text-xs text-slate-500 px-1">
                         Enter options separated by a comma.
                       </p>
                       <FormMessage />
@@ -289,7 +289,7 @@ export default function AddParameterModal({
                     control={form.control}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-gray-700">
+                        <FormLabel className="text-sm font-medium text-slate-700">
                           'True' Label
                         </FormLabel>
                         <FormControl>
@@ -308,7 +308,7 @@ export default function AddParameterModal({
                     control={form.control}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-gray-700">
+                        <FormLabel className="text-sm font-medium text-slate-700">
                           'False' Label
                         </FormLabel>
                         <FormControl>
@@ -327,17 +327,22 @@ export default function AddParameterModal({
             </div>
 
             {apiError && (
-              <p className="text-sm text-red-600 px-1">{apiError}</p>
+              <p className="text-sm text-red-600 px-6 pb-4">{apiError}</p>
             )}
 
-            <div className="flex justify-end items-center gap-4 bg-gray-100 p-4 -m-6 mt-6 rounded-b-lg">
-              <Button type="button" variant="ghost" onClick={onClose}>
+            {/* REVAMPED: macOS-style footer with a distinct background and themed buttons */}
+            <div className="flex justify-end gap-3 p-4 bg-slate-200/60 border-t border-slate-200/80">
+              <Button
+                type="button"
+                onClick={onClose}
+                className="bg-white text-slate-800 ring-1 ring-slate-300 hover:bg-slate-100"
+              >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-gray-900 text-white hover:bg-gray-800"
+                className="bg-indigo-600 text-white hover:bg-indigo-700"
               >
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

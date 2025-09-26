@@ -68,32 +68,33 @@ export default function AddGradeModal({
     }
   };
 
+  // REVAMPED: Consistent input styles from our new theme
   const inputStyles =
-    "block w-full rounded-md border-0 bg-gray-100 py-2.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0071e3] sm:text-sm transition-shadow duration-150";
+    "block w-full rounded-md border-0 bg-white py-2.5 px-4 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 sm:text-sm transition-shadow duration-150";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg bg-gray-50">
-        <DialogHeader className="px-1 pt-1">
-          <DialogTitle className="text-lg font-semibold text-gray-900">
+      {/* REVAMPED: Modal content uses the new theme's structure and styling */}
+      <DialogContent className="sm:max-w-lg bg-slate-50 p-0 rounded-xl border border-slate-200/80">
+        {/* NEW: Tighter header spacing by controlling padding here */}
+        <DialogHeader className="p-6 pb-4 border-b border-slate-200/80">
+          <DialogTitle className="text-lg font-semibold text-slate-900">
             Create a New Grade
           </DialogTitle>
-          <DialogDescription className="text-gray-500">
+          <DialogDescription className="text-slate-600">
             Define a new quality tier for this product.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6 pt-2"
-          >
-            <div className="space-y-4 px-1">
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            {/* NEW: Consistent padding for the form body */}
+            <div className="p-6 space-y-4">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">
+                    <FormLabel className="text-sm font-medium text-slate-700">
                       Grade Name
                     </FormLabel>
                     <FormControl>
@@ -112,7 +113,7 @@ export default function AddGradeModal({
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">
+                    <FormLabel className="text-sm font-medium text-slate-700">
                       Description (Optional)
                     </FormLabel>
                     <FormControl>
@@ -127,20 +128,24 @@ export default function AddGradeModal({
                   </FormItem>
                 )}
               />
+              {apiError && (
+                <p className="text-sm text-red-600 pt-2">{apiError}</p>
+              )}
             </div>
 
-            {apiError && (
-              <p className="text-sm text-red-600 px-1">{apiError}</p>
-            )}
-
-            <div className="flex justify-end items-center gap-4 bg-gray-100 p-4 -m-6 mt-6 rounded-b-lg">
-              <Button type="button" variant="ghost" onClick={onClose}>
+            {/* REVAMPED: macOS-style footer with a distinct background and themed buttons */}
+            <div className="flex justify-end gap-3 p-4 bg-slate-200/60 border-t border-slate-200/80">
+              <Button
+                type="button"
+                onClick={onClose}
+                className="bg-white text-slate-800 ring-1 ring-slate-300 hover:bg-slate-100"
+              >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-gray-900 text-white hover:bg-gray-800"
+                className="bg-indigo-600 text-white hover:bg-indigo-700"
               >
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

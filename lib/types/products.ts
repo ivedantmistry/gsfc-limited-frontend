@@ -1,30 +1,6 @@
 /**
- * Represents a Product Grade object.
- */
-export interface ProductGrade {
-  id: number;
-  name: string;
-  description: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-/**
- * Represents a Product object.
- */
-export interface Product {
-  id: number;
-  name: string;
-  product_id: string;
-  description: string | null;
-  created_at: string;
-  updated_at: string;
-  grades: ProductGrade[];
-}
-
-/**
  * Represents a Parameter Definition object.
- * Based on inventory.models.ParameterDefinition.
+ * (This interface is correct and does not need changes)
  */
 export interface ParameterDefinition {
   id: number;
@@ -38,4 +14,32 @@ export interface ParameterDefinition {
   enum_options: string[] | null;
   boolean_true_label: string | null;
   boolean_false_label: string | null;
+}
+
+/**
+ * Represents a Product Grade object.
+ */
+export interface ProductGrade {
+  id: number;
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+  // NEW: Add the nested parameters property
+  parameters: ParameterDefinition[];
+}
+
+/**
+ * Represents a Product object.
+ */
+export interface Product {
+  id: number;
+  name: string;
+  product_id: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+  grades: ProductGrade[];
+  // NEW: Add the property for direct parameters
+  parameters: ParameterDefinition[];
 }
