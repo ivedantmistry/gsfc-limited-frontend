@@ -19,7 +19,7 @@ export default function InventoryPage() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const { products, isLoading, error, mutate } =
+  const { products, totalCount, isLoading, error, mutate } =
     useProducts(debouncedSearchTerm);
   const canManageProducts = useHasPermission("inventory.can_manage_products");
 
@@ -32,13 +32,22 @@ export default function InventoryPage() {
     <>
       <AddProductModal isOpen={isModalOpen} onClose={handleModalClose} />
 
-      {/* REVAMPED: Main container with a clean layout */}
       <div className="space-y-6">
-        {/* NEW: A dedicated toolbar for the page title, search, and primary actions, mimicking a native app */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4">
-          <h1 className="text-3xl font-bold text-slate-900">
-            Product Inventory
-          </h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-bold text-slate-900">
+              Product Inventory
+            </h1>
+            {/* NEW: Display the total product count with a loading state */}
+            {isLoading && (
+              <div className="h-7 w-20 bg-slate-200 rounded-full animate-pulse"></div>
+            )}
+            {!isLoading && totalCount !== undefined && (
+              <span className="bg-slate-200 text-slate-700 text-sm font-medium px-3 py-1 rounded-full">
+                {totalCount} Total
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <div className="relative flex-grow">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">

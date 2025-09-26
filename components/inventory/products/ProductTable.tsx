@@ -25,7 +25,6 @@ export const ProductTable = ({
             <th scope="col" className="w-12 p-4"></th>
             <th scope="col" className="px-6 py-3">Product ID</th>
             <th scope="col" className="px-6 py-3">Name</th>
-            <th scope="col" className="px-6 py-3">Created</th>
             <th scope="col" className="px-6 py-3">Actions</th>
           </tr>
         </thead>

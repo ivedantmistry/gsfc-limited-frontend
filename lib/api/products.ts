@@ -34,6 +34,7 @@ export function useProducts(searchTerm: string) {
 
   return {
     products: data?.results,
+    totalCount: data?.count,
     isLoading,
     error,
     mutate,
