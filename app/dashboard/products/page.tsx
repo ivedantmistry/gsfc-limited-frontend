@@ -5,22 +5,107 @@ import { useProducts } from "@/lib/api/products";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import AddProductModal from "@/components/inventory/AddProductModal";
 import { ProductTable } from "@/components/inventory/products/ProductTable";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+
+// NEW: Define the type for the props our PaginationControls component expects.
+interface PaginationControlsProps {
+  page: number;
+  setPage: React.Dispatch<React.SetStateAction<number>>;
+  pageSize: number;
+  setPageSize: React.Dispatch<React.SetStateAction<number>>;
+  totalCount: number | undefined;
+  nextPageUrl: string | null | undefined;
+  prevPageUrl: string | null | undefined;
+  productsLength: number;
+}
+
+// A dedicated component for all pagination controls.
+const PaginationControls: React.FC<PaginationControlsProps> = ({
+  page,
+  setPage,
+  pageSize,
+  setPageSize,
+  totalCount,
+  nextPageUrl,
+  prevPageUrl,
+  productsLength,
+}) => {
+  const pageSizes = [10, 25, 50, 75, 100];
+  // Fallback to 0 if totalCount is undefined
+  const count = totalCount || 0;
+  const startItem = count > 0 ? (page - 1) * pageSize + 1 : 0;
+  const endItem = startItem + productsLength - 1;
+
+  return (
+    <div className="flex items-center justify-between p-4 text-sm text-slate-600">
+      <div className="flex items-center gap-2">
+        <span>Rows per page:</span>
+        <select
+          value={pageSize}
+          onChange={(e) => setPageSize(Number(e.target.value))}
+          className="bg-white border border-slate-300 rounded-md p-1.5"
+        >
+          {pageSizes.map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="font-medium">
+        {startItem}–{endItem} of {count}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setPage(page - 1)}
+          disabled={!prevPageUrl}
+          className="p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <button
+          onClick={() => setPage(page + 1)}
+          disabled={!nextPageUrl}
+          className="p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default function InventoryPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
+      setPage(1);
     }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const { products, totalCount, isLoading, error, mutate } =
-    useProducts(debouncedSearchTerm);
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize]);
+
+  const {
+    products,
+    totalCount,
+    nextPageUrl,
+    prevPageUrl,
+    isLoading,
+    error,
+    mutate,
+  } = useProducts({ searchTerm: debouncedSearchTerm, page, pageSize });
+
   const canManageProducts = useHasPermission("inventory.can_manage_products");
 
   const handleModalClose = () => {
@@ -38,7 +123,6 @@ export default function InventoryPage() {
             <h1 className="text-3xl font-bold text-slate-900">
               Product Inventory
             </h1>
-            {/* NEW: Display the total product count with a loading state */}
             {isLoading && (
               <div className="h-7 w-20 bg-slate-200 rounded-full animate-pulse"></div>
             )}
@@ -55,14 +139,13 @@ export default function InventoryPage() {
               </div>
               <input
                 type="text"
-                className="block w-full rounded-md border-0 bg-white py-2 pl-9 pr-3 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 sm:text-sm transition-shadow duration-150"
+                className="block w-full rounded-md border-0 bg-white py-2 pl-9 pr-3 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 sm:text-sm"
                 placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             {canManageProducts && (
-              // REVAMPED: Button is now a clean, macOS-style icon-only button for adding new items
               <button
                 onClick={() => setIsModalOpen(true)}
                 title="Add New Product"
@@ -75,7 +158,6 @@ export default function InventoryPage() {
           </div>
         </div>
 
-        {/* NEW: The product table is now wrapped in a clean, bordered panel, consistent with the dashboard widgets */}
         <div className="bg-white/80 rounded-xl border border-slate-200/70">
           <ProductTable
             products={products}
@@ -83,6 +165,19 @@ export default function InventoryPage() {
             error={error}
             canManage={canManageProducts}
           />
+          {/* FIXED: The condition now safely checks if totalCount is a positive number. */}
+          {totalCount && totalCount > 0 && (
+            <PaginationControls
+              page={page}
+              setPage={setPage}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              totalCount={totalCount}
+              nextPageUrl={nextPageUrl}
+              prevPageUrl={prevPageUrl}
+              productsLength={products?.length || 0}
+            />
+          )}
         </div>
       </div>
     </>

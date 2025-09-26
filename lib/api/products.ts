@@ -15,17 +15,31 @@ const singleFetcher = (url: string) => api.get(url).then((res) => res.data);
 // --- Hooks ---
 
 /**
- * Fetches a paginated list of all products, with optional search.
- * Used for the main inventory page.
- * @param searchTerm The string to search for.
+ * Fetches a paginated list of all products, with optional search and pagination.
+ * @param params An object containing searchTerm, page, and pageSize.
  */
-export function useProducts(searchTerm: string) {
-  const searchUrl = searchTerm
-    ? `${PRODUCTS_ENDPOINT}?search=${encodeURIComponent(searchTerm)}`
-    : PRODUCTS_ENDPOINT;
+// REVAMPED: The hook now accepts an object with pagination parameters.
+export function useProducts({
+  searchTerm,
+  page,
+  pageSize,
+}: {
+  searchTerm: string;
+  page: number;
+  pageSize: number;
+}) {
+  // Use URLSearchParams for clean and safe URL construction
+  const params = new URLSearchParams();
+  if (searchTerm) {
+    params.append("search", searchTerm);
+  }
+  params.append("page", page.toString());
+  params.append("page_size", pageSize.toString());
+
+  const url = `${PRODUCTS_ENDPOINT}?${params.toString()}`;
 
   const { data, error, isLoading, mutate } = useSWR<PaginatedResponse<Product>>(
-    searchUrl,
+    url,
     listFetcher,
     {
       keepPreviousData: true,
@@ -35,6 +49,8 @@ export function useProducts(searchTerm: string) {
   return {
     products: data?.results,
     totalCount: data?.count,
+    nextPageUrl: data?.next,
+    prevPageUrl: data?.previous,
     isLoading,
     error,
     mutate,
