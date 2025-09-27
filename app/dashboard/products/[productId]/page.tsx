@@ -9,6 +9,7 @@ import { ParameterTable } from "@/components/inventory/product-detail/ParameterT
 import AddGradeModal from "@/components/inventory/AddGradeModal";
 import AddParameterModal from "@/components/inventory/AddParameterModal";
 import { ProductGrade, ParameterDefinition } from "@/lib/types";
+import { SpecificationManager } from "@/components/inventory/product-detail/SpecificationManager";
 
 // The GradeCard component is correct and needs no changes.
 type GradeWithParameters = ProductGrade & { parameters: ParameterDefinition[] };
@@ -153,16 +154,117 @@ export default function ProductParametersPage({
       </div>
     );
   }
+if (!product) {
+    return (
+      <div className="text-center p-8">
+        <h2 className="text-xl font-semibold">Product Not Found</h2>
+        <p className="text-slate-500">The requested product could not be loaded.</p>
+      </div>
+    );
+  }
 
   const hasGrades = product && product.grades && product.grades.length > 0;
-  // The 'parameters' field on the product now holds the direct parameters
   const hasDirectParams =
     product && product.parameters && product.parameters.length > 0;
 
   // Case 1: The product has grades defined.
   if (hasGrades) {
     return (
-      <>
+      // NEW: Added a wrapper div for spacing
+      <div className="space-y-8">
+        <div>
+          <AddGradeModal
+            isOpen={isGradeModalOpen}
+            onClose={() => setIsGradeModalOpen(false)}
+            productId={resolvedParams.productId}
+            onSuccess={mutateProduct}
+          />
+          <AddParameterModal
+            isOpen={isParamModalOpen}
+            onClose={() => setIsParamModalOpen(false)}
+            scope={paramModalScope}
+            onSuccess={mutateProduct}
+          />
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-slate-900">
+                Product Grades
+              </h2>
+              <button
+                onClick={() => setIsGradeModalOpen(true)}
+                className={addButtonStyle}
+              >
+                <Plus size={16} /> Add Grade
+              </button>
+            </div>
+            <div className="space-y-4">
+              {product.grades.map((grade, index) => (
+                <GradeCard
+                  key={grade.id}
+                  grade={grade}
+                  color={gradeColors[index % gradeColors.length]}
+                  onAddParameter={() => openParamModal({ gradeId: grade.id })}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* NEW: Add the Specification Manager here */}
+        <SpecificationManager
+          productId={resolvedParams.productId}
+          // NEW: Pass the product's direct parameters as a prop
+          directParameters={product.parameters}
+        />
+      </div>
+    );
+  }
+
+  // Case 2: No grades, but has direct parameters.
+  if (hasDirectParams) {
+    return (
+      // NEW: Added a wrapper div for spacing
+      <div className="space-y-8">
+        <div>
+          <AddParameterModal
+            isOpen={isParamModalOpen}
+            onClose={() => setIsParamModalOpen(false)}
+            scope={paramModalScope}
+            onSuccess={mutateProduct}
+          />
+          <div className="bg-white/80 rounded-xl border border-slate-200/70">
+            <div className="flex justify-between items-center p-4 border-b border-slate-200/70">
+              <h2 className="text-lg font-semibold text-slate-900">
+                Parameters
+              </h2>
+              <button
+                onClick={() =>
+                  openParamModal({ productId: resolvedParams.productId })
+                }
+                className={addButtonStyle}
+              >
+                <Plus size={16} /> Add Parameter
+              </button>
+            </div>
+            <ParameterTable parameters={product.parameters} />
+          </div>
+        </div>
+
+        {/* NEW: Add the Specification Manager here */}
+        <SpecificationManager
+          productId={resolvedParams.productId}
+          // NEW: Pass the product's direct parameters as a prop
+          directParameters={product.parameters}
+        />
+      </div>
+    );
+  }
+
+  // Case 3: The product is completely empty.
+  return (
+    // NEW: Added a wrapper div for spacing
+    <div className="space-y-8">
+      <div>
         <AddGradeModal
           isOpen={isGradeModalOpen}
           onClose={() => setIsGradeModalOpen(false)}
@@ -175,84 +277,21 @@ export default function ProductParametersPage({
           scope={paramModalScope}
           onSuccess={mutateProduct}
         />
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-slate-900">
-              Product Grades
-            </h2>
-            <button
-              onClick={() => setIsGradeModalOpen(true)}
-              className={addButtonStyle}
-            >
-              <Plus size={16} /> Add Grade
-            </button>
-          </div>
-          <div className="space-y-4">
-            {product.grades.map((grade, index) => (
-              <GradeCard
-                key={grade.id}
-                grade={grade}
-                color={gradeColors[index % gradeColors.length]}
-                onAddParameter={() => openParamModal({ gradeId: grade.id })}
-              />
-            ))}
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  // Case 2: No grades, but has direct parameters.
-  if (hasDirectParams) {
-    return (
-      <>
-        <AddParameterModal
-          isOpen={isParamModalOpen}
-          onClose={() => setIsParamModalOpen(false)}
-          scope={paramModalScope}
-          onSuccess={mutateProduct}
-        />
         <div className="bg-white/80 rounded-xl border border-slate-200/70">
-          <div className="flex justify-between items-center p-4 border-b border-slate-200/70">
-            <h2 className="text-lg font-semibold text-slate-900">Parameters</h2>
-            <button
-              onClick={() =>
-                openParamModal({ productId: resolvedParams.productId })
-              }
-              className={addButtonStyle}
-            >
-              <Plus size={16} /> Add Parameter
-            </button>
-          </div>
-          <ParameterTable parameters={product.parameters} />
+          <EmptyState
+            onAddGradeClick={() => setIsGradeModalOpen(true)}
+            onAddParameterClick={() =>
+              openParamModal({ productId: resolvedParams.productId })
+            }
+          />
         </div>
-      </>
-    );
-  }
-
-  // Case 3: The product is completely empty.
-  return (
-    <>
-      <AddGradeModal
-        isOpen={isGradeModalOpen}
-        onClose={() => setIsGradeModalOpen(false)}
-        productId={resolvedParams.productId}
-        onSuccess={mutateProduct}
-      />
-      <AddParameterModal
-        isOpen={isParamModalOpen}
-        onClose={() => setIsParamModalOpen(false)}
-        scope={paramModalScope}
-        onSuccess={mutateProduct}
-      />
-      <div className="bg-white/80 rounded-xl border border-slate-200/70">
-        <EmptyState
-          onAddGradeClick={() => setIsGradeModalOpen(true)}
-          onAddParameterClick={() =>
-            openParamModal({ productId: resolvedParams.productId })
-          }
-        />
       </div>
-    </>
+
+      <SpecificationManager
+        productId={resolvedParams.productId}
+        // NEW: Pass the product's direct parameters as a prop
+        directParameters={product.parameters}
+      />
+    </div>
   );
 }

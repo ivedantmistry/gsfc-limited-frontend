@@ -43,3 +43,21 @@ export interface Product {
   // NEW: Add the property for direct parameters
   parameters: ParameterDefinition[];
 }
+
+/**
+ * Represents a Specification Version object from the API.
+ */
+export interface Specification {
+  id: number;
+  name: string;
+  version: number;
+  is_active: boolean;
+  product: number | null;
+  product_grade: number | null;
+  product_name: string | null;
+  product_grade_name: string | null;
+  // This will be a list of the parameters included in this specific version
+  parameters: ParameterDefinition[]; 
+  created_at: string;
+  activated_at: string | null;
+}

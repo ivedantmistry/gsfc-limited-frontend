@@ -1,12 +1,18 @@
 import useSWR from "swr";
 import api from "@/lib/api";
 import { PaginatedResponse } from "@/lib/types";
-import { Product, ParameterDefinition, ProductGrade } from "@/lib/types/";
+import {
+  Product,
+  ParameterDefinition,
+  ProductGrade,
+  Specification,
+} from "@/lib/types/";
 
 // --- Endpoints ---
 const PRODUCTS_ENDPOINT = "/inventory/products/";
 const GRADES_ENDPOINT = "/inventory/grades/";
 const PARAMETERS_ENDPOINT = "/inventory/parameters/";
+const SPECIFICATIONS_ENDPOINT = "/inventory/specifications/";
 
 // --- Fetcher Functions ---
 const listFetcher = (url: string) => api.get(url).then((res) => res.data);
@@ -163,6 +169,79 @@ export const createParameter = async (
   const response = await api.post<ParameterDefinition>(
     PARAMETERS_ENDPOINT,
     payload
+  );
+  return response.data;
+};
+
+// --- NEW SECTION: Specification Hooks and Functions ---
+
+/**
+ * Fetches a list of specifications for a given product or grade.
+ * @param scope An object containing either a productId or a gradeId.
+ */
+export function useSpecifications(scope: {
+  productId?: string | number;
+  gradeId?: string | number;
+}) {
+  const params = new URLSearchParams();
+  if (scope.productId) {
+    params.append("product", String(scope.productId));
+  } else if (scope.gradeId) {
+    params.append("product_grade", String(scope.gradeId));
+  }
+
+  const url = `${SPECIFICATIONS_ENDPOINT}?${params.toString()}`;
+
+  const { data, error, isLoading, mutate } = useSWR<Specification[]>(
+    // Only fetch if a scope is provided
+    scope.productId || scope.gradeId ? url : null,
+    listFetcher
+  );
+
+  return {
+    specifications: data,
+    isLoading,
+    error,
+    mutate,
+  };
+}
+
+/**
+ * Creates a new specification (e.g., v1).
+ * @param data The data for the new specification.
+ */
+export const createSpecification = async (data: {
+  name: string;
+  product?: number | string;
+  product_grade?: number | string;
+  parameter_ids: number[];
+}) => {
+  const response = await api.post<Specification>(SPECIFICATIONS_ENDPOINT, data);
+  return response.data;
+};
+
+/**
+ * Activates a specific version of a specification.
+ * @param specId The ID of the specification to activate.
+ */
+export const activateSpecification = async (specId: number) => {
+  const response = await api.patch<Specification>(
+    `${SPECIFICATIONS_ENDPOINT}${specId}/`,
+    {
+      is_active: true,
+    }
+  );
+  return response.data;
+};
+
+/**
+ * Creates a new version from an existing specification.
+ * @param specId The ID of the specification to create a new version of.
+ */
+export const createNewSpecificationVersion = async (specId: number) => {
+  const response = await api.post<Specification>(
+    `${SPECIFICATIONS_ENDPOINT}${specId}/create-new-version/`,
+    {}
   );
   return response.data;
 };
