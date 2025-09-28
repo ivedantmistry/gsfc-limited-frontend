@@ -32,7 +32,7 @@ export default function LoginPage() {
       if (err.response?.data?.detail) {
         setError(err.response.data.detail);
       } else {
-        setError("Login failed. Please check credentials and try again.");
+        setError("Login failed. Please check credentials and try again or server is temporarily down.");
       }
     } finally {
       setIsLoggingIn(false);

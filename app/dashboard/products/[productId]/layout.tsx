@@ -1,7 +1,7 @@
 "use client";
 
 import React, { use } from "react";
-import { useProduct } from "@/lib/api/products";
+import { useProduct } from "@/lib/api/product";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 

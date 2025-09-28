@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useParameters } from "@/lib/api/products";
+import { useParameters } from "@/lib/api/product";
 import { ProductGrade } from "@/lib/types/products";
 import { ParameterTable } from "./ParameterTable";
 import { PlusCircle } from "lucide-react"; // Import icon

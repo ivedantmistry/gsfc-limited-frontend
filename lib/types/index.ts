@@ -1,6 +1,10 @@
 // lib/types/index.ts
-export * from "./products"; 
+
+export * from './product.types';
+export * from './test.types';
+export * from './lab.types';
 /**
+ * 
  * Represents the structure of a Permission object.
  * Based on authentication.serializers.PermissionSerializer
  */

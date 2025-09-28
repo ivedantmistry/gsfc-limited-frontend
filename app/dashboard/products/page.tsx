@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useProducts } from "@/lib/api/products";
+import { useProducts } from "@/lib/api/product";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import AddProductModal from "@/components/inventory/AddProductModal";
 import { ProductTable } from "@/components/inventory/products/ProductTable";

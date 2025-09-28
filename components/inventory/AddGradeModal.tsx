@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { createProductGrade } from "@/lib/api/products";
+import { createProductGrade } from "@/lib/api/product";
 
 import { Button } from "@/components/ui/button";
 import {

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { use, useState } from "react";
-import { useProduct } from "@/lib/api/products";
+import { useProduct } from "@/lib/api/product";
 import AddGradeModal from "@/components/inventory/AddGradeModal";
 import AddParameterModal from "@/components/inventory/AddParameterModal";
 // NEW: Import our new view components
