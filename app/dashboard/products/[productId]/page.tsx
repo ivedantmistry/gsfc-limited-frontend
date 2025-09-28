@@ -1,69 +1,73 @@
+// /app/dashboard/products/[productId]/page.tsx
 "use client";
 
 import React, { useState, use } from "react";
 import { useProduct } from "@/lib/api/product";
 import AddGradeModal from "@/components/inventory/AddGradeModal";
 import AddParameterModal from "@/components/inventory/AddParameterModal";
-import { ProductWithGradesView } from "@/components/inventory/product-detail/ProductWithGradesView";
-import { ProductWithNoGradesView } from "@/components/inventory/product-detail/ProductWithNoGradesView";
+import { VersionManager } from "@/components/inventory/product-detail/VersionManager";
 
-export default function ProductParametersPage({
+// This specific type definition will help TypeScript understand the scope
+type ParamModalScope = {
+  versionId?: number;
+  gradeId?: number;
+};
+
+export default function ProductDetailPage({
   params,
 }: {
-  // The 'params' prop is a Promise
   params: Promise<{ productId: string }>;
 }) {
   const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
   const [isParamModalOpen, setIsParamModalOpen] = useState(false);
-  const [paramModalScope, setParamModalScope] = useState({});
- const resolvedParams = use(params);
-const {
+  const [targetVersionId, setTargetVersionId] = useState<number | null>(null);
+  const [paramModalScope, setParamModalScope] = useState<ParamModalScope>({});
+
+  const resolvedParams = use(params);
+
+  const {
     product,
     isLoading,
     mutate: mutateProduct,
   } = useProduct(resolvedParams.productId);
 
-  const openParamModal = (scope: any) => {
+  const openGradeModal = (versionId: number) => {
+    setTargetVersionId(versionId);
+    setIsGradeModalOpen(true);
+  };
+
+  const openParamModal = (scope: ParamModalScope) => {
     setParamModalScope(scope);
     setIsParamModalOpen(true);
   };
 
-  if (isLoading) {
+  // ✅ THIS IS THE CRITICAL FIX ✅
+  // If the data is loading OR if the product hasn't been defined yet,
+  // show a loading state and stop execution here.
+  if (isLoading || !product) {
     return (
-      <div className="bg-white/80 p-6 rounded-xl border border-slate-200/70 space-y-4 animate-pulse">
-        <div className="h-6 bg-slate-200 rounded w-48"></div>
-        <div className="h-24 bg-slate-200 rounded-lg"></div>
+      <div className="space-y-6 animate-pulse">
+        {/* Loading skeleton for the header */}
+        <div className="space-y-2">
+          <div className="h-4 bg-slate-200 rounded w-1/4"></div>
+          <div className="h-8 bg-slate-300 rounded w-1/2"></div>
+          <div className="h-6 bg-slate-200 rounded w-3/4"></div>
+        </div>
+        {/* Loading skeleton for the version manager */}
+        <div className="h-64 bg-slate-200 rounded-lg"></div>
       </div>
     );
   }
 
-  if (!product) {
-    return (
-      <div className="text-center p-8">
-        <h2 className="text-xl font-semibold">Product Not Found</h2>
-        <p className="text-slate-500">
-          The requested product could not be loaded.
-        </p>
-      </div>
-    );
-  }
-
-  // CORRECTED LOGIC: Check for grades within the active version
-  const activeVersion = product.versions.find((v) => v.is_active);
-  const hasGrades = activeVersion ? activeVersion.grades.length > 0 : false;
-
+  // Because of the check above, TypeScript now knows that 'product' is defined.
   return (
     <>
-      {/* The modal is only available if there is an active version to add a grade to */}
-      {activeVersion && (
-        <AddGradeModal
-          isOpen={isGradeModalOpen}
-          onClose={() => setIsGradeModalOpen(false)}
-          // CORRECTED PROP: Pass the active version's ID
-          versionId={activeVersion.id}
-          onSuccess={mutateProduct}
-        />
-      )}
+      <AddGradeModal
+        isOpen={isGradeModalOpen}
+        onClose={() => setIsGradeModalOpen(false)}
+        versionId={targetVersionId!}
+        onSuccess={mutateProduct}
+      />
 
       <AddParameterModal
         isOpen={isParamModalOpen}
@@ -72,16 +76,16 @@ const {
         onSuccess={mutateProduct}
       />
 
-      {/* The view logic now correctly checks the 'hasGrades' flag derived from the active version */}
-      {hasGrades ? (
-        <ProductWithGradesView
-          product={product}
-          openGradeModal={() => setIsGradeModalOpen(true)}
+      <div className="space-y-6">
+        <VersionManager
+          productId={product.id}
+          versions={product.versions}
+          isLoading={isLoading}
+          mutate={mutateProduct}
           openParamModal={openParamModal}
+          openGradeModal={openGradeModal}
         />
-      ) : (
-        <ProductWithNoGradesView product={product} />
-      )}
+      </div>
     </>
   );
 }

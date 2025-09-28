@@ -111,12 +111,6 @@ export const GradeCard = ({
                 <Plus size={16} /> Add Parameter to this Grade
               </button>
             </div>
-            <div className="border-t border-slate-200 pt-4">
-              <VersionManager
-                scope={{ gradeId: grade.id }}
-                availableParameters={grade.parameters}
-              />
-            </div>
           </div>
         </div>
       </div>

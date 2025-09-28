@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import api from "@/lib/api";
-import { Product } from "@/lib/types/products";
+import { Product } from "@/lib/types/";
 
 import { Button } from "@/components/ui/button";
 import {
