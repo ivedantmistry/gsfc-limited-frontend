@@ -4,8 +4,10 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { createParameterForVersion, createParameterForGrade } from "@/lib/api/parameter";
-
+import {
+  createParameterForVersion,
+  createParameterForGrade,
+} from "@/lib/api/parameter";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -44,9 +46,9 @@ const DATA_TYPE_CHOICES = [
 const formSchema = z
   .object({
     name: z.string().min(1, "Parameter name is required."),
-    description: z.string().optional(), 
+    description: z.string().optional(),
     unit: z.string().optional(),
-    is_required: z.boolean().default(true), 
+    is_required: z.boolean().default(true),
     data_type: z.enum(DATA_TYPE_CHOICES, {
       error: "Data type is required.",
     }),
@@ -88,6 +90,7 @@ export default function AddParameterModal({
 }: AddParameterModalProps) {
   const [apiError, setApiError] = useState<string | null>(null);
 
+  // ✅ Corrected defaultValues (includes all fields)
   const form = useForm<ParameterFormData>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
@@ -96,16 +99,22 @@ export default function AddParameterModal({
       unit: "",
       is_required: true,
       data_type: "STRING",
-    } satisfies Partial<ParameterFormData>,
+      // Add default "empty" values for all optional fields
+      min_value: undefined, // Or "" if you prefer, react-hook-form handles both
+      max_value: undefined,
+      enum_options: "",
+      boolean_true_label: "",
+      boolean_false_label: "",
+    },
   });
 
   const dataType = form.watch("data_type");
   const { isSubmitting } = form.formState;
 
-    const onSubmit = async (values: ParameterFormData) => {
+  const onSubmit = async (values: ParameterFormData) => {
     setApiError(null);
     try {
-     const apiValues = {
+      const apiValues = {
         ...values,
         description: values.description || null,
         unit: values.unit || null,
@@ -138,7 +147,7 @@ export default function AddParameterModal({
   // REVAMPED: Consistent input styles from our new theme
   const inputStyles =
     "block w-full rounded-md border-0 bg-white py-2.5 px-4 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 sm:text-sm transition-shadow duration-150";
- const selectTriggerStyles = `${inputStyles} flex items-center justify-between`;
+  const selectTriggerStyles = `${inputStyles} flex items-center justify-between`;
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       {/* REVAMPED: Modal content uses the new theme's structure and styling */}
