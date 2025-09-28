@@ -49,6 +49,7 @@ export interface Product {
  */
 export interface Specification {
   id: number;
+  status: 'DRAFT' | 'LOCKED';
   name: string;
   version: number;
   is_active: boolean;

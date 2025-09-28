@@ -6,20 +6,34 @@ import {
   activateSpecification,
   createNewSpecificationVersion,
   createSpecification,
+  lockSpecification,
 } from "@/lib/api/products";
 import { ParameterDefinition } from "@/lib/types";
-import { FileCheck2, Copy, AlertTriangle } from "lucide-react";
+import { FileCheck2, Copy, AlertTriangle, Lock, Unlock } from "lucide-react";
 
 export function SpecificationManager({
-  productId,
-  directParameters,
+  scope,
+  availableParameters,
 }: {
-  productId: number | string;
-  directParameters: ParameterDefinition[];
+  scope: { productId?: number | string; gradeId?: number | string };
+  availableParameters: ParameterDefinition[];
 }) {
-  const { specifications, isLoading, mutate } = useSpecifications({
-    productId,
-  });
+  const { specifications, isLoading, mutate } = useSpecifications(scope);
+
+  const handleLock = async (specId: number) => {
+    if (
+      !window.confirm(
+        "Locking a specification is permanent and cannot be undone. Are you sure?"
+      )
+    )
+      return;
+    try {
+      await lockSpecification(specId);
+      mutate();
+    } catch (error) {
+      console.error("Failed to lock specification:", error);
+    }
+  };
 
   const handleActivate = async (specId: number) => {
     try {
@@ -27,7 +41,6 @@ export function SpecificationManager({
       mutate(); // Re-fetch the list to show the change
     } catch (error) {
       console.error("Failed to activate specification:", error);
-      // You could add a user-facing error message here
     }
   };
 
@@ -40,9 +53,7 @@ export function SpecificationManager({
     }
   };
 
-  // NEW: Function to handle creating the very first specification
   const handleCreateFirstSpecification = async () => {
-    // Use a simple confirmation before creating
     if (
       !window.confirm(
         "This will create Specification v1 using all current direct parameters. Are you sure?"
@@ -52,14 +63,14 @@ export function SpecificationManager({
     }
 
     try {
-      // Prepare the payload for the API
       const payload = {
         name: "v1.0 - Initial Release",
-        product: productId,
-        parameter_ids: directParameters.map((p) => p.id), // Get IDs from the passed-in parameters
+        product: scope.productId,
+        product_grade: scope.gradeId,
+        parameter_ids: availableParameters.map((p) => p.id),
       };
       await createSpecification(payload);
-      mutate(); // Re-fetch the list to show the new spec
+      mutate();
     } catch (error) {
       console.error("Failed to create specification:", error);
       alert(
@@ -71,7 +82,6 @@ export function SpecificationManager({
   if (isLoading) {
     return <div className="h-48 bg-slate-200 rounded-lg animate-pulse"></div>;
   }
-
   if (!specifications || specifications.length === 0) {
     return (
       <div className="text-center p-8 bg-white/80 rounded-xl border border-slate-200/70">
@@ -80,20 +90,18 @@ export function SpecificationManager({
           No Specifications Found
         </p>
         <p className="text-sm text-slate-500">
-          This product has no defined testing specifications yet.
+          This item has no defined testing specifications yet.
         </p>
-        {/* REVAMPED: The button now calls our new handler function */}
         <button
           onClick={handleCreateFirstSpecification}
-          disabled={!directParameters || directParameters.length === 0}
+          disabled={!availableParameters || availableParameters.length === 0}
           className="mt-4 inline-flex items-center gap-2 rounded-md bg-slate-800 text-white font-medium px-4 py-2 text-sm hover:bg-slate-700 disabled:bg-slate-400 disabled:cursor-not-allowed"
         >
           Create Specification v1
         </button>
-        {(!directParameters || directParameters.length === 0) && (
+        {(!availableParameters || availableParameters.length === 0) && (
           <p className="text-xs text-slate-400 mt-2">
-            Add direct parameters to the product before creating a
-            specification.
+            Add parameters before creating a specification.
           </p>
         )}
       </div>
@@ -109,7 +117,7 @@ export function SpecificationManager({
         {activeSpec && (
           <button
             onClick={() => handleNewVersion(activeSpec.id)}
-            className="inline-flex items-center gap-2 rounded-md bg-white text-slate-800 font-medium px-3 py-2 text-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-100/80"
+            className="..."
           >
             <Copy size={16} /> Create New Version
           </button>
@@ -136,25 +144,42 @@ export function SpecificationManager({
                 <p className="font-bold text-slate-800">
                   {spec.name} (v{spec.version})
                 </p>
-                <p className="text-xs text-slate-500">
-                  Contains {spec.parameters.length} parameters
-                </p>
+                <div className="flex items-center gap-2 text-xs text-slate-500">
+                  {spec.status === "DRAFT" ? (
+                    <Unlock size={12} />
+                  ) : (
+                    <Lock size={12} />
+                  )}
+                  <span>{spec.status}</span>
+                  <span>&bull;</span>
+                  <span>{spec.parameters.length} parameters</span>
+                </div>
               </div>
             </div>
-            {spec.is_active ? (
-              <span className="px-3 py-1 text-xs font-bold text-white bg-indigo-500 rounded-full">
-                ACTIVE
-              </span>
-            ) : (
-              <button
-                onClick={() => handleActivate(spec.id)}
-                className="px-3 py-1 text-xs font-medium text-slate-700 bg-slate-200 rounded-full hover:bg-slate-300"
-              >
-                Set as Active
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {spec.status === "DRAFT" && (
+                <button
+                  onClick={() => handleLock(spec.id)}
+                  className="px-3 py-1 text-xs font-medium text-amber-800 bg-amber-200 rounded-full hover:bg-amber-300"
+                >
+                  Lock Version
+                </button>
+              )}
+              {spec.status === "LOCKED" && !spec.is_active && (
+                <button
+                  onClick={() => handleActivate(spec.id)}
+                  className="px-3 py-1 text-xs font-medium text-slate-700 bg-slate-200 rounded-full hover:bg-slate-300"
+                >
+                  Set as Active
+                </button>
+              )}
+              {spec.is_active && (
+                <span className="px-3 py-1 text-xs font-bold text-white bg-indigo-500 rounded-full">
+                  ACTIVE
+                </span>
+              )}
+            </div>
           </div>
-          {/* Optional: Add a dropdown to view the parameters for each spec */}
         </div>
       ))}
     </div>

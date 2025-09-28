@@ -245,3 +245,15 @@ export const createNewSpecificationVersion = async (specId: number) => {
   );
   return response.data;
 };
+
+
+/**
+ * Locks a specification, changing its status from DRAFT to LOCKED.
+ * @param specId The ID of the specification to lock.
+ */
+export const lockSpecification = async (specId: number) => {
+  const response = await api.patch<Specification>(`${SPECIFICATIONS_ENDPOINT}${specId}/`, {
+    status: "LOCKED",
+  });
+  return response.data;
+};
