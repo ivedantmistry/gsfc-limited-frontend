@@ -1,25 +1,23 @@
 "use client";
 
-import React, { use, useState } from "react";
+import React, { useState, use } from "react";
 import { useProduct } from "@/lib/api/product";
 import AddGradeModal from "@/components/inventory/AddGradeModal";
 import AddParameterModal from "@/components/inventory/AddParameterModal";
-// NEW: Import our new view components
 import { ProductWithGradesView } from "@/components/inventory/product-detail/ProductWithGradesView";
 import { ProductWithNoGradesView } from "@/components/inventory/product-detail/ProductWithNoGradesView";
 
 export default function ProductParametersPage({
   params,
 }: {
+  // The 'params' prop is a Promise
   params: Promise<{ productId: string }>;
 }) {
-  const resolvedParams = use(params);
-
   const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
   const [isParamModalOpen, setIsParamModalOpen] = useState(false);
   const [paramModalScope, setParamModalScope] = useState({});
-
-  const {
+ const resolvedParams = use(params);
+const {
     product,
     isLoading,
     mutate: mutateProduct,
@@ -50,16 +48,23 @@ export default function ProductParametersPage({
     );
   }
 
-  const hasGrades = product.grades && product.grades.length > 0;
+  // CORRECTED LOGIC: Check for grades within the active version
+  const activeVersion = product.versions.find((v) => v.is_active);
+  const hasGrades = activeVersion ? activeVersion.grades.length > 0 : false;
 
   return (
     <>
-      <AddGradeModal
-        isOpen={isGradeModalOpen}
-        onClose={() => setIsGradeModalOpen(false)}
-        productId={resolvedParams.productId}
-        onSuccess={mutateProduct}
-      />
+      {/* The modal is only available if there is an active version to add a grade to */}
+      {activeVersion && (
+        <AddGradeModal
+          isOpen={isGradeModalOpen}
+          onClose={() => setIsGradeModalOpen(false)}
+          // CORRECTED PROP: Pass the active version's ID
+          versionId={activeVersion.id}
+          onSuccess={mutateProduct}
+        />
+      )}
+
       <AddParameterModal
         isOpen={isParamModalOpen}
         onClose={() => setIsParamModalOpen(false)}
@@ -67,6 +72,7 @@ export default function ProductParametersPage({
         onSuccess={mutateProduct}
       />
 
+      {/* The view logic now correctly checks the 'hasGrades' flag derived from the active version */}
       {hasGrades ? (
         <ProductWithGradesView
           product={product}
@@ -74,11 +80,7 @@ export default function ProductParametersPage({
           openParamModal={openParamModal}
         />
       ) : (
-        <ProductWithNoGradesView
-          product={product}
-          openGradeModal={() => setIsGradeModalOpen(true)}
-          openParamModal={openParamModal}
-        />
+        <ProductWithNoGradesView product={product} />
       )}
     </>
   );

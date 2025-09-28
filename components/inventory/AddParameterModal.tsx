@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { createParameter } from "@/lib/api/product";
-import { ParameterDefinition } from "@/lib/types/";
+import { createParameterForVersion, createParameterForGrade } from "@/lib/api/parameter";
+
 
 import { Button } from "@/components/ui/button";
 import {
@@ -44,7 +44,9 @@ const DATA_TYPE_CHOICES = [
 const formSchema = z
   .object({
     name: z.string().min(1, "Parameter name is required."),
+    description: z.string().optional(), 
     unit: z.string().optional(),
+    is_required: z.boolean().default(true), 
     data_type: z.enum(DATA_TYPE_CHOICES, {
       error: "Data type is required.",
     }),
@@ -73,7 +75,8 @@ type ParameterFormData = z.infer<typeof formSchema>;
 interface AddParameterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  scope: { productId?: string | number; gradeId?: string | number };
+  // UPDATED: Scope now accepts versionId instead of productId
+  scope: { versionId?: string | number; gradeId?: string | number };
   onSuccess: () => void;
 }
 
@@ -89,37 +92,45 @@ export default function AddParameterModal({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: "",
+      description: "",
       unit: "",
+      is_required: true,
       data_type: "STRING",
-      min_value: undefined,
-      max_value: undefined,
-      enum_options: "",
-      boolean_true_label: "",
-      boolean_false_label: "",
-    } satisfies ParameterFormData,
+    } satisfies Partial<ParameterFormData>,
   });
 
   const dataType = form.watch("data_type");
   const { isSubmitting } = form.formState;
 
-  const onSubmit = async (values: ParameterFormData) => {
+    const onSubmit = async (values: ParameterFormData) => {
     setApiError(null);
     try {
-      // Convert undefined optional fields to null for the API
-      const apiValues = {
+     const apiValues = {
         ...values,
+        description: values.description || null,
         unit: values.unit || null,
         min_value: values.min_value?.toString() ?? null,
         max_value: values.max_value?.toString() ?? null,
-        enum_options: values.enum_options || undefined, // API expects string or undefined
+        enum_options: values.enum_options || undefined,
         boolean_true_label: values.boolean_true_label || null,
         boolean_false_label: values.boolean_false_label || null,
       };
-      await createParameter(apiValues, scope);
+
+      // Check the scope to decide which function to call
+      if (scope.versionId) {
+        await createParameterForVersion(Number(scope.versionId), apiValues);
+      } else if (scope.gradeId) {
+        await createParameterForGrade(Number(scope.gradeId), apiValues);
+      } else {
+        // This should not happen if the modal is opened correctly
+        throw new Error("Invalid scope: No versionId or gradeId provided.");
+      }
+
       onSuccess();
       onClose();
       form.reset();
     } catch (error: any) {
+      console.error(error); // Log the full error for debugging
       setApiError("An unexpected error occurred. Please try again.");
     }
   };

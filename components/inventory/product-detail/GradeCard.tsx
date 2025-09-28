@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Plus, ChevronDown, FlaskConical } from "lucide-react";
 import { ParameterTable } from "@/components/inventory/product-detail/ParameterTable";
-import { SpecificationManager } from "@/components/inventory/product-detail/SpecificationManager";
+import { VersionManager } from "@/components/inventory/product-detail/VersionManager";
 import { ProductGrade, ParameterDefinition } from "@/lib/types";
 
 type GradeWithParameters = ProductGrade & { parameters: ParameterDefinition[] };
@@ -112,7 +112,7 @@ export const GradeCard = ({
               </button>
             </div>
             <div className="border-t border-slate-200 pt-4">
-              <SpecificationManager
+              <VersionManager
                 scope={{ gradeId: grade.id }}
                 availableParameters={grade.parameters}
               />

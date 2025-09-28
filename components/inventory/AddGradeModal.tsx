@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { createProductGrade } from "@/lib/api/product";
+import { createGrade } from "@/lib/api/grade";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -34,14 +34,15 @@ const formSchema = z.object({
 interface AddGradeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  productId: string | number;
+  // UPDATED: Changed from productId to versionId
+  versionId: string | number;
   onSuccess: () => void;
 }
 
 export default function AddGradeModal({
   isOpen,
   onClose,
-  productId,
+  versionId, // UPDATED
   onSuccess,
 }: AddGradeModalProps) {
   const [apiError, setApiError] = useState<string | null>(null);
@@ -56,7 +57,8 @@ export default function AddGradeModal({
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setApiError(null);
     try {
-      await createProductGrade(productId, values);
+      // UPDATED: Pass the versionId to the createGrade function
+      await createGrade(Number(versionId), values);
       onSuccess();
       onClose();
     } catch (error: any) {
