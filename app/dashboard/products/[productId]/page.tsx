@@ -31,6 +31,10 @@ export default function ProductDetailPage({
     mutate: mutateProduct,
   } = useProduct(resolvedParams.productId);
 
+   const handleMutationSuccess = () => {
+    // This tells SWR to re-fetch the product data from the API.
+    mutateProduct();
+  };
   const openGradeModal = (versionId: number) => {
     setTargetVersionId(versionId);
     setIsGradeModalOpen(true);
@@ -66,14 +70,15 @@ export default function ProductDetailPage({
         isOpen={isGradeModalOpen}
         onClose={() => setIsGradeModalOpen(false)}
         versionId={targetVersionId!}
-        onSuccess={mutateProduct}
+        onSuccess={handleMutationSuccess}
+        
       />
 
       <AddParameterModal
         isOpen={isParamModalOpen}
         onClose={() => setIsParamModalOpen(false)}
         scope={paramModalScope}
-        onSuccess={mutateProduct}
+       onSuccess={handleMutationSuccess}
       />
 
       <div className="space-y-6">

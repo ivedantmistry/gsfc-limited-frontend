@@ -40,7 +40,7 @@ export function CreateVersionModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center"
+      className="fixed inset-0 z-50 flex justify-center items-center"
       aria-modal="true"
       role="dialog"
     >

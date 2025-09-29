@@ -42,31 +42,22 @@ export const createVersion = async (data: {
  * Locks a DRAFT version.
  */
 export const lockVersion = async (versionId: number) => {
-  // NOTE: Your VersionViewSet does not currently support PATCH for status.
-  // This is a placeholder for when you add that functionality.
-  // For now, this would be handled in the Django admin.
-  alert("Locking a version via the API is not yet implemented in the backend.");
-  // Example of what it would look like:
-  // const response = await api.patch<Version>(`${VERSIONS_ENDPOINT}${versionId}/`, {
-  //   status: "LOCKED",
-  // });
-  // return response.data;
+  // UPDATED: Replaced alert with a real API call
+  const response = await api.patch<Version>(`${VERSIONS_ENDPOINT}${versionId}/`, {
+    status: "LOCKED",
+  });
+  return response.data;
 };
 
 /**
  * Activates a LOCKED version.
  */
 export const activateVersion = async (versionId: number) => {
-  // NOTE: Your VersionViewSet does not currently support PATCH for is_active.
-  // This is a placeholder for when you add that functionality.
-  alert(
-    "Activating a version via the API is not yet implemented in the backend."
-  );
-  // Example of what it would look like:
-  // const response = await api.patch<Version>(`${VERSIONS_ENDPOINT}${versionId}/`, {
-  //   is_active: true,
-  // });
-  // return response.data;
+  // UPDATED: Replaced alert with a real API call
+  const response = await api.patch<Version>(`${VERSIONS_ENDPOINT}${versionId}/`, {
+    is_active: true,
+  });
+  return response.data;
 };
 
 /**

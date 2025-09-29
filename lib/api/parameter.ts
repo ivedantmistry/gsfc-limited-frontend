@@ -16,8 +16,8 @@ type CreateParameterData = Omit<
 // IMPORTANT: These ContentType IDs come from your backend's `django_content_type`
 // database table. You will need to look them up once. They will not change.
 // I am using placeholder values here.
-const VERSION_CONTENT_TYPE_ID = 10; // Replace with your actual ID for the Version model
-const GRADE_CONTENT_TYPE_ID = 11; // Replace with your actual ID for the ProductGrade model
+const VERSION_CONTENT_TYPE_ID = 13; // Replace with your actual ID for the Version model
+const GRADE_CONTENT_TYPE_ID = 14; // Replace with your actual ID for the ProductGrade model
 
 /**
  * A helper function to create the final payload.
