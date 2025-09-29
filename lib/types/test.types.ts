@@ -29,6 +29,7 @@ export interface TestRecord {
   id: number;
   record_id: string;
   version: number;
+  lab: number; // ✅ ADD THIS LINE (ID of the Lab)
   product_grade: number | null;
   sample_id: string;
   batch_no: string;
