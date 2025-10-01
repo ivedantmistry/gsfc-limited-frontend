@@ -56,7 +56,7 @@ export interface Version {
   status: "DRAFT" | "LOCKED";
   is_active: boolean;
   created_by_username: string;
-  created_at: string;
+   created_at: string | null;
   locked_at: string | null;
   activated_at: string | null;
 }

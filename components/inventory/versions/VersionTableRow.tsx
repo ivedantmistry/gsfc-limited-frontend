@@ -3,18 +3,25 @@ import Link from "next/link";
 import { Version } from "@/lib/types";
 import { VersionActions } from "./VersionActions";
 import { Lock, Unlock, ShieldCheck } from "lucide-react";
+import { parseISO, format } from "date-fns";
 
-const formatDate = (dateString: string) =>
-  new Date(dateString).toLocaleString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+// ✅ 1. Add a guard clause to handle null or undefined dates gracefully.
+const formatDate = (dateString: string | null | undefined) => {
+  if (!dateString) {
+    return "N/A"; // Return a placeholder if the date is missing.
+  }
+  try {
+    const date = parseISO(dateString);
+    return format(date, "MMM d, yyyy");
+  } catch (error) {
+    console.error("Failed to parse a malformed date:", dateString);
+    return "Invalid Date";
+  }
+};
 
 type VersionTableRowProps = {
   version: Version;
   productId: number | string;
-  // Pass all handlers down
   onLock: (id: number) => void;
   onActivate: (id: number) => void;
   onClone: (id: number) => void;
@@ -49,7 +56,11 @@ export const VersionTableRow: React.FC<VersionTableRowProps> = ({
               : "bg-slate-100 text-slate-800"
           }`}
         >
-          {version.status === "DRAFT" ? <Unlock size={12} /> : <Lock size={12} />}
+          {version.status === "DRAFT" ? (
+            <Unlock size={12} />
+          ) : (
+            <Lock size={12} />
+          )}
           {version.status}
         </span>
       </td>
