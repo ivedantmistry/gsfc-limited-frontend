@@ -5,7 +5,7 @@ import { useHasPermission } from "../../../hooks/useHasPermission";
 import { AddTestModal } from "../../../components/modals/AddTestModal";
 import { TestRecordTable } from "../../../components/inventory/records/TestRecordTable";
 import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
-
+import { TestRecord } from "@/lib/types/test.types"
 /*
  * NOTE: You will need to create a `useTests` data-fetching hook.
  */
@@ -96,7 +96,7 @@ export default function TestEntryPage() {
   // --- Placeholder for your data fetching hook ---
   const isLoading = false; // Set to true to test skeleton
   const totalCount = 0;
-  const tests = [];
+    const tests: TestRecord[] = []; 
   const error = null;
   const mutate = () => console.log("mutating...");
   // ---------------------------------------------

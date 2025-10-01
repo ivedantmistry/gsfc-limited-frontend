@@ -48,10 +48,15 @@ export function VersionDetailView({
     setParamModalScope(scope);
     setIsParamModalOpen(true);
   };
+  
+  // ✅ FIX: Default parameters and grades to empty arrays to prevent crashes.
+  const parameters = version.parameters ?? [];
+  const grades = version.grades ?? [];
 
   const isDraft = version.status === "DRAFT";
-  const hasParameters = version.parameters.length > 0;
-  const hasGrades = version.grades.length > 0;
+  // ✅ FIX: Use the safe, defaulted arrays for calculations.
+  const hasParameters = parameters.length > 0;
+  const hasGrades = grades.length > 0;
   const isEmptyDraft = isDraft && !hasParameters && !hasGrades;
 
   return (
@@ -89,7 +94,7 @@ export function VersionDetailView({
           <ParameterSection
             isDraft={isDraft}
             versionId={version.id}
-            parameters={version.parameters}
+            parameters={parameters} // ✅ FIX: Pass the safe array
             onOpenParamModal={openParamModal}
           />
         )}
@@ -97,7 +102,7 @@ export function VersionDetailView({
           <GradeSection
             isDraft={isDraft}
             versionId={version.id}
-            grades={version.grades}
+            grades={grades} // ✅ FIX: Pass the safe array
             onOpenGradeModal={openGradeModal}
             onOpenParamModal={openParamModal}
           />
@@ -241,30 +246,36 @@ const GradeSection = ({
   </div>
 );
 
-const GradeCard = ({ grade, isDraft, onAddParameter }: any) => (
-  <div className="bg-white border border-slate-200/70 rounded-xl shadow-sm overflow-hidden">
-    <div className="p-4 bg-slate-50 border-b border-slate-200/70 flex justify-between items-center">
-      <h4 className="font-semibold text-slate-800">{grade.name}</h4>
-      {isDraft && (
-        <button
-          onClick={onAddParameter}
-          className="inline-flex items-center gap-1.5 rounded-md bg-white text-slate-700 font-medium px-3 py-1.5 text-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
-        >
-          <Plus size={16} /> Add Parameter
-        </button>
-      )}
+const GradeCard = ({ grade, isDraft, onAddParameter }: any) => {
+  // ✅ FIX: Default grade.parameters to an empty array.
+  const parameters = grade.parameters ?? [];
+  const hasParameters = parameters.length > 0;
+
+  return (
+    <div className="bg-white border border-slate-200/70 rounded-xl shadow-sm overflow-hidden">
+      <div className="p-4 bg-slate-50 border-b border-slate-200/70 flex justify-between items-center">
+        <h4 className="font-semibold text-slate-800">{grade.name}</h4>
+        {isDraft && (
+          <button
+            onClick={onAddParameter}
+            className="inline-flex items-center gap-1.5 rounded-md bg-white text-slate-700 font-medium px-3 py-1.5 text-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
+          >
+            <Plus size={16} /> Add Parameter
+          </button>
+        )}
+      </div>
+      <div className="p-4">
+        {hasParameters ? (
+          <ParameterTable parameters={parameters} /> // ✅ FIX: Pass the safe array
+        ) : (
+          <p className="text-center text-sm text-slate-500 py-4">
+            No parameters defined for this grade.
+          </p>
+        )}
+      </div>
     </div>
-    <div className="p-4">
-      {grade.parameters.length > 0 ? (
-        <ParameterTable parameters={grade.parameters} />
-      ) : (
-        <p className="text-center text-sm text-slate-500 py-4">
-          No parameters defined for this grade.
-        </p>
-      )}
-    </div>
-  </div>
-);
+  );
+};
 
 const ParameterTable = ({
   parameters,
@@ -287,7 +298,7 @@ const ParameterTable = ({
         </tr>
       </thead>
       <tbody className="bg-white divide-y divide-slate-200">
-        {parameters.map((param) => (
+        {(parameters ?? []).map((param) => ( // ✅ FIX: Extra safety for mapping
           <tr key={param.id}>
             <td className="px-4 py-3 text-sm font-medium text-slate-800">
               {param.name}
