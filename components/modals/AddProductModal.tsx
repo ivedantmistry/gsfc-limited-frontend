@@ -7,13 +7,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import api from "@/lib/api";
 import { Product } from "@/lib/types/";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -29,7 +27,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 
-// Define the form validation schema using Zod
 const formSchema = z.object({
   name: z
     .string()
@@ -51,10 +48,7 @@ export default function AddProductModal({
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-    },
+    defaultValues: { name: "", description: "" },
   });
 
   const { isSubmitting } = form.formState;
@@ -65,7 +59,7 @@ export default function AddProductModal({
       const response = await api.post<Product>("/inventory/products/", values);
       const newProduct = response.data;
       onClose();
-      router.push(`/dashboard/products/${newProduct.id}`);
+      router.push(`/dashboard/products/${newProduct.id}/versions`);
     } catch (error: any) {
       if (error.response?.data?.name) {
         setApiError(`Error: ${error.response.data.name[0]}`);
@@ -75,13 +69,11 @@ export default function AddProductModal({
     }
   };
 
-  // REVAMPED: Centralized input styles to match our new theme
   const inputStyles =
     "block w-full rounded-md border-0 bg-white py-2.5 px-4 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 sm:text-sm transition-shadow duration-150";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      
       <DialogContent className="sm:max-w-lg bg-slate-50 p-0 rounded-xl border border-slate-200/80">
         <DialogHeader className="p-6 pb-4 border-b border-slate-200/80">
           <DialogTitle className="text-lg font-semibold text-slate-900">
@@ -138,7 +130,6 @@ export default function AddProductModal({
               )}
             </div>
 
-            {/* REVAMPED: macOS-style footer with a distinct background and themed buttons. */}
             <div className="flex justify-end gap-3 p-4 bg-slate-200/60 border-t border-slate-200/80">
               <Button
                 type="button"

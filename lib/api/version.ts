@@ -70,3 +70,10 @@ export const createNewVersionFromExisting = async (versionId: number) => {
   );
   return response.data;
 };
+
+/**
+ * ✅ NEW: Deletes a DRAFT version.
+ */
+export const deleteVersion = async (versionId: number) => {
+  await api.delete(`${VERSIONS_ENDPOINT}${versionId}/`);
+};

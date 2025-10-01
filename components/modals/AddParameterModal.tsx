@@ -8,7 +8,6 @@ import {
   createParameterForVersion,
   createParameterForGrade,
 } from "@/lib/api/parameter";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -49,9 +48,7 @@ const formSchema = z
     description: z.string().optional(),
     unit: z.string().optional(),
     is_required: z.boolean().default(true),
-    data_type: z.enum(DATA_TYPE_CHOICES, {
-      error: "Data type is required.",
-    }),
+    data_type: z.enum(DATA_TYPE_CHOICES, { error: "Data type is required." }),
     min_value: z.coerce.number().optional(),
     max_value: z.coerce.number().optional(),
     enum_options: z.string().optional(),
@@ -77,7 +74,6 @@ type ParameterFormData = z.infer<typeof formSchema>;
 interface AddParameterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // UPDATED: Scope now accepts versionId instead of productId
   scope: { versionId?: string | number; gradeId?: string | number };
   onSuccess: () => void;
 }
@@ -90,7 +86,6 @@ export default function AddParameterModal({
 }: AddParameterModalProps) {
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // ✅ Corrected defaultValues (includes all fields)
   const form = useForm<ParameterFormData>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
@@ -99,8 +94,7 @@ export default function AddParameterModal({
       unit: "",
       is_required: true,
       data_type: "STRING",
-      // Add default "empty" values for all optional fields
-      min_value: undefined, // Or "" if you prefer, react-hook-form handles both
+      min_value: undefined,
       max_value: undefined,
       enum_options: "",
       boolean_true_label: "",
@@ -125,13 +119,11 @@ export default function AddParameterModal({
         boolean_false_label: values.boolean_false_label || null,
       };
 
-      // Check the scope to decide which function to call
       if (scope.versionId) {
         await createParameterForVersion(Number(scope.versionId), apiValues);
       } else if (scope.gradeId) {
         await createParameterForGrade(Number(scope.gradeId), apiValues);
       } else {
-        // This should not happen if the modal is opened correctly
         throw new Error("Invalid scope: No versionId or gradeId provided.");
       }
 
@@ -139,20 +131,18 @@ export default function AddParameterModal({
       onClose();
       form.reset();
     } catch (error: any) {
-      console.error(error); // Log the full error for debugging
+      console.error(error);
       setApiError("An unexpected error occurred. Please try again.");
     }
   };
 
-  // REVAMPED: Consistent input styles from our new theme
   const inputStyles =
     "block w-full rounded-md border-0 bg-white py-2.5 px-4 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 sm:text-sm transition-shadow duration-150";
   const selectTriggerStyles = `${inputStyles} flex items-center justify-between`;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      {/* REVAMPED: Modal content uses the new theme's structure and styling */}
       <DialogContent className="sm:max-w-lg bg-slate-50 p-0 rounded-xl border border-slate-200/80">
-        {/* NEW: Tighter header spacing */}
         <DialogHeader className="p-6 pb-4 border-b border-slate-200/80">
           <DialogTitle className="text-lg font-semibold text-slate-900">
             Define a New Parameter
@@ -163,8 +153,7 @@ export default function AddParameterModal({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            {/* NEW: Form body is padded and scrollable */}
-            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto pr-4">
+            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto pr-5">
               <FormField
                 name="name"
                 control={form.control}
@@ -197,7 +186,6 @@ export default function AddParameterModal({
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        {/* REVAMPED: Select trigger now uses the consistent input style */}
                         <SelectTrigger className={selectTriggerStyles}>
                           <SelectValue placeholder="Select a data type" />
                         </SelectTrigger>
@@ -233,7 +221,6 @@ export default function AddParameterModal({
                   </FormItem>
                 )}
               />
-
               {(dataType === "DECIMAL" || dataType === "INTEGER") && (
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
@@ -241,9 +228,7 @@ export default function AddParameterModal({
                     control={form.control}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-slate-700">
-                          Min Value
-                        </FormLabel>
+                        <FormLabel>Min Value</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -260,9 +245,7 @@ export default function AddParameterModal({
                     control={form.control}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-slate-700">
-                          Max Value
-                        </FormLabel>
+                        <FormLabel>Max Value</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -276,16 +259,13 @@ export default function AddParameterModal({
                   />
                 </div>
               )}
-
               {dataType === "ENUM" && (
                 <FormField
                   name="enum_options"
                   control={form.control}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-slate-700">
-                        Enum Options
-                      </FormLabel>
+                      <FormLabel>Enum Options</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="e.g., Pass, Fail, Retest"
@@ -301,7 +281,6 @@ export default function AddParameterModal({
                   )}
                 />
               )}
-
               {dataType === "BOOLEAN" && (
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
@@ -309,9 +288,7 @@ export default function AddParameterModal({
                     control={form.control}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-slate-700">
-                          'True' Label
-                        </FormLabel>
+                        <FormLabel>'True' Label</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="e.g., Present"
@@ -328,9 +305,7 @@ export default function AddParameterModal({
                     control={form.control}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-slate-700">
-                          'False' Label
-                        </FormLabel>
+                        <FormLabel>'False' Label</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="e.g., Absent"
@@ -345,12 +320,9 @@ export default function AddParameterModal({
                 </div>
               )}
             </div>
-
             {apiError && (
               <p className="text-sm text-red-600 px-6 pb-4">{apiError}</p>
             )}
-
-            {/* REVAMPED: macOS-style footer with a distinct background and themed buttons */}
             <div className="flex justify-end gap-3 p-4 bg-slate-200/60 border-t border-slate-200/80">
               <Button
                 type="button"

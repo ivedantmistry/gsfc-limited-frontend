@@ -33,7 +33,7 @@ const formSchema = z.object({
 interface AddGradeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  versionId: number | null; // Can be null when modal is closed
+  versionId: number | null;
   onSuccess: () => void;
 }
 
@@ -50,7 +50,6 @@ export default function AddGradeModal({
     defaultValues: { name: "", description: "" },
   });
 
-  // Reset form when the modal opens for a new entry
   useEffect(() => {
     if (isOpen) {
       form.reset();
@@ -140,10 +139,18 @@ export default function AddGradeModal({
               )}
             </div>
             <div className="flex justify-end gap-3 p-4 bg-slate-200/60 border-t border-slate-200/80">
-              <Button type="button" onClick={onClose} variant="outline">
+              <Button
+                type="button"
+                onClick={onClose}
+                className="bg-white text-slate-800 ring-1 ring-slate-300 hover:bg-slate-100"
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-indigo-600 text-white hover:bg-indigo-700"
+              >
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}

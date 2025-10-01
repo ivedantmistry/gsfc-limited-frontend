@@ -28,10 +28,16 @@ export const navItems: NavItem[] = [
     permission: "inventory.can_view_products",
   },
   {
+    href: "/dashboard/test-records",
+    icon: FileText,
+    label: "Test Records",
+    permission: "inventory.can_view_test_records",
+  },
+  {
     href: "/dashboard/tests",
     icon: FileText,
-    label: "Tests",
-    permission: "inventory.can_view_test_records",
+    label: "Create a test record",
+    permission: "inventory.add_testrecord",
   },
   {
     href: "/dashboard/users",
