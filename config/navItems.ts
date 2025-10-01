@@ -28,9 +28,9 @@ export const navItems: NavItem[] = [
     permission: "inventory.can_view_products",
   },
   {
-    href: "/dashboard/reports",
+    href: "/dashboard/tests",
     icon: FileText,
-    label: "Reports",
+    label: "Tests",
     permission: "inventory.can_view_test_records",
   },
   {

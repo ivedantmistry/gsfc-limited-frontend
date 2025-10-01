@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { createGrade } from "@/lib/api/grade";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,15 +33,14 @@ const formSchema = z.object({
 interface AddGradeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // UPDATED: Changed from productId to versionId
-  versionId: string | number;
+  versionId: number | null; // Can be null when modal is closed
   onSuccess: () => void;
 }
 
 export default function AddGradeModal({
   isOpen,
   onClose,
-  versionId, // UPDATED
+  versionId,
   onSuccess,
 }: AddGradeModalProps) {
   const [apiError, setApiError] = useState<string | null>(null);
@@ -52,13 +50,24 @@ export default function AddGradeModal({
     defaultValues: { name: "", description: "" },
   });
 
+  // Reset form when the modal opens for a new entry
+  useEffect(() => {
+    if (isOpen) {
+      form.reset();
+      setApiError(null);
+    }
+  }, [isOpen, form]);
+
   const { isSubmitting } = form.formState;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!versionId) {
+      setApiError("Error: No version selected to add the grade to.");
+      return;
+    }
     setApiError(null);
     try {
-      // UPDATED: Pass the versionId to the createGrade function
-      await createGrade(Number(versionId), values);
+      await createGrade(versionId, values);
       onSuccess();
       onClose();
     } catch (error: any) {
@@ -70,26 +79,22 @@ export default function AddGradeModal({
     }
   };
 
-  // REVAMPED: Consistent input styles from our new theme
   const inputStyles =
     "block w-full rounded-md border-0 bg-white py-2.5 px-4 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 sm:text-sm transition-shadow duration-150";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      {/* REVAMPED: Modal content uses the new theme's structure and styling */}
       <DialogContent className="sm:max-w-lg bg-slate-50 p-0 rounded-xl border border-slate-200/80">
-        {/* NEW: Tighter header spacing by controlling padding here */}
         <DialogHeader className="p-6 pb-4 border-b border-slate-200/80">
           <DialogTitle className="text-lg font-semibold text-slate-900">
-            Create a New Grade
+            Add New Grade
           </DialogTitle>
           <DialogDescription className="text-slate-600">
-            Define a new quality tier for this product.
+            Define a new quality tier for this product version.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            {/* NEW: Consistent padding for the form body */}
             <div className="p-6 space-y-4">
               <FormField
                 control={form.control}
@@ -120,7 +125,7 @@ export default function AddGradeModal({
                     </FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="A brief summary of this grade's characteristics."
+                        placeholder="A brief summary of this grade's characteristics..."
                         className={`${inputStyles} resize-none`}
                         rows={3}
                         {...field}
@@ -134,21 +139,11 @@ export default function AddGradeModal({
                 <p className="text-sm text-red-600 pt-2">{apiError}</p>
               )}
             </div>
-
-            {/* REVAMPED: macOS-style footer with a distinct background and themed buttons */}
             <div className="flex justify-end gap-3 p-4 bg-slate-200/60 border-t border-slate-200/80">
-              <Button
-                type="button"
-                onClick={onClose}
-                className="bg-white text-slate-800 ring-1 ring-slate-300 hover:bg-slate-100"
-              >
+              <Button type="button" onClick={onClose} variant="outline">
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-indigo-600 text-white hover:bg-indigo-700"
-              >
+              <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}

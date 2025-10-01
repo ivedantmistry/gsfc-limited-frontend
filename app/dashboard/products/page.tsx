@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useProducts } from "@/lib/api/product";
 import { useHasPermission } from "@/hooks/useHasPermission";
-import AddProductModal from "@/components/inventory/AddProductModal";
+import AddProductModal from "@/components/modals/AddProductModal";
 import { ProductTable } from "@/components/inventory/products/ProductTable";
 import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 
