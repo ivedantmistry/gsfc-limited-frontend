@@ -1,6 +1,6 @@
 import React from "react";
 import { VersionNested } from "@/lib/types";
-import { Plus, Lock, Unlock, ShieldCheck } from "lucide-react";
+import { Lock, Unlock, ShieldCheck } from "lucide-react";
 
 interface VersionHeaderProps {
   version: VersionNested;
@@ -12,8 +12,6 @@ interface VersionHeaderProps {
 export const VersionHeader = ({
   version,
   isDraft,
-  onAddGrade,
-  onAddParameter,
 }: VersionHeaderProps) => (
   <div className="flex justify-between items-start">
     <div>
@@ -38,21 +36,6 @@ export const VersionHeader = ({
         )}
       </div>
     </div>
-    {isDraft && (
-      <div className="flex gap-2">
-        <button
-          onClick={onAddGrade}
-          className="inline-flex items-center gap-2 rounded-md bg-white text-slate-700 font-medium px-3 py-2 text-sm border border-slate-300 hover:bg-slate-50"
-        >
-          <Plus size={16} /> Add Grade
-        </button>
-        <button
-          onClick={onAddParameter}
-          className="inline-flex items-center gap-2 rounded-md bg-indigo-600 text-white font-medium px-3 py-2 text-sm hover:bg-indigo-700"
-        >
-          <Plus size={16} /> Add Parameter
-        </button>
-      </div>
-    )}
+   
   </div>
 );

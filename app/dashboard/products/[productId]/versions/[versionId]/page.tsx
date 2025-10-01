@@ -3,8 +3,8 @@
 import React, { use } from "react";
 import Link from "next/link";
 import { useProduct } from "@/lib/api/product";
-import { useVersion } from "@/lib/api/version"; // Use the new hook
-import { VersionDetailView } from "@/components/inventory/version-detail/VersionDetailView"; // Import the new view
+import { useVersion } from "@/lib/api/version"; 
+import { VersionDetailView } from "@/components/inventory/version-detail/VersionDetailView"; 
 import { ChevronRight } from "lucide-react";
 
 export default function VersionDetailPage({
