@@ -6,5 +6,6 @@ export default function VersionDetailLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  // Added a container for consistent padding
+  return <div className="mx-auto max-w-7xl">{children}</div>;
 }

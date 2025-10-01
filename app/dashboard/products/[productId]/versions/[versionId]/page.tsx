@@ -3,11 +3,10 @@
 import React, { use } from "react";
 import Link from "next/link";
 import { useProduct } from "@/lib/api/product";
-// NOTE: You will need to create a `useVersion` hook to fetch a single version.
-// import { useVersion } from "@/lib/api/version";
-import { ChevronRight, Plus, Lock, Unlock, ShieldCheck } from "lucide-react";
+import { useVersion } from "@/lib/api/version"; // Use the new hook
+import { VersionDetailView } from "@/components/inventory/version-detail/VersionDetailView"; // Import the new view
+import { ChevronRight } from "lucide-react";
 
-// --- Main Page Component ---
 export default function VersionDetailPage({
   params,
 }: {
@@ -16,19 +15,15 @@ export default function VersionDetailPage({
   const resolvedParams = use(params);
   const { productId, versionId } = resolvedParams;
 
-  // Fetch data for breadcrumbs and version details
+  // Fetch all necessary data
   const { product, isLoading: isProductLoading } = useProduct(productId);
-  // const { version, isLoading: isVersionLoading } = useVersion(versionId); // Implement this hook
+  const {
+    version,
+    isLoading: isVersionLoading,
+    mutate: mutateVersion,
+  } = useVersion(versionId);
 
-  // --- Placeholder Data until hook is created ---
-  const isLoading = isProductLoading;
-  const version = {
-    id: Number(versionId),
-    version_name: "v1.0 Final",
-    status: "DRAFT",
-    is_active: false,
-  };
-  // --- End Placeholder Data ---
+  const isLoading = isProductLoading || isVersionLoading;
 
   if (isLoading) return <div>Loading Version Details...</div>;
   if (!product || !version) return <div>Data not found.</div>;
@@ -68,56 +63,12 @@ export default function VersionDetailPage({
         </ol>
       </nav>
 
-      {/* Page Title and Status */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Manage Version: {version.version_name}
-          </h1>
-          <div className="mt-2 flex items-center gap-4">
-            <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium ${
-                version.status === "DRAFT"
-                  ? "bg-amber-100 text-amber-800"
-                  : "bg-slate-100 text-slate-800"
-              }`}
-            >
-              {version.status === "DRAFT" ? (
-                <Unlock size={14} />
-              ) : (
-                <Lock size={14} />
-              )}
-              {version.status}
-            </span>
-            {version.is_active && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                <ShieldCheck size={14} /> Active
-              </span>
-            )}
-          </div>
-        </div>
-        {version.status === "DRAFT" && (
-          <div className="flex gap-2">
-            <button className="inline-flex items-center gap-2 rounded-md bg-white text-slate-700 font-medium px-3 py-2 text-sm border border-slate-300 hover:bg-slate-50">
-              <Plus size={16} /> Add Grade
-            </button>
-            <button className="inline-flex items-center gap-2 rounded-md bg-indigo-600 text-white font-medium px-3 py-2 text-sm hover:bg-indigo-700">
-              <Plus size={16} /> Add Parameter
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* TODO: Add components to manage Parameters and Grades here */}
-      <div className="p-8 text-center bg-slate-50 border border-dashed border-slate-300 rounded-xl">
-        <h3 className="text-lg font-medium text-slate-800">
-          Parameter & Grade Management
-        </h3>
-        <p className="mt-1 text-sm text-slate-500">
-          Components to list, create, and edit parameters and grades will go
-          here.
-        </p>
-      </div>
+      {/* Render the main view component */}
+      <VersionDetailView
+        product={product}
+        version={version}
+        onDataChange={mutateVersion}
+      />
     </div>
   );
 }

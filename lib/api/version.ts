@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 import api from "@/lib/api";
-import { Version } from "@/lib/types";
+import { Version, VersionNested } from "@/lib/types";
 
 const VERSIONS_ENDPOINT = "/inventory/versions/";
 
@@ -27,6 +27,24 @@ export function useVersions(productId: string | number) {
 }
 
 /**
+ * ✅ NEW: Fetches a single, detailed version by its ID.
+ * This will include its parameters and grades.
+ */
+export function useVersion(versionId: string | number) {
+  const url = versionId ? `${VERSIONS_ENDPOINT}${versionId}/` : null;
+  const { data, error, isLoading, mutate } = useSWR<VersionNested>(
+    url,
+    listFetcher
+  );
+
+  return {
+    version: data,
+    isLoading,
+    error,
+    mutate,
+  };
+}
+/**
  * Creates a new, DRAFT version for a product.
  */
 export const createVersion = async (data: {
@@ -43,9 +61,12 @@ export const createVersion = async (data: {
  */
 export const lockVersion = async (versionId: number) => {
   // UPDATED: Replaced alert with a real API call
-  const response = await api.patch<Version>(`${VERSIONS_ENDPOINT}${versionId}/`, {
-    status: "LOCKED",
-  });
+  const response = await api.patch<Version>(
+    `${VERSIONS_ENDPOINT}${versionId}/`,
+    {
+      status: "LOCKED",
+    }
+  );
   return response.data;
 };
 
@@ -54,9 +75,12 @@ export const lockVersion = async (versionId: number) => {
  */
 export const activateVersion = async (versionId: number) => {
   // UPDATED: Replaced alert with a real API call
-  const response = await api.patch<Version>(`${VERSIONS_ENDPOINT}${versionId}/`, {
-    is_active: true,
-  });
+  const response = await api.patch<Version>(
+    `${VERSIONS_ENDPOINT}${versionId}/`,
+    {
+      is_active: true,
+    }
+  );
   return response.data;
 };
 

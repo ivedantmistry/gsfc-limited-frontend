@@ -58,8 +58,8 @@ export default function ProductOverviewPage({
       <div className="space-y-2">
 
         {activeVersion ? (
-          <Link
-            href={`/dashboard/products/${product.id}/versions`}
+            <Link
+            href={`/dashboard/products/${product.id}/versions/${activeVersion.id}`}
             className="block group"
           >
             <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm group-hover:ring-2 group-hover:ring-indigo-500 group-hover:shadow-md transition-all">
