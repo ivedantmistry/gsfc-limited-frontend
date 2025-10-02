@@ -5,16 +5,12 @@ import { VersionActions } from "./VersionActions";
 import { Lock, Unlock, ShieldCheck } from "lucide-react";
 import { parseISO, format } from "date-fns";
 
-// ✅ 1. Add a guard clause to handle null or undefined dates gracefully.
 const formatDate = (dateString: string | null | undefined) => {
-  if (!dateString) {
-    return "N/A"; // Return a placeholder if the date is missing.
-  }
+  if (!dateString) return "N/A";
   try {
     const date = parseISO(dateString);
     return format(date, "MMM d, yyyy");
   } catch (error) {
-    console.error("Failed to parse a malformed date:", dateString);
     return "Invalid Date";
   }
 };
@@ -22,6 +18,7 @@ const formatDate = (dateString: string | null | undefined) => {
 type VersionTableRowProps = {
   version: Version;
   productId: number | string;
+  isLoading: boolean; // ✅ ADD THIS PROP
   onLock: (id: number) => void;
   onActivate: (id: number) => void;
   onClone: (id: number) => void;
@@ -31,7 +28,11 @@ type VersionTableRowProps = {
 export const VersionTableRow: React.FC<VersionTableRowProps> = ({
   version,
   productId,
-  ...handlers
+  isLoading, // ✅ GET THE PROP
+  onLock,
+  onActivate,
+  onClone,
+  onDelete,
 }) => {
   return (
     <tr>
@@ -68,7 +69,14 @@ export const VersionTableRow: React.FC<VersionTableRowProps> = ({
         {formatDate(version.created_at)}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-center">
-        <VersionActions version={version} {...handlers} />
+        <VersionActions
+          version={version}
+          isLoading={isLoading} // ✅ PASS IT DOWN
+          onLock={onLock}
+          onActivate={onActivate}
+          onClone={onClone}
+          onDelete={onDelete}
+        />
       </td>
     </tr>
   );

@@ -5,7 +5,7 @@ import { VersionTableRow } from "./VersionTableRow";
 type VersionTableProps = {
   versions: Version[] | undefined;
   productId: number | string;
-  // Pass all handlers
+  isLoading: boolean; // ✅ ADD THIS PROP
   onLock: (id: number) => void;
   onActivate: (id: number) => void;
   onClone: (id: number) => void;
@@ -15,7 +15,11 @@ type VersionTableProps = {
 export const VersionTable: React.FC<VersionTableProps> = ({
   versions,
   productId,
-  ...handlers
+  isLoading, // ✅ GET THE PROP
+  onLock,
+  onActivate,
+  onClone,
+  onDelete,
 }) => {
   return (
     <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm overflow-hidden">
@@ -43,7 +47,11 @@ export const VersionTable: React.FC<VersionTableProps> = ({
                 key={version.id}
                 version={version}
                 productId={productId}
-                {...handlers}
+                isLoading={isLoading} // ✅ PASS IT DOWN
+                onLock={onLock}
+                onActivate={onActivate}
+                onClone={onClone}
+                onDelete={onDelete}
               />
             ))
           ) : (

@@ -14,8 +14,8 @@ import { CreateVersionModal } from "@/components/modals/CreateVersionModal";
 import { VersionListHeader } from "@/components/inventory/versions/VersionListHeader";
 import { VersionTable } from "@/components/inventory/versions/VersionTable";
 import { ConfirmLockModal } from "@/components/modals/ConfirmLockModal";
-import { ConfirmActivateModal } from "@/components/modals/ConfirmActivateModal"; 
-import { ConfirmDeleteModal } from "@/components/modals/ConfirmDeleteModal"; 
+import { ConfirmActivateModal } from "@/components/modals/ConfirmActivateModal";
+import { ConfirmDeleteModal } from "@/components/modals/ConfirmDeleteModal";
 import { Version } from "@/lib/types";
 
 export default function VersionManagementPage({
@@ -33,18 +33,12 @@ export default function VersionManagementPage({
     mutate: mutateVersions,
   } = useVersions(productId);
 
-  // State for all modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isLockModalOpen, setIsLockModalOpen] = useState(false);
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [versionToProcess, setVersionToProcess] = useState<Version | null>(null);
 
-  // State to track which version is targeted by a modal
-  const [versionToProcess, setVersionToProcess] = useState<Version | null>(
-    null
-  );
-
-  // --- Handlers to OPEN modals ---
   const openLockModal = (versionId: number) => {
     const version = versions?.find((v) => v.id === versionId);
     if (version) {
@@ -52,7 +46,6 @@ export default function VersionManagementPage({
       setIsLockModalOpen(true);
     }
   };
-
   const openActivateModal = (versionId: number) => {
     const version = versions?.find((v) => v.id === versionId);
     if (version) {
@@ -60,7 +53,6 @@ export default function VersionManagementPage({
       setIsActivateModalOpen(true);
     }
   };
-
   const openDeleteModal = (versionId: number) => {
     const version = versions?.find((v) => v.id === versionId);
     if (version) {
@@ -69,37 +61,29 @@ export default function VersionManagementPage({
     }
   };
 
-  // --- Handlers to CONFIRM actions ---
   const handleCreate = async (versionName: string) => {
-    await createVersion({
-      product: Number(productId),
-      version_name: versionName,
-    });
+    await createVersion({ product: Number(productId), version_name: versionName });
     mutateVersions();
     setIsCreateModalOpen(false);
   };
-
   const handleConfirmLock = async () => {
     if (!versionToProcess) return;
     await lockVersion(versionToProcess.id);
     mutateVersions();
     setIsLockModalOpen(false);
   };
-
   const handleConfirmActivate = async () => {
     if (!versionToProcess) return;
     await activateVersion(versionToProcess.id);
     mutateVersions();
     setIsActivateModalOpen(false);
   };
-
   const handleConfirmDelete = async () => {
     if (!versionToProcess) return;
     await deleteVersion(versionToProcess.id);
     mutateVersions();
     setIsDeleteModalOpen(false);
   };
-
   const handleClone = async (versionId: number) => {
     await createNewVersionFromExisting(versionId);
     mutateVersions();
@@ -145,6 +129,7 @@ export default function VersionManagementPage({
         <VersionTable
           versions={versions}
           productId={product.id}
+          isLoading={isLoading} // ✅ PASS THE LOADING STATE
           onLock={openLockModal}
           onActivate={openActivateModal}
           onClone={handleClone}
