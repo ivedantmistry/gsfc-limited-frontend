@@ -3,8 +3,9 @@
 import React, { use } from "react";
 import Link from "next/link";
 import { useProduct } from "@/lib/api/product";
-import { useVersion } from "@/lib/api/version"; 
-import { VersionDetailView } from "@/components/inventory/version-detail/VersionDetailView"; 
+// ✅ 1. IMPORT the new updateVersion function
+import { useVersion, updateVersion } from "@/lib/api/version";
+import { VersionDetailView } from "@/components/inventory/version-detail/VersionDetailView";
 import { ChevronRight } from "lucide-react";
 
 export default function VersionDetailPage({
@@ -15,7 +16,6 @@ export default function VersionDetailPage({
   const resolvedParams = use(params);
   const { productId, versionId } = resolvedParams;
 
-  // Fetch all necessary data
   const { product, isLoading: isProductLoading } = useProduct(productId);
   const {
     version,
@@ -25,12 +25,26 @@ export default function VersionDetailPage({
 
   const isLoading = isProductLoading || isVersionLoading;
 
+  // ✅ 2. DEFINE the handler to call the API and refresh data
+  const handleNameUpdate = async (newName: string) => {
+    if (!version) return;
+    try {
+      // Call the API to update the name
+      await updateVersion(version.id, { version_name: newName });
+      // Trigger a re-fetch of the version data to update the UI
+      mutateVersion();
+    } catch (error) {
+      console.error("Failed to update version name:", error);
+      // Optionally, show an error toast to the user
+      throw error; // Re-throw to let the EditableField component know it failed
+    }
+  };
+
   if (isLoading) return <div>Loading Version Details...</div>;
   if (!product || !version) return <div>Data not found.</div>;
 
   return (
     <div className="space-y-6">
-      {/* Header and Breadcrumbs */}
       <nav className="flex" aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-2">
           <li className="inline-flex items-center">
@@ -63,11 +77,11 @@ export default function VersionDetailPage({
         </ol>
       </nav>
 
-      {/* Render the main view component */}
       <VersionDetailView
         product={product}
         version={version}
         onDataChange={mutateVersion}
+        onNameUpdate={handleNameUpdate} // ✅ 3. PASS the handler down
       />
     </div>
   );

@@ -5,7 +5,6 @@ import { Product, VersionNested } from "@/lib/types";
 import AddGradeModal from "@/components/modals/AddGradeModal";
 import AddParameterModal from "@/components/modals/AddParameterModal";
 
-// ✅ FIX: Import the new components that were extracted.
 import { VersionHeader } from "./VersionHeader";
 import { EmptyState } from "./EmptyState";
 import { ParameterSection } from "./ParameterSection";
@@ -15,12 +14,14 @@ interface VersionDetailViewProps {
   product: Product;
   version: VersionNested;
   onDataChange: () => void; // Mutate function
+  onNameUpdate: (newName: string) => Promise<void>; // ✅ 1. Add handler to props
 }
 
 export function VersionDetailView({
   product,
   version,
   onDataChange,
+  onNameUpdate, // ✅ 2. Receive the handler from the page
 }: VersionDetailViewProps) {
   const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
   const [isParamModalOpen, setIsParamModalOpen] = useState(false);
@@ -66,6 +67,7 @@ export function VersionDetailView({
           isDraft={isDraft}
           onAddGrade={openGradeModal}
           onAddParameter={() => openParamModal({ versionId: version.id })}
+          onNameUpdate={onNameUpdate} // ✅ 3. Pass the handler down to the header
         />
 
         {isEmptyDraft && (

@@ -56,6 +56,22 @@ export const createVersion = async (data: {
   return response.data;
 };
 
+
+/**
+ * ✅ NEW: Updates a specific field on a version (e.g., the name).
+ */
+export const updateVersion = async (
+  versionId: number,
+  data: Partial<Version>
+) => {
+  const response = await api.patch<Version>(
+    `${VERSIONS_ENDPOINT}${versionId}/`,
+    data
+  );
+  return response.data;
+};
+
+
 /**
  * Locks a DRAFT version.
  */

@@ -1,23 +1,32 @@
+"use client";
+
 import React from "react";
 import { VersionNested } from "@/lib/types";
 import { Lock, Unlock, ShieldCheck } from "lucide-react";
+import { EditableField } from "@/components/shared/EditableField"; // Import the new component
 
 interface VersionHeaderProps {
   version: VersionNested;
   isDraft: boolean;
-  onAddGrade: () => void;
-  onAddParameter: () => void;
+  onNameUpdate: (newName: string) => Promise<void>; // Add this handler
 }
 
-export const VersionHeader = ({
+export const VersionHeader: React.FC<VersionHeaderProps> = ({
   version,
   isDraft,
-}: VersionHeaderProps) => (
+  onNameUpdate,
+}) => (
   <div className="flex justify-between items-start">
     <div>
-      <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-        Manage Version: {version.version_name}
-      </h1>
+      {/* ✅ REPLACE H1 WITH EDITABLE FIELD */}
+      <EditableField
+        initialValue={version.version_name}
+        onSave={onNameUpdate}
+        fieldName="Version Name"
+        canEdit={isDraft} // Only editable if it's a draft
+        textClass="text-3xl font-bold tracking-tight text-slate-900"
+        inputClass="text-3xl font-bold"
+      />
       <div className="mt-2 flex items-center gap-4">
         <span
           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium ${
@@ -36,6 +45,5 @@ export const VersionHeader = ({
         )}
       </div>
     </div>
-   
   </div>
 );
