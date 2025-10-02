@@ -5,6 +5,7 @@ import {
   FileText,
   Users,
   AlertTriangle,
+  PlusCircle,
 } from "lucide-react";
 export interface NavItem {
   href: string;
@@ -35,8 +36,8 @@ export const navItems: NavItem[] = [
   },
   {
     href: "/dashboard/tests",
-    icon: FileText,
-    label: "Create a test record",
+    icon: PlusCircle,
+    label: "Create New Test",
     permission: "inventory.add_testrecord",
   },
   {

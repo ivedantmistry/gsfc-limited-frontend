@@ -1,55 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
 import Link from "next/link";
-import { useHasPermission } from "../../../hooks/useHasPermission";
-import { AddTestModal } from "../../../components/modals/AddTestModal";
-import {
-  FilePlus,
-  FlaskConical,
-  Clock,
-  ChevronRight,
-  ShieldAlert,
-  Beaker,
-} from "lucide-react";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useTestRecords } from "@/lib/api/test";
+import { TestRecord } from "@/lib/types/test.types";
+import { useHasPermission } from "@/hooks/useHasPermission";
+import { FlaskConical, ChevronRight, Beaker, AlertCircle, PlusCircle } from "lucide-react";
+import CreateTestModal from "@/components/modals/create-test-wizard/CreateTestModal";
 
-// --- MOCK DATA ---
-// This would come from a `usePendingTests` hook in a real implementation.
-const mockPendingTests = [
-  {
-    id: 1,
-    record_id: "QC-2023-0928-001",
-    product_name: "Ammonia (NH3)",
-    status: "PENDING",
-    assigned_at: "2023-09-28T10:00:00Z",
-  },
-  {
-    id: 2,
-    record_id: "QC-2023-0928-002",
-    product_name: "Urea (46-0-0)",
-    status: "RETEST",
-    assigned_at: "2023-09-27T15:30:00Z",
-  },
-  {
-    id: 3,
-    record_id: "QC-2023-0927-015",
-    product_name: "Sulphuric Acid (98%)",
-    status: "PENDING",
-    assigned_at: "2023-09-27T11:45:00Z",
-  },
-];
-// --- END MOCK DATA ---
+const LoadingSpinner = () => (
+  <div className="flex justify-center items-center p-12">
+    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+  </div>
+);
 
-// A component to render a single pending test item
-const PendingTestItem = ({ test }: { test: (typeof mockPendingTests)[0] }) => {
-  const isRetest = test.status === "RETEST";
-  const timeSince = new Date(test.assigned_at).toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+// A component to render a single pending test item, now using real data
+const PendingTestItem = ({ test }: { test: TestRecord }) => {
+  // 3. Use the real TestRecord type
+  // A test is considered a retest if it has a link to a previous test
+  const isRetest = !!test.retest_record_id;
 
   return (
-    <Link href={`/dashboard/records/${test.record_id}`}>
+    // 4. Link to the test record detail page using the numeric ID for the URL
+    <Link href={`/dashboard/records/${test.id}`}>
       <span className="flex items-center justify-between p-4 rounded-lg bg-white hover:bg-slate-50 border border-slate-200/80 transition-all duration-150 shadow-sm">
         <div className="flex items-center">
           <div
@@ -66,20 +40,18 @@ const PendingTestItem = ({ test }: { test: (typeof mockPendingTests)[0] }) => {
           <div>
             <p className="font-semibold text-slate-800">{test.product_name}</p>
             <p className="text-sm text-slate-500 font-mono">
-              ID: {test.record_id}
+              ID: {test.record_id}{" "}
+              {/* 5. Use the human-readable record_id for display */}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-4">
           {isRetest && (
             <span className="text-xs font-bold text-yellow-700 bg-yellow-100 px-2 py-1 rounded-full">
-              RETEST REQUIRED
+              RETEST
             </span>
           )}
-          <span className="flex items-center text-sm text-slate-500">
-            <Clock className="w-4 h-4 mr-1.5" />
-            {timeSince}
-          </span>
+          {/* 6. Time has been removed as requested */}
           <ChevronRight className="w-5 h-5 text-slate-400" />
         </div>
       </span>
@@ -88,99 +60,98 @@ const PendingTestItem = ({ test }: { test: (typeof mockPendingTests)[0] }) => {
 };
 
 export default function TestResultEntryPage() {
+  // State to control the modal visibility
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const canEnterData = useHasPermission("testing.add_testrecord");
+  const canCreateTest = useHasPermission("inventory.add_testrecord");
 
-  // In a real app, you would fetch pending tests:
-  // const { data: pendingTests, isLoading } = usePendingTests();
+  const {
+    testRecords: pendingTests,
+    isLoading,
+    error,
+    mutate: mutateTestRecords, // Get mutate function to refresh list later
+  } = useTestRecords({ status: "PENDING" });
+
+  const handleCreateSuccess = () => {
+    // This function will be called by the modal on success
+    setIsModalOpen(false);
+    mutateTestRecords(); // Re-fetch the list of pending tests
+  };
+
+  const renderContent = () => {
+    if (isLoading) {
+      return <LoadingSpinner />;
+    }
+
+    if (error) {
+      return (
+        <div className="text-center bg-red-50 border border-dashed border-red-300 rounded-lg p-12 text-red-700">
+          <AlertCircle className="mx-auto h-8 w-8 mb-2" />
+          <h3 className="font-medium">Failed to load tests</h3>
+          <p className="text-sm text-red-600 mt-1">
+            There was an error fetching your assigned tests. Please try again
+            later.
+          </p>
+        </div>
+      );
+    }
+
+    if (pendingTests && pendingTests.length > 0) {
+      return (
+        <div className="space-y-3">
+          {pendingTests.map((test) => (
+            <PendingTestItem key={test.id} test={test} />
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="text-center bg-white border border-dashed border-slate-300 rounded-lg p-12">
+        <h3 className="font-medium text-slate-700">All caught up!</h3>
+        <p className="text-sm text-slate-500 mt-1">
+          You have no tests currently assigned to you.
+        </p>
+      </div>
+    );
+  };
 
   return (
-    <>
-      <AddTestModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-
-      <div className="space-y-10">
-        {/* Header */}
+    <div className="space-y-10">
+      {/* Header */}
+      <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
             Test Result Entry
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Select a pending test or start a new record from scratch.
+            Select a pending test from your queue or create a new test record.
           </p>
         </div>
-
-        {/* Section 1: Pending Tests Assigned to User */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Beaker className="w-6 h-6 text-indigo-600" />
-            <h2 className="text-xl font-semibold text-slate-800">
-              Your Pending Tests ({mockPendingTests.length})
-            </h2>
-          </div>
-          {mockPendingTests.length > 0 ? (
-            <div className="space-y-3">
-              {mockPendingTests.map((test) => (
-                <PendingTestItem key={test.id} test={test} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center bg-white border border-dashed border-slate-300 rounded-lg p-12">
-              <h3 className="font-medium text-slate-700">All caught up!</h3>
-              <p className="text-sm text-slate-500 mt-1">
-                You have no tests currently assigned to you.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Divider */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center" aria-hidden="true">
-            <div className="w-full border-t border-slate-300" />
-          </div>
-          <div className="relative flex justify-center">
-            <span className="bg-slate-50 px-2 text-sm font-medium text-slate-500">OR</span>
-          </div>
-        </div>
-
-
-        {/* Section 2: Start a New Test Record */}
-        <div>
-          <h2 className="text-xl font-semibold text-slate-800 mb-4">
-            Start an Ad-Hoc Test
-          </h2>
-          {canEnterData ? (
-            <div className="text-center bg-white p-8 rounded-lg shadow-sm border border-slate-200/80">
-              <h3 className="text-lg font-semibold text-slate-800">
-                Create a New Record
-              </h3>
-              <p className="text-slate-600 my-3 max-w-2xl mx-auto">
-                If the sample is not in your pending list, you can start a new
-                test record by finding the product and entering the sample
-                details manually.
-              </p>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="inline-flex items-center justify-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-              >
-                <FilePlus className="w-5 h-5 mr-2" />
-                Enter New Test Data
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center text-center bg-yellow-50 border-l-4 border-yellow-400 p-8 rounded-lg">
-              <ShieldAlert className="w-12 h-12 text-yellow-500 mb-3" />
-              <h3 className="text-lg font-semibold text-yellow-800">
-                Permission Required
-              </h3>
-              <p className="mt-1 text-yellow-700">
-                You do not have permission to create new test records.
-              </p>
-            </div>
-          )}
-        </div>
+        {canCreateTest && (
+          <Button onClick={() => setIsModalOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Create New Test
+          </Button>
+        )}
       </div>
-    </>
+
+      {/* Section 1: Pending Tests Assigned to User */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <Beaker className="w-6 h-6 text-indigo-600" />
+          <h2 className="text-xl font-semibold text-slate-800">
+            Your Pending Tests ({isLoading ? "..." : pendingTests?.length ?? 0})
+          </h2>
+        </div>
+        {renderContent()}
+      </div>
+
+       {/* Render the Modal */}
+      <CreateTestModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleCreateSuccess}
+      />
+    </div>
   );
 }
-

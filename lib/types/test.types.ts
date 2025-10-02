@@ -7,7 +7,7 @@ import { ParameterDefinition } from "./product.types";
  */
 export interface TestResultDisplay {
   id: number;
-  parameter: ParameterDefinition; // Using a simplified parameter type for display
+  parameter: ParameterDefinition;
   display_value: string | number | boolean | null;
   status: "IN_SPEC" | "OUT_OF_SPEC";
 }
@@ -22,18 +22,18 @@ export interface TestResultInput {
 }
 
 /**
- * Represents a full Test Record.
+ * Represents a full Test Record received from the API.
  * Matches TestRecordSerializer.
  */
 export interface TestRecord {
   id: number;
   record_id: string;
   version: number;
-  lab: number; // ✅ ADD THIS LINE (ID of the Lab)
+  lab: number;
   product_grade: number | null;
   sample_id: string;
   batch_no: string;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "RETEST" | "RETEST_ORDERED";
+  status: "PENDING" | "APPROVED" | "REJECTED" | "CLOSED" | "RETEST_ORDERED"; // Corrected statuses
   analyst: number | null;
   analyst_username: string;
   supervisor_comments: string | null;
@@ -46,4 +46,16 @@ export interface TestRecord {
   parameter_values: TestResultDisplay[];
   retest_record_id: string | null;
   retests: string[]; // List of record_ids
+}
+
+/**
+ * Represents the data structure for creating a new Test Record.
+ */
+export interface TestRecordInput {
+  version: number;
+  lab: number;
+  product_grade?: number | null;
+  sample_id: string;
+  batch_no: string;
+  results_input: TestResultInput[];
 }

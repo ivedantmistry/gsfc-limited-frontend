@@ -56,3 +56,24 @@ export function useProduct(productId: string | number) {
     mutate,
   };
 }
+
+/**
+ * ✅ NEW: Fetches a non-paginated list of all products.
+ * Ideal for populating searchable dropdowns where all options are needed at once.
+ */
+export function useAllProducts() {
+  // We add a large page_size to simulate fetching all items.
+  // Adjust if your backend supports a specific 'all' parameter.
+  const url = `${PRODUCTS_ENDPOINT}?page_size=1000`; 
+
+  const { data, error, isLoading } = useSWR<PaginatedResponse<Product>>(
+    url,
+    (url: string) => api.get(url).then((res) => res.data)
+  );
+
+  return {
+    products: data?.results,
+    isLoading,
+    error,
+  };
+}

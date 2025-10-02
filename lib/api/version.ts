@@ -117,3 +117,28 @@ export const createNewVersionFromExisting = async (versionId: number) => {
 export const deleteVersion = async (versionId: number) => {
   await api.delete(`${VERSIONS_ENDPOINT}${versionId}/`);
 };
+
+
+/**
+ * ✅ NEW: Fetches the single active, nested version for a given product.
+ * This is the primary data source for the test creation form.
+ */
+export function useActiveVersionForProduct(productId: number | null) {
+  // The backend filterset allows filtering by product and active status.
+  const url = productId
+    ? `${VERSIONS_ENDPOINT}?product=${productId}&is_active=true`
+    : null;
+
+  const { data, error, isLoading, mutate } = useSWR<VersionNested[]>(
+    url,
+    listFetcher
+  );
+
+  return {
+    // The API returns an array, but there should only be one active version.
+    activeVersion: data && data.length > 0 ? data[0] : undefined,
+    isLoading,
+    error,
+    mutate,
+  };
+}
