@@ -23,6 +23,7 @@ const singleFetcher = (url: string) => api.get(url).then((res) => res.data);
  * the 'view all' permission.
  */
 export function useTestRecords(params: {
+  view_type?: 'recent' | 'historical'; // ✅ ADD THIS PARAMETER
   status?: "PENDING" | "APPROVED" | "REJECTED" | "CLOSED" | "RETEST_ORDERED";
   analystId?: number;
   searchTerm?: string;
@@ -30,6 +31,9 @@ export function useTestRecords(params: {
   pageSize?: number;
 }) {
   const urlParams = new URLSearchParams();
+  // ✅ ADD LOGIC TO HANDLE THE NEW PARAMETER
+  if (params.view_type) urlParams.append("view_type", params.view_type); 
+  
   if (params.status) urlParams.append("status", params.status);
   if (params.analystId) urlParams.append("analyst", params.analystId.toString());
   if (params.searchTerm) urlParams.append("search", params.searchTerm);
@@ -38,7 +42,9 @@ export function useTestRecords(params: {
 
   const url = `${TESTS_ENDPOINT}?${urlParams.toString()}`;
 
-  const { data, error, isLoading, mutate } = useSWR<PaginatedResponse<TestRecord>>(
+  // Use the correct type for the paginated response.
+  // We'll create a new TestRecordInList type for our lightweight serializers.
+  const { data, error, isLoading, mutate } = useSWR<PaginatedResponse<TestRecordInList>>(
     url,
     listFetcher,
     { keepPreviousData: true }

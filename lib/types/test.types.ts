@@ -59,3 +59,16 @@ export interface TestRecordInput {
   batch_no: string;
   results_input: TestResultInput[];
 }
+/**
+ * ✅ NEW: Represents a lightweight test record for list/table views.
+ * Matches RecentTestRecordSerializer and HistoricalTestRecordSerializer.
+ */
+export interface TestRecordInList {
+  id: number;
+  record_id: string;
+  product_name: string;
+  analyst_username: string | null;
+  created_at: string;
+  lab_name: string;
+  status: "PENDING" | "APPROVED" | "REJECTED" | "CLOSED" | "RETEST_ORDERED";
+}
