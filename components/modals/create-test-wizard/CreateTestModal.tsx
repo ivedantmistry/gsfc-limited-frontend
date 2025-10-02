@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Product } from "@/lib/types/product.types";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import Step1_ProductSelect from "./Step1_ProductSelect";
-import Step2_DetailsAndResults from "./Step2_DetailsAndResults";
+import Step2_DetailsAndResults from "../create-test-wizard/Step2_DetailsAndResults/index";
 import { TestRecordInput } from "@/lib/types/test.types";
 import { createTestRecord } from "@/lib/api/test";
 import { useRouter } from "next/navigation";
