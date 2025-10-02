@@ -35,8 +35,8 @@ export default function RecordDetailPage() {
           <ResultsTable results={testRecord.parameter_values} />
         </div>
         <div className="space-y-6">
-          <RecordInfoCard testRecord={testRecord} />
           <RecordActions testRecord={testRecord} />
+          <RecordInfoCard testRecord={testRecord} />
         </div>
       </div>
     </>

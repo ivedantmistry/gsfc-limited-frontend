@@ -1,20 +1,26 @@
 // src/components/records/RecordHeader.tsx
 
 import React from "react";
-import { TestRecord } from "@/lib/types/test.types";
+import { TestRecord, TestRecordInList } from "@/lib/types/test.types";
 import { Badge } from "@/components/ui/badge";
 
-// Helper from your TestRecordsTable component
-const getStatusVariant = (status: TestRecord['status']) => {
+// Helper to get status colors and variants
+const getStatusVariant = (
+  status: TestRecord["status"] | TestRecordInList["status"]
+) => {
   switch (status) {
-    case "PENDING": return "secondary";
-    case "APPROVED": return "default";
-    case "REJECTED": return "destructive";
-    case "RETEST_ORDERED": return "outline";
-    default: return "secondary";
+    case "APPROVED":
+      return "success"; // We'll style this to be green
+    case "PENDING":
+      return "warning"; // We'll style this to be yellow
+    case "REJECTED":
+      return "destructive"; // Already red
+    case "CLOSED":
+    case "RETEST_ORDERED":
+    default:
+      return "secondary"; // Gray
   }
 };
-
 interface RecordHeaderProps {
   testRecord: TestRecord;
 }
@@ -30,7 +36,9 @@ export default function RecordHeader({ testRecord }: RecordHeaderProps) {
           <p className="text-sm text-slate-500 font-mono">
             ID: {testRecord.record_id}
           </p>
-          <Badge variant={getStatusVariant(testRecord.status)}>{testRecord.status}</Badge>
+          <Badge className={`badge-${getStatusVariant(testRecord.status)}`}>
+            {testRecord.status}
+          </Badge>
         </div>
       </div>
     </div>

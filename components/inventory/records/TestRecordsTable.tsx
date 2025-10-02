@@ -13,22 +13,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { TestRecordInList } from "@/lib/types/test.types";
-import { format } from 'date-fns';
+import { TestRecord, TestRecordInList } from "@/lib/types/test.types";
+import { format } from "date-fns";
 
-// A small helper to get status colors
-const getStatusVariant = (status: TestRecordInList['status']) => {
+// Helper to get status colors and variants
+const getStatusVariant = (
+  status: TestRecord["status"] | TestRecordInList["status"]
+) => {
   switch (status) {
-    case "PENDING":
-      return "secondary";
     case "APPROVED":
-      return "default";
+      return "success"; // We'll style this to be green
+    case "PENDING":
+      return "warning"; // We'll style this to be yellow
     case "REJECTED":
-      return "destructive";
+      return "destructive"; // Already red
+    case "CLOSED":
     case "RETEST_ORDERED":
-      return "outline";
     default:
-      return "secondary";
+      return "secondary"; // Gray
   }
 };
 
@@ -53,9 +55,15 @@ export default function TestRecordsTable({ records }: TestRecordsTableProps) {
         <TableBody>
           {records.length > 0 ? (
             records.map((record) => (
-              <TableRow key={record.id} className="cursor-pointer hover:bg-muted/50">
+              <TableRow
+                key={record.id}
+                className="cursor-pointer hover:bg-muted/50"
+              >
                 <TableCell className="font-mono">
-                  <Link href={`/dashboard/records/${record.id}`} className="hover:underline">
+                  <Link
+                    href={`/dashboard/records/${record.id}`}
+                    className="hover:underline"
+                  >
                     {record.record_id}
                   </Link>
                 </TableCell>
@@ -63,9 +71,13 @@ export default function TestRecordsTable({ records }: TestRecordsTableProps) {
                 <TableCell>{record.analyst_username || "N/A"}</TableCell>
                 <TableCell>{record.lab_name}</TableCell>
                 <TableCell>
-                  <Badge variant={getStatusVariant(record.status)}>{record.status}</Badge>
+                  <Badge className={`badge-${getStatusVariant(record.status)}`}>
+                    {record.status}
+                  </Badge>
                 </TableCell>
-                <TableCell>{format(new Date(record.created_at), 'dd MMM yyyy, hh:mm a')}</TableCell>
+                <TableCell>
+                  {format(new Date(record.created_at), "dd MMM yyyy, hh:mm a")}
+                </TableCell>
               </TableRow>
             ))
           ) : (
