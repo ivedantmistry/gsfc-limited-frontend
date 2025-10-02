@@ -5,7 +5,7 @@
 import React, { useState } from "react";
 import { TestRecord } from "@/lib/types/test.types";
 import { useHasPermission } from "@/hooks/useHasPermission";
-import { approveOrRejectTest } from "@/lib/api/test";
+import { approveOrRejectTest, closeTestRecord } from "@/lib/api/test";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -24,6 +24,7 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [isRetestModalOpen, setIsRetestModalOpen] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   const handleApprove = async () => {
     setIsApproving(true);
@@ -42,6 +43,24 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
     }
   };
 
+  const handleClose = async () => {
+    setIsClosing(true);
+    try {
+      await closeTestRecord(testRecord.id);
+      toast.success("Success", {
+        description: "Test record has been closed.",
+      });
+      router.refresh();
+    } catch (error) {
+      toast.error("Error", { description: "Failed to close record." });
+    } finally {
+      setIsClosing(false);
+    }
+  };
+
+  if (!canApprove) {
+    return null;
+  }
   if (!canApprove) {
     return null;
   }
@@ -74,7 +93,7 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
               </Button>
             </div>
           )}
-          {(testRecord.status === "APPROVED" ||
+          {/* {(testRecord.status === "APPROVED" ||
             testRecord.status === "REJECTED") && (
             <Button
               className="w-full"
@@ -82,6 +101,27 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
             >
               Order Retest
             </Button>
+          )} */}
+          {(testRecord.status === "APPROVED" ||
+            testRecord.status === "REJECTED") && (
+            // ✅ 4. Display Close and Retest buttons when approved/rejected
+            <div className="space-y-2">
+              <Button
+                variant="secondary"
+                className="w-full"
+                onClick={handleClose}
+                disabled={isClosing}
+              >
+                {isClosing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Close Record
+              </Button>
+              <Button
+                className="w-full"
+                onClick={() => setIsRetestModalOpen(true)}
+              >
+                Order Retest
+              </Button>
+            </div>
           )}
           {testRecord.status === "RETEST_ORDERED" && (
             <p className="text-sm text-center text-slate-500">

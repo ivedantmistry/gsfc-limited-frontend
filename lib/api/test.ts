@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 import api from "@/lib/api";
-import { PaginatedResponse, User } from "@/lib/types";
+import { PaginatedResponse, TestRecordInList, User } from "@/lib/types";
 import { TestRecord, TestRecordInput, TestResultInput } from "@/lib/types/";
 
 const TESTS_ENDPOINT = "/inventory/tests/";
@@ -134,4 +134,13 @@ export const orderRetest = async (recordId: number, analystIdToAssign: number): 
         analyst_id: analystIdToAssign
     });
     return response.data; // This returns the *new* retest record
+}
+
+// ✅ NEW FUNCTION: Add this to the end of your file
+/**
+ * Closes an approved or rejected test record. (Supervisor/Manager action)
+ */
+export const closeTestRecord = async (recordId: number): Promise<TestRecord> => {
+    const response = await api.post(`${TESTS_ENDPOINT}${recordId}/close_record/`);
+    return response.data;
 }
