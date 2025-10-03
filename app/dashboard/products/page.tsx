@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react"; // ✅ 1. Import useRef
 import { useSearchParams } from "next/navigation";
 import { useProducts } from "@/lib/api/product";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -23,12 +23,29 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(initialSearch);
 
+  // ✅ 2. Create a ref for the search input element
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Debouncing effect (no changes needed here)
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  // ✅ 3. Update the useEffect for the keyboard shortcut
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        // Instead of opening a dialog, directly focus the input field
+        searchInputRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
   const { products, totalCount, isLoading, error, mutate } = useProducts({
     searchTerm: debouncedSearchTerm,
@@ -51,7 +68,7 @@ export default function ProductsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-              All Products 
+              All Products
             </h1>
             <p className="mt-1 text-sm text-slate-500">
               Browse and manage all product testing blueprints.
@@ -64,23 +81,35 @@ export default function ProductsPage() {
             </Button>
           )}
         </div>
-        
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by product name or ID..."
-            className="pl-9"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+
+        {/* ✅ 4. Revert to the inline search bar and attach the ref */}
+        <div className="relative w-full max-w-md">
+  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+
+  <Input
+    ref={searchInputRef}
+    placeholder="Search products..."
+    className="pl-10 pr-20 h-10 rounded-md border border-input bg-background text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+  />
+
+  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center space-x-1 text-xs text-muted-foreground bg-muted border rounded px-2 py-0.5">
+    <span className="font-mono">
+      {typeof window !== "undefined" && navigator.platform.includes("Mac") ? "⌘" : "Ctrl"}
+    </span>
+    <span className="font-mono">K</span>
+  </div>
+</div>
+
+
 
         <ProductTable
           products={products}
           isLoading={isLoading}
           canManage={canManageProducts}
         />
-        
+
         {totalCount && totalCount > pageSize && (
           <PaginationControls
             totalCount={totalCount}
