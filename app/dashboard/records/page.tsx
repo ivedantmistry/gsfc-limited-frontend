@@ -5,7 +5,7 @@
 import React, { useState } from "react";
 import { useTestRecords } from "@/lib/api/test";
 import { useHasPermission } from "@/hooks/useHasPermission";
-import { Beaker, AlertCircle, PlusCircle, Loader2 } from "lucide-react";
+import { PlusCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CreateTestModal from "@/components/modals/create-test-wizard/CreateTestModal";
 import TestRecordsTable from "@/components/inventory/records/TestRecordsTable";

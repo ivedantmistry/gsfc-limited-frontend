@@ -80,7 +80,7 @@ export interface Product {
   name: string;
   product_id: string;
   description: string | null;
-  versions: VersionNested[];
   created_at: string;
   updated_at: string;
+  active_version_name: string | null; 
 }

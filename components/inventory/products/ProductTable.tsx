@@ -1,64 +1,104 @@
+// src/components/inventory/products/ProductTable.tsx
+
+"use client";
+
 import React from "react";
-import { Product } from "@/lib/types/products";
-import { HardDrive } from "lucide-react";
-import { SkeletonRow } from "./SkeletonRow";
-import { ProductRow } from "./ProductRow";
+import Link from "next/link";
+import { format } from "date-fns";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Product } from "@/lib/types/";
+import { MoreHorizontal, Edit, Eye } from "lucide-react";
 
 interface ProductTableProps {
   products?: Product[];
   isLoading: boolean;
-  error: any;
   canManage: boolean;
 }
 
-export const ProductTable = ({
-  products,
-  isLoading,
-  error,
-  canManage,
-}: ProductTableProps) => {
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
-      <table className="w-full text-sm text-left text-gray-600">
-        <thead className="bg-gray-100 text-xs text-gray-700 uppercase tracking-wider">
-          <tr>
-            <th scope="col" className="w-12 p-4"></th>
-            <th scope="col" className="px-6 py-3">Product ID</th>
-            <th scope="col" className="px-6 py-3">Name</th>
-            <th scope="col" className="px-6 py-3">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {isLoading &&
-            Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)}
-          {error && (
-            <tr>
-              <td colSpan={5} className="text-center py-10 text-red-500">
-                Failed to load products.
-              </td>
-            </tr>
-          )}
-          {!isLoading && products && products.length === 0 && (
-            <tr>
-              <td colSpan={5} className="text-center py-16 text-gray-500">
-                <HardDrive className="mx-auto w-12 h-12 text-gray-300 mb-4" />
-                <h3 className="font-medium">No products found.</h3>
-                <p className="text-xs mt-1">
-                  Get started by adding a new product.
-                </p>
-              </td>
-            </tr>
-          )}
-          {!isLoading &&
-            products?.map((product) => (
-              <ProductRow
-                key={product.id}
-                product={product}
-                canManage={canManage}
-              />
+export const ProductTable = ({ products, isLoading, canManage }: ProductTableProps) => {
+  if (isLoading) {
+    return (
+      <div className="rounded-lg border">
+        <Table>
+          <TableHeader>
+             {/* ... (table header) ... */}
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                <TableCell><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
+              </TableRow>
             ))}
-        </tbody>
-      </table>
+          </TableBody>
+        </Table>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="rounded-lg border bg-white shadow-sm">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[150px]">Product ID</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Active Version</TableHead>
+            <TableHead>Date Created</TableHead>
+            {/* <TableHead className="w-[100px] text-right">Actions</TableHead> */}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {products && products.length > 0 ? (
+            products.map((product) => (
+              <TableRow key={product.id}>
+                <TableCell className="font-mono">
+                   <Link href={`/dashboard/products/${product.id}/versions`} className="hover:underline">{product.product_id}</Link>
+                </TableCell>
+                <TableCell className="font-medium">{product.name}</TableCell>
+                <TableCell>{product.active_version_name || "N/A"}</TableCell>
+                <TableCell>{format(new Date(product.created_at), 'dd MMM yyyy')}</TableCell>
+                {/* <TableCell className="text-right">
+                   <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                       <Link href={`/dashboard/products/${product.id}/versions`}>
+                        <DropdownMenuItem><Eye className="mr-2 h-4 w-4" />View Versions</DropdownMenuItem>
+                       </Link>
+                      {canManage && (
+                        <Link href={`/dashboard/products/${product.id}`}>
+                           <DropdownMenuItem><Edit className="mr-2 h-4 w-4" />Edit Product</DropdownMenuItem>
+                        </Link>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell> */}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={5} className="h-24 text-center">
+                No products found.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 };
