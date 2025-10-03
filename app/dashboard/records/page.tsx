@@ -2,14 +2,23 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef } from "react"; // ✅ 1. Add useEffect and useRef
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useTestRecords } from "@/lib/api/test";
 import { useHasPermission } from "@/hooks/useHasPermission";
-import { PlusCircle, Loader2, Search } from "lucide-react"; // ✅ 2. Add Search icon
+import {
+  PlusCircle,
+  Loader2,
+  Search,
+  ListChecks,
+  Clock,
+  CheckCircle,
+  XCircle,
+} from "lucide-react"; // ✅ 2. Import new icons
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input"; // ✅ 3. Import Input
 import CreateTestModal from "@/components/modals/create-test-wizard/CreateTestModal";
 import TestRecordsTable from "@/components/inventory/records/TestRecordsTable";
+import { StatCard } from "@/components/shared/StatCard";
 
 export default function RecentTestsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,14 +47,24 @@ export default function RecentTestsPage() {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  // ✅ 5. Pass the debounced search term to the API hook
   const {
     testRecords,
+    totalCount,
     isLoading,
     error,
     mutate: mutateTestRecords,
   } = useTestRecords({ searchTerm: debouncedSearchTerm });
 
+  const stats = useMemo(() => {
+    if (!testRecords) {
+      return { pending: 0, approved: 0, rejected: 0 };
+    }
+    return {
+      pending: testRecords.filter((r) => r.status === "PENDING").length,
+      approved: testRecords.filter((r) => r.status === "APPROVED").length,
+      rejected: testRecords.filter((r) => r.status === "REJECTED").length,
+    };
+  }, [testRecords]);
   const handleCreateSuccess = () => {
     setIsModalOpen(false);
     mutateTestRecords();
@@ -53,39 +72,62 @@ export default function RecentTestsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-          Recent Test Records
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Showing all test records created today.
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+            Recent Test Records
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            An overview of all test records created today.
+          </p>
+        </div>
+        {canCreateTest && (
+          <Button onClick={() => setIsModalOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Create New Test
+          </Button>
+        )}
       </div>
 
-      {/* ✅ 6. Add the search input field */}
-      <div className="relative w-full max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      {/* ✅ 5. Add the Stat Cards grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Today's Total Tests"
+          value={totalCount}
+          isLoading={isLoading}
+          icon={<ListChecks className="h-4 w-4 text-muted-foreground" />}
+        />
+        <StatCard
+          title="Pending Review"
+          value={stats.pending}
+          isLoading={isLoading}
+          icon={<Clock className="h-4 w-4 text-muted-foreground" />}
+        />
+        <StatCard
+          title="Approved Today"
+          value={stats.approved}
+          isLoading={isLoading}
+          icon={<CheckCircle className="h-4 w-4 text-muted-foreground" />}
+        />
+        <StatCard
+          title="Rejected Today"
+          value={stats.rejected}
+          isLoading={isLoading}
+          icon={<XCircle className="h-4 w-4 text-muted-foreground" />}
+        />
+      </div>
 
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           ref={searchInputRef}
-          placeholder="Search products..."
-          className="pl-10 pr-20 h-10 rounded-md border border-input bg-background text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring"
+          placeholder="Search today's records... (Ctrl+K)"
+          className="pl-9"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center space-x-1 text-xs text-muted-foreground bg-muted border rounded px-2 py-0.5">
-          <span className="font-mono">
-            {typeof window !== "undefined" && navigator.platform.includes("Mac")
-              ? "⌘"
-              : "Ctrl"}
-          </span>
-          <span className="font-mono">K</span>
-        </div>
       </div>
 
-      {/* Table Section */}
       {isLoading && (
         <div className="flex justify-center p-12">
           <Loader2 className="h-8 w-8 animate-spin" />
