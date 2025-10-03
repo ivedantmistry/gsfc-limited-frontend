@@ -61,8 +61,8 @@ export default function RecentTestsPage() {
     }
     return {
       pending: testRecords.filter((r) => r.status === "PENDING").length,
-      approved: testRecords.filter((r) => r.status === "APPROVED").length,
-      rejected: testRecords.filter((r) => r.status === "REJECTED").length,
+      // approved: testRecords.filter((r) => r.status === "APPROVED").length,
+      // rejected: testRecords.filter((r) => r.status === "REJECTED").length,
     };
   }, [testRecords]);
   const handleCreateSuccess = () => {
@@ -103,7 +103,7 @@ export default function RecentTestsPage() {
           isLoading={isLoading}
           icon={<Clock className="h-4 w-4 text-muted-foreground" />}
         />
-        <StatCard
+        {/* <StatCard
           title="Approved Today"
           value={stats.approved}
           isLoading={isLoading}
@@ -114,7 +114,7 @@ export default function RecentTestsPage() {
           value={stats.rejected}
           isLoading={isLoading}
           icon={<XCircle className="h-4 w-4 text-muted-foreground" />}
-        />
+        /> */}
       </div>
 
       <div className="relative">
