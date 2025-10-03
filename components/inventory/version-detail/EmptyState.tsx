@@ -4,6 +4,7 @@ import { Layers, FlaskConical } from "lucide-react";
 interface EmptyStateProps {
   onAddGradeClick: () => void;
   onAddParameterClick: () => void;
+    canManage: boolean; 
 }
 
 export const EmptyState = ({
@@ -18,6 +19,7 @@ export const EmptyState = ({
       Choose how to structure this blueprint. You can add quality grades, or add
       testable parameters directly.
     </p>
+     {canManage && (
     <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-md mx-auto">
       <button
         onClick={onAddGradeClick}
@@ -36,5 +38,6 @@ export const EmptyState = ({
         <span className="text-xs text-slate-500">e.g., Viscosity, pH</span>
       </button>
     </div>
+       )}
   </div>
 );

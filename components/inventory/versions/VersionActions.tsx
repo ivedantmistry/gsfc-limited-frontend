@@ -4,11 +4,12 @@ import { Lock, Copy, Trash2, CheckCircle } from "lucide-react";
 
 type VersionActionsProps = {
   version: Version;
-  isLoading: boolean; // ✅ ADD THIS PROP
+  isLoading: boolean; 
   onLock: (id: number) => void;
   onActivate: (id: number) => void;
   onClone: (id: number) => void;
   onDelete: (id: number) => void;
+  canManage?: boolean;
 };
 
 const iconButtonClass =
@@ -16,12 +17,16 @@ const iconButtonClass =
 
 export const VersionActions: React.FC<VersionActionsProps> = ({
   version,
-  isLoading, // ✅ GET THE PROP
+  isLoading, 
   onLock,
   onActivate,
   onClone,
   onDelete,
+  canManage,
 }) => {
+  if (!canManage) {
+    return null;
+  }
   return (
     <div className="flex justify-center items-center gap-2">
       {version.status === "DRAFT" && (
@@ -29,7 +34,7 @@ export const VersionActions: React.FC<VersionActionsProps> = ({
           <button
             onClick={() => onLock(version.id)}
             title="Lock Version"
-            disabled={isLoading} // ✅ DISABLE BUTTON
+            disabled={isLoading} 
             className={`${iconButtonClass} text-amber-600 hover:bg-amber-100`}
           >
             <Lock size={18} />
@@ -37,7 +42,7 @@ export const VersionActions: React.FC<VersionActionsProps> = ({
           <button
             onClick={() => onDelete(version.id)}
             title="Delete Draft"
-            disabled={isLoading} // ✅ DISABLE BUTTON
+            disabled={isLoading} 
             className={`${iconButtonClass} text-red-600 hover:bg-red-100`}
           >
             <Trash2 size={18} />
@@ -48,7 +53,7 @@ export const VersionActions: React.FC<VersionActionsProps> = ({
         <button
           onClick={() => onActivate(version.id)}
           title="Activate Version"
-          disabled={isLoading} // ✅ DISABLE BUTTON
+          disabled={isLoading}
           className={`${iconButtonClass} text-green-600 hover:bg-green-100`}
         >
           <CheckCircle size={18} />
@@ -58,7 +63,7 @@ export const VersionActions: React.FC<VersionActionsProps> = ({
         <button
           onClick={() => onClone(version.id)}
           title="Clone Version"
-          disabled={isLoading} // ✅ DISABLE BUTTON
+          disabled={isLoading} 
           className={`${iconButtonClass} text-indigo-600 hover:bg-indigo-100`}
         >
           <Copy size={18} />

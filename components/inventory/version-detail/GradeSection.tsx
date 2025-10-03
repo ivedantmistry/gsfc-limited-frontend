@@ -9,19 +9,21 @@ interface GradeSectionProps {
   grades: ProductGrade[];
   onOpenGradeModal: (versionId: number) => void;
   onOpenParamModal: (scope: { gradeId?: number }) => void;
+   canManage: boolean;
 }
 
 export const GradeSection = ({
   isDraft,
   versionId,
   grades,
+  canManage,
   onOpenGradeModal,
   onOpenParamModal,
 }: GradeSectionProps) => (
   <div className="space-y-4">
     <div className="flex justify-between items-center">
       <h2 className="text-2xl font-bold text-slate-900">Product Grades</h2>
-      {isDraft && (
+    {isDraft && canManage && (
         <button
           onClick={() => onOpenGradeModal(versionId)}
           className="inline-flex items-center gap-2 rounded-md bg-white text-slate-700 font-medium px-3 py-2 text-sm border border-slate-300 hover:bg-slate-50"
@@ -36,6 +38,7 @@ export const GradeSection = ({
         grade={g}
         isDraft={isDraft}
         onAddParameter={() => onOpenParamModal({ gradeId: g.id })}
+          canManage={canManage}
       />
     ))}
   </div>

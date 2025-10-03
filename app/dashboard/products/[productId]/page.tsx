@@ -50,7 +50,7 @@ export default function ProductOverviewPage({
             href={`/dashboard/products/${product.id}/versions`}
             className="inline-flex items-center gap-2 rounded-md bg-indigo-600 text-white font-medium px-3 py-2 text-sm hover:bg-indigo-700"
           >
-            Manage All Versions
+            View All Versions
           </Link>
         </div>
       </div>

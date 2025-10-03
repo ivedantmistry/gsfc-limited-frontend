@@ -6,11 +6,13 @@ import { ChevronRight, Plus } from "lucide-react";
 type VersionListHeaderProps = {
   product: Product;
   onAddNew: () => void;
+  canManage?: boolean; // ✅ FIX: Add the optional canManage prop
 };
 
 export const VersionListHeader: React.FC<VersionListHeaderProps> = ({
   product,
   onAddNew,
+  canManage, // ✅ FIX: Receive the prop
 }) => {
   return (
     <>
@@ -50,12 +52,14 @@ export const VersionListHeader: React.FC<VersionListHeaderProps> = ({
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">
           Version History for {product.name}
         </h1>
-        <button
-          onClick={onAddNew}
-          className="inline-flex items-center gap-2 rounded-md bg-indigo-600 text-white font-medium px-3 py-2 text-sm hover:bg-indigo-700"
-        >
-          <Plus size={16} /> Create New Version
-        </button>
+        {canManage && (
+          <button
+            onClick={onAddNew}
+            className="inline-flex items-center gap-2 rounded-md bg-indigo-600 text-white font-medium px-3 py-2 text-sm hover:bg-indigo-700"
+          >
+            <Plus size={16} /> Create New Version
+          </button>
+        )}
       </div>
     </>
   );

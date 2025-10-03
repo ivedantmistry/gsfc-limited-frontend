@@ -18,21 +18,23 @@ const formatDate = (dateString: string | null | undefined) => {
 type VersionTableRowProps = {
   version: Version;
   productId: number | string;
-  isLoading: boolean; // ✅ ADD THIS PROP
+  isLoading: boolean;
   onLock: (id: number) => void;
   onActivate: (id: number) => void;
   onClone: (id: number) => void;
   onDelete: (id: number) => void;
+  canManage?: boolean;
 };
 
 export const VersionTableRow: React.FC<VersionTableRowProps> = ({
   version,
   productId,
-  isLoading, // ✅ GET THE PROP
+  isLoading,
   onLock,
   onActivate,
   onClone,
   onDelete,
+  canManage,
 }) => {
   return (
     <tr>
@@ -68,16 +70,20 @@ export const VersionTableRow: React.FC<VersionTableRowProps> = ({
       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
         {formatDate(version.created_at)}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-center">
-        <VersionActions
-          version={version}
-          isLoading={isLoading} // ✅ PASS IT DOWN
-          onLock={onLock}
-          onActivate={onActivate}
-          onClone={onClone}
-          onDelete={onDelete}
-        />
-      </td>
+      {canManage && (
+        <td className="px-6 py-4 whitespace-nowrap text-center">
+          <VersionActions
+            version={version}
+            isLoading={isLoading}
+            onLock={onLock}
+            onActivate={onActivate}
+            onClone={onClone}
+            onDelete={onDelete}
+            canManage={canManage} 
+          />
+        </td>
+      )}
+
     </tr>
   );
 };

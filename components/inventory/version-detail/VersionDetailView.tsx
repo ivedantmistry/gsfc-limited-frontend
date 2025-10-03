@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { Product, VersionNested } from "@/lib/types";
 import AddGradeModal from "@/components/modals/AddGradeModal";
 import AddParameterModal from "@/components/modals/AddParameterModal";
-
 import { VersionHeader } from "./VersionHeader";
 import { EmptyState } from "./EmptyState";
 import { ParameterSection } from "./ParameterSection";
@@ -13,15 +12,16 @@ import { GradeSection } from "./GradeSection";
 interface VersionDetailViewProps {
   product: Product;
   version: VersionNested;
-  onDataChange: () => void; // Mutate function
-  onNameUpdate: (newName: string) => Promise<void>; // ✅ 1. Add handler to props
+  onDataChange: () => void;
+  onNameUpdate: (newName: string) => Promise<void>;
+  canManage: boolean;
 }
 
 export function VersionDetailView({
-  product,
   version,
   onDataChange,
-  onNameUpdate, // ✅ 2. Receive the handler from the page
+  onNameUpdate,
+  canManage,
 }: VersionDetailViewProps) {
   const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
   const [isParamModalOpen, setIsParamModalOpen] = useState(false);
@@ -67,21 +67,25 @@ export function VersionDetailView({
           isDraft={isDraft}
           onAddGrade={openGradeModal}
           onAddParameter={() => openParamModal({ versionId: version.id })}
-          onNameUpdate={onNameUpdate} // ✅ 3. Pass the handler down to the header
+          onNameUpdate={onNameUpdate}
         />
 
         {isEmptyDraft && (
           <EmptyState
             onAddGradeClick={openGradeModal}
-            onAddParameterClick={() => openParamModal({ versionId: version.id })}
+            onAddParameterClick={() =>
+              openParamModal({ versionId: version.id })
+            }
+            canManage={canManage}
           />
         )}
-        {hasParameters && (
+         {hasParameters && (
           <ParameterSection
             isDraft={isDraft}
             versionId={version.id}
             parameters={parameters}
             onOpenParamModal={openParamModal}
+            canManage={canManage} 
           />
         )}
         {hasGrades && (
@@ -91,6 +95,7 @@ export function VersionDetailView({
             grades={grades}
             onOpenGradeModal={openGradeModal}
             onOpenParamModal={openParamModal}
+             canManage={canManage}
           />
         )}
       </div>

@@ -17,6 +17,7 @@ import { ConfirmLockModal } from "@/components/modals/ConfirmLockModal";
 import { ConfirmActivateModal } from "@/components/modals/ConfirmActivateModal";
 import { ConfirmDeleteModal } from "@/components/modals/ConfirmDeleteModal";
 import { Version } from "@/lib/types";
+import { useHasPermission } from "@/hooks/useHasPermission";
 
 export default function VersionManagementPage({
   params,
@@ -25,7 +26,7 @@ export default function VersionManagementPage({
 }) {
   const resolvedParams = use(params);
   const productId = resolvedParams.productId;
-
+  const canManageVersions = useHasPermission("inventory.can_manage_versions");
   const { product, isLoading: isProductLoading } = useProduct(productId);
   const {
     versions,
@@ -37,7 +38,9 @@ export default function VersionManagementPage({
   const [isLockModalOpen, setIsLockModalOpen] = useState(false);
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [versionToProcess, setVersionToProcess] = useState<Version | null>(null);
+  const [versionToProcess, setVersionToProcess] = useState<Version | null>(
+    null
+  );
 
   const openLockModal = (versionId: number) => {
     const version = versions?.find((v) => v.id === versionId);
@@ -60,9 +63,11 @@ export default function VersionManagementPage({
       setIsDeleteModalOpen(true);
     }
   };
-
   const handleCreate = async (versionName: string) => {
-    await createVersion({ product: Number(productId), version_name: versionName });
+    await createVersion({
+      product: Number(productId),
+      version_name: versionName,
+    });
     mutateVersions();
     setIsCreateModalOpen(false);
   };
@@ -125,15 +130,17 @@ export default function VersionManagementPage({
         <VersionListHeader
           product={product}
           onAddNew={() => setIsCreateModalOpen(true)}
+          canManage={canManageVersions} 
         />
         <VersionTable
           versions={versions}
           productId={product.id}
-          isLoading={isLoading} // ✅ PASS THE LOADING STATE
+          isLoading={isLoading}
           onLock={openLockModal}
           onActivate={openActivateModal}
           onClone={handleClone}
           onDelete={openDeleteModal}
+          canManage={canManageVersions} 
         />
       </div>
     </>

@@ -3,10 +3,10 @@
 import React, { use } from "react";
 import Link from "next/link";
 import { useProduct } from "@/lib/api/product";
-// ✅ 1. IMPORT the new updateVersion function
 import { useVersion, updateVersion } from "@/lib/api/version";
 import { VersionDetailView } from "@/components/inventory/version-detail/VersionDetailView";
 import { ChevronRight } from "lucide-react";
+import { useHasPermission } from "@/hooks/useHasPermission";
 
 export default function VersionDetailPage({
   params,
@@ -15,34 +15,26 @@ export default function VersionDetailPage({
 }) {
   const resolvedParams = use(params);
   const { productId, versionId } = resolvedParams;
-
   const { product, isLoading: isProductLoading } = useProduct(productId);
   const {
     version,
     isLoading: isVersionLoading,
     mutate: mutateVersion,
   } = useVersion(versionId);
-
+  const canManage = useHasPermission("inventory.can_manage_versions");
   const isLoading = isProductLoading || isVersionLoading;
-
-  // ✅ 2. DEFINE the handler to call the API and refresh data
   const handleNameUpdate = async (newName: string) => {
     if (!version) return;
     try {
-      // Call the API to update the name
       await updateVersion(version.id, { version_name: newName });
-      // Trigger a re-fetch of the version data to update the UI
       mutateVersion();
     } catch (error) {
       console.error("Failed to update version name:", error);
-      // Optionally, show an error toast to the user
-      throw error; // Re-throw to let the EditableField component know it failed
+      throw error;
     }
   };
-
   if (isLoading) return <div>Loading Version Details...</div>;
   if (!product || !version) return <div>Data not found.</div>;
-
   return (
     <div className="space-y-6">
       <nav className="flex" aria-label="Breadcrumb">
@@ -76,12 +68,12 @@ export default function VersionDetailPage({
           </li>
         </ol>
       </nav>
-
       <VersionDetailView
         product={product}
         version={version}
         onDataChange={mutateVersion}
-        onNameUpdate={handleNameUpdate} // ✅ 3. PASS the handler down
+        onNameUpdate={handleNameUpdate}
+        canManage={canManage} 
       />
     </div>
   );
