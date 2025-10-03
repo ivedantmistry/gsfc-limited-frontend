@@ -51,7 +51,7 @@ export default function ProductsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-              Product Specifications
+              All Products 
             </h1>
             <p className="mt-1 text-sm text-slate-500">
               Browse and manage all product testing blueprints.

@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Product } from "@/lib/types";
 import { ChevronRight, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type VersionListHeaderProps = {
   product: Product;
@@ -52,13 +53,10 @@ export const VersionListHeader: React.FC<VersionListHeaderProps> = ({
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">
           Version History for {product.name}
         </h1>
-        {canManage && (
-          <button
-            onClick={onAddNew}
-            className="inline-flex items-center gap-2 rounded-md bg-indigo-600 text-white font-medium px-3 py-2 text-sm hover:bg-indigo-700"
-          >
-            <Plus size={16} /> Create New Version
-          </button>
+        {canManage && onAddNew && (
+          <Button onClick={onAddNew}>
+            <Plus className="mr-2 h-4 w-4" /> Create New Version
+          </Button>
         )}
       </div>
     </>

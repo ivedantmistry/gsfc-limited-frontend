@@ -1,6 +1,17 @@
+// src/components/inventory/versions/VersionTable.tsx
+
 import React from "react";
 import { Version } from "@/lib/types";
 import { VersionTableRow } from "./VersionTableRow";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableHead,
+  TableRow,
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type VersionTableProps = {
   versions: Version[] | undefined;
@@ -10,13 +21,13 @@ type VersionTableProps = {
   onActivate: (id: number) => void;
   onClone: (id: number) => void;
   onDelete: (id: number) => void;
-  canManage?: boolean; 
+  canManage?: boolean;
 };
 
 export const VersionTable: React.FC<VersionTableProps> = ({
   versions,
   productId,
-  isLoading, // ✅ GET THE PROP
+  isLoading,
   onLock,
   onActivate,
   onClone,
@@ -24,34 +35,34 @@ export const VersionTable: React.FC<VersionTableProps> = ({
   canManage,
 }) => {
   return (
-    <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm overflow-hidden">
-      <table className="min-w-full divide-y divide-slate-200">
-        <thead className="bg-slate-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">
-              Version Name
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">
-              Status
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">
-              Created On
-            </th>
-            {canManage && (
-              <th className="px-6 py-3 text-center text-xs font-semibold text-slate-600 uppercase">
-                Actions
-              </th>
-            )}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-200">
-          {versions && versions.length > 0 ? (
+    <div className="rounded-lg border bg-white shadow-sm">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Version Name</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Created On</TableHead>
+            {canManage && <TableHead className="text-right">Actions</TableHead>}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {isLoading && (
+            Array.from({ length: 3 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                {canManage && <TableCell className="text-right"><Skeleton className="h-8 w-20" /></TableCell>}
+              </TableRow>
+            ))
+          )}
+          {!isLoading && versions && versions.length > 0 ? (
             versions.map((version) => (
               <VersionTableRow
                 key={version.id}
                 version={version}
                 productId={productId}
-                isLoading={isLoading} 
+                isLoading={isLoading} // isLoading is always false here, but we pass for prop conformity
                 onLock={onLock}
                 onActivate={onActivate}
                 onClone={onClone}
@@ -60,14 +71,19 @@ export const VersionTable: React.FC<VersionTableProps> = ({
               />
             ))
           ) : (
-            <tr>
-              <td colSpan={4} className="text-center py-12 text-slate-500">
-                No versions found for this product.
-              </td>
-            </tr>
+            !isLoading && (
+              <TableRow>
+                <TableCell
+                  colSpan={canManage ? 4 : 3}
+                  className="h-24 text-center"
+                >
+                  No versions found for this product.
+                </TableCell>
+              </TableRow>
+            )
           )}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 };

@@ -10,6 +10,7 @@ interface EmptyStateProps {
 export const EmptyState = ({
   onAddGradeClick,
   onAddParameterClick,
+  canManage,
 }: EmptyStateProps) => (
   <div className="text-center bg-slate-50 p-8 rounded-xl border-2 border-dashed border-slate-300">
     <h3 className="text-lg font-semibold text-slate-800">

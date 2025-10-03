@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Edit } from "lucide-react";
-import { Product } from "@/lib/types/products";
+import { Product } from "@/lib/types/";
 
 interface ProductRowProps {
   product: Product;

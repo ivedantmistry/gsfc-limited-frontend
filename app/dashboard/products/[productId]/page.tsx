@@ -20,7 +20,6 @@ export default function ProductOverviewPage({
 
   return (
     <div className="space-y-6">
-      {/* ✅ BREADCRUMBS ADDED */}
       <nav className="flex" aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-2">
           <li className="inline-flex items-center">
@@ -44,7 +43,6 @@ export default function ProductOverviewPage({
 
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          {/* ✅ PAGE TITLE IS NOW DYNAMIC */}
           <h1 className="text-3xl font-bold text-slate-900">{product.name}</h1>
           <Link
             href={`/dashboard/products/${product.id}/versions`}
@@ -78,7 +76,6 @@ export default function ProductOverviewPage({
                 </div>
               </div>
               <div className="p-4 text-sm text-slate-600">
-                {/* You can add more details about the active version here if needed */}
                 <p>
                   <strong>Description:</strong>{" "}
                   {activeVersion.description || "No description provided."}

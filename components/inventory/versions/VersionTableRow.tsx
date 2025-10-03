@@ -1,19 +1,22 @@
+// src/components/inventory/versions/VersionTableRow.tsx
+
 import React from "react";
 import Link from "next/link";
 import { Version } from "@/lib/types";
 import { VersionActions } from "./VersionActions";
-import { Lock, Unlock, ShieldCheck } from "lucide-react";
-import { parseISO, format } from "date-fns";
+import { ShieldCheck } from "lucide-react";
+import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge"; // ✅ Import Badge
+import { TableRow, TableCell } from "@/components/ui/table"; // ✅ Import Table components
 
-const formatDate = (dateString: string | null | undefined) => {
-  if (!dateString) return "N/A";
-  try {
-    const date = parseISO(dateString);
-    return format(date, "MMM d, yyyy");
-  } catch (error) {
-    return "Invalid Date";
+// ✅ Define a helper for status variants
+const getStatusVariant = (status: Version['status']) => {
+  switch (status) {
+    case "DRAFT": return "warning";
+    case "LOCKED": return "secondary";
+    default: return "secondary";
   }
-};
+}
 
 type VersionTableRowProps = {
   version: Version;
@@ -37,11 +40,11 @@ export const VersionTableRow: React.FC<VersionTableRowProps> = ({
   canManage,
 }) => {
   return (
-    <tr>
-      <td className="px-6 py-4 whitespace-nowrap">
+    <TableRow>
+      <TableCell className="font-medium">
         <Link
           href={`/dashboard/products/${productId}/versions/${version.id}`}
-          className="font-semibold text-indigo-600 hover:underline"
+          className="text-indigo-600 hover:underline"
         >
           {version.version_name}
         </Link>
@@ -50,28 +53,18 @@ export const VersionTableRow: React.FC<VersionTableRowProps> = ({
             <ShieldCheck size={12} /> Active
           </span>
         )}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-            version.status === "DRAFT"
-              ? "bg-amber-100 text-amber-800"
-              : "bg-slate-100 text-slate-800"
-          }`}
-        >
-          {version.status === "DRAFT" ? (
-            <Unlock size={12} />
-          ) : (
-            <Lock size={12} />
-          )}
+      </TableCell>
+      <TableCell>
+        {/* ✅ Use the Badge component with our custom CSS classes */}
+        <Badge className={`badge-${getStatusVariant(version.status)}`} variant="outline">
           {version.status}
-        </span>
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-        {formatDate(version.created_at)}
-      </td>
+        </Badge>
+      </TableCell>
+      <TableCell className="text-sm text-slate-500">
+        {version.created_at ? format(new Date(version.created_at), "dd MMM yyyy") : 'N/A'}
+      </TableCell>
       {canManage && (
-        <td className="px-6 py-4 whitespace-nowrap text-center">
+        <TableCell className="text-right">
           <VersionActions
             version={version}
             isLoading={isLoading}
@@ -79,11 +72,10 @@ export const VersionTableRow: React.FC<VersionTableRowProps> = ({
             onActivate={onActivate}
             onClone={onClone}
             onDelete={onDelete}
-            canManage={canManage} 
+            canManage={canManage}
           />
-        </td>
+        </TableCell>
       )}
-
-    </tr>
+    </TableRow>
   );
 };

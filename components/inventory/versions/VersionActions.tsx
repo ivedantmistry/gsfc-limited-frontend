@@ -1,10 +1,19 @@
+// src/components/inventory/versions/VersionActions.tsx
+
 import React from "react";
 import { Version } from "@/lib/types";
 import { Lock, Copy, Trash2, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button"; // ✅ Import Button
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"; // ✅ Import Tooltip components
 
 type VersionActionsProps = {
   version: Version;
-  isLoading: boolean; 
+  isLoading: boolean;
   onLock: (id: number) => void;
   onActivate: (id: number) => void;
   onClone: (id: number) => void;
@@ -12,12 +21,9 @@ type VersionActionsProps = {
   canManage?: boolean;
 };
 
-const iconButtonClass =
-  "p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"; // Add disabled styles
-
 export const VersionActions: React.FC<VersionActionsProps> = ({
   version,
-  isLoading, 
+  isLoading,
   onLock,
   onActivate,
   onClone,
@@ -27,48 +33,79 @@ export const VersionActions: React.FC<VersionActionsProps> = ({
   if (!canManage) {
     return null;
   }
+
   return (
-    <div className="flex justify-center items-center gap-2">
-      {version.status === "DRAFT" && (
-        <>
-          <button
-            onClick={() => onLock(version.id)}
-            title="Lock Version"
-            disabled={isLoading} 
-            className={`${iconButtonClass} text-amber-600 hover:bg-amber-100`}
-          >
-            <Lock size={18} />
-          </button>
-          <button
-            onClick={() => onDelete(version.id)}
-            title="Delete Draft"
-            disabled={isLoading} 
-            className={`${iconButtonClass} text-red-600 hover:bg-red-100`}
-          >
-            <Trash2 size={18} />
-          </button>
-        </>
-      )}
-      {version.status === "LOCKED" && !version.is_active && (
-        <button
-          onClick={() => onActivate(version.id)}
-          title="Activate Version"
-          disabled={isLoading}
-          className={`${iconButtonClass} text-green-600 hover:bg-green-100`}
-        >
-          <CheckCircle size={18} />
-        </button>
-      )}
-      {version.status === "LOCKED" && (
-        <button
-          onClick={() => onClone(version.id)}
-          title="Clone Version"
-          disabled={isLoading} 
-          className={`${iconButtonClass} text-indigo-600 hover:bg-indigo-100`}
-        >
-          <Copy size={18} />
-        </button>
-      )}
-    </div>
+    <TooltipProvider delayDuration={100}>
+      <div className="flex justify-end items-center gap-1">
+        {version.status === "DRAFT" && (
+          <>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onLock(version.id)}
+                  disabled={isLoading}
+                >
+                  <Lock size={16} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Lock Version</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onDelete(version.id)}
+                  disabled={isLoading}
+                >
+                  <Trash2 size={16} className="text-red-500" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Delete Draft</p>
+              </TooltipContent>
+            </Tooltip>
+          </>
+        )}
+        {version.status === "LOCKED" && !version.is_active && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onActivate(version.id)}
+                disabled={isLoading}
+              >
+                <CheckCircle size={16} className="text-green-600" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Activate Version</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+        {version.status === "LOCKED" && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onClone(version.id)}
+                disabled={isLoading}
+              >
+                <Copy size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Clone to New Draft</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+    </TooltipProvider>
   );
 };
