@@ -1,24 +1,13 @@
-// src/app/dashboard/records/all/page.tsx
-
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTestRecords } from "@/lib/api/test";
-import { Loader2, Search, X, SlidersHorizontal } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Loader2 } from "lucide-react";
 import { format, isValid } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { DatePicker } from "@/components/ui/date-picker";
 import TestRecordsTable from "@/components/inventory/records/TestRecordsTable";
 import PaginationControls from "@/components/inventory/records/PaginationControls";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import RecordFilters from "@/components/inventory/records/RecordFilters";
 
 // Helper to parse dates from URL
 const parseDate = (dateString: string | null): Date | undefined => {
@@ -32,12 +21,19 @@ export default function AllRecordsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  // Read all initial state from URL
   const page = Number(searchParams.get("page") ?? "1");
   const pageSize = Number(searchParams.get("page_size") ?? "10");
   const initialSearch = searchParams.get("search") ?? "";
   const initialDateAfter = searchParams.get("date_after");
   const initialDateBefore = searchParams.get("date_before");
+  const initialStatus = searchParams.get("status") ?? "";
+  const initialLabId = searchParams.get("lab");
+  const initialOrdering = searchParams.get("ordering");
 
+  // State for all filters now lives here
+  const [status, setStatus] = useState(initialStatus);
+  const [labId, setLabId] = useState(initialLabId);
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [dateAfter, setDateAfter] = useState<Date | undefined>(
     parseDate(initialDateAfter)
@@ -45,62 +41,73 @@ export default function AllRecordsPage() {
   const [dateBefore, setDateBefore] = useState<Date | undefined>(
     parseDate(initialDateBefore)
   );
+  const [ordering, setOrdering] = useState(initialOrdering);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(initialSearch);
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
+    const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // ✅ FIX: Consolidate all URL-updating logic into a single useEffect
+  // Single useEffect to sync all state to the URL
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
     params.set("page", "1");
 
     if (debouncedSearchTerm) params.set("search", debouncedSearchTerm);
     else params.delete("search");
-
     if (dateAfter) params.set("date_after", format(dateAfter, "yyyy-MM-dd"));
     else params.delete("date_after");
-
     if (dateBefore) params.set("date_before", format(dateBefore, "yyyy-MM-dd"));
     else params.delete("date_before");
+    if (status) params.set("status", status);
+    else params.delete("status");
+    if (labId) params.set("lab", labId);
+    else params.delete("lab");
+    if (ordering) params.set("ordering", ordering);
+    else params.delete("ordering");
 
     router.replace(`${pathname}?${params.toString()}`);
-  }, [debouncedSearchTerm, dateAfter, dateBefore, pathname, router]);
-
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-      }
-    };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, []);
+  }, [
+    debouncedSearchTerm,
+    dateAfter,
+    dateBefore,
+    status,
+    labId,
+    ordering,
+    pathname,
+    router,
+  ]);
 
   const { testRecords, totalCount, isLoading, error } = useTestRecords({
     view_type: "historical",
     page: page,
     pageSize: pageSize,
-    searchTerm: debouncedSearchTerm,
+    searchTerm: initialSearch,
     date_after: initialDateAfter,
     date_before: initialDateBefore,
+    status: initialStatus as any,
+    labId: initialLabId,
+    ordering: initialOrdering,
   });
 
   const clearFilters = () => {
     setSearchTerm("");
     setDateAfter(undefined);
     setDateBefore(undefined);
+    setStatus("");
+    setLabId(null);
+    setOrdering(null);
   };
 
   const areFiltersActive =
-    initialSearch || initialDateAfter || initialDateBefore;
+    initialSearch ||
+    initialDateAfter ||
+    initialDateBefore ||
+    initialStatus ||
+    initialLabId ||
+    initialOrdering;
 
   return (
     <div className="space-y-6">
@@ -109,67 +116,27 @@ export default function AllRecordsPage() {
           All Test Records
         </h1>
         <p className="mt-1 text-sm text-slate-500">
-          Search and filter all historical test records assigned to you.
+          Search, filter, and sort all historical test records.
         </p>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            ref={searchInputRef}
-       placeholder="Search by Record ID, Product, etc. (Ctrl+K)"
-            className="pl-10 pr-20 h-10 rounded-md border border-input bg-background text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center space-x-1 text-xs text-muted-foreground bg-muted border rounded px-2 py-0.5">
-            <span className="font-mono">
-              {typeof window !== "undefined" &&
-              navigator.platform.includes("Mac")
-                ? "⌘"
-                : "Ctrl"}
-            </span>
-            <span className="font-mono">K</span>
-          </div>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="flex gap-2">
-              <SlidersHorizontal className="h-4 w-4" />
-              Filter
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-64 p-2" align="end">
-            <DropdownMenuLabel>Filter by Date</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <div className="space-y-2">
-              <DatePicker
-                date={dateAfter}
-                setDate={setDateAfter}
-                placeholder="Start date"
-              />
-              <DatePicker
-                date={dateBefore}
-                setDate={setDateBefore}
-                placeholder="End date"
-              />
-            </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {areFiltersActive && (
-          <Button
-            variant="ghost"
-            onClick={clearFilters}
-            className="text-muted-foreground"
-          >
-            <X className="h-4 w-4 mr-2" />
-            Clear
-          </Button>
-        )}
-      </div>
+      {/* ✅ 2. Render the new, consolidated filter component */}
+      <RecordFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        dateAfter={dateAfter}
+        setDateAfter={setDateAfter}
+        dateBefore={dateBefore}
+        setDateBefore={setDateBefore}
+        status={status}
+        setStatus={setStatus}
+        labId={labId}
+        setLabId={setLabId}
+        ordering={ordering}
+        setOrdering={setOrdering}
+        clearFilters={clearFilters}
+        areFiltersActive={areFiltersActive}
+      />
 
       {isLoading && (
         <div className="flex justify-center p-12">
@@ -179,6 +146,7 @@ export default function AllRecordsPage() {
       {error && <div className="text-red-600">Failed to load records.</div>}
       {testRecords && (
         <>
+          {/* ✅ 3. Pass only the records to the simplified table */}
           <TestRecordsTable records={testRecords} />
           {totalCount && totalCount > pageSize && (
             <PaginationControls

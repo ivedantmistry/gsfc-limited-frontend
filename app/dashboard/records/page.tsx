@@ -11,8 +11,7 @@ import {
   Search,
   ListChecks,
   Clock,
-  CheckCircle,
-  XCircle,
+  Command,
 } from "lucide-react"; // ✅ 2. Import new icons
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,11 +19,10 @@ import CreateTestModal from "@/components/modals/create-test-wizard/CreateTestMo
 import TestRecordsTable from "@/components/inventory/records/TestRecordsTable";
 import { StatCard } from "@/components/shared/StatCard";
 
+
 export default function RecentTestsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const canCreateTest = useHasPermission("inventory.add_testrecord");
-
-  // ✅ 4. Add state for search term and a ref for the input
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -47,13 +45,14 @@ export default function RecentTestsPage() {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
+
   const {
     testRecords,
     totalCount,
     isLoading,
     error,
     mutate: mutateTestRecords,
-  } = useTestRecords({ searchTerm: debouncedSearchTerm });
+  } = useTestRecords({ searchTerm: debouncedSearchTerm, });
 
   const stats = useMemo(() => {
     if (!testRecords) {
@@ -61,8 +60,6 @@ export default function RecentTestsPage() {
     }
     return {
       pending: testRecords.filter((r) => r.status === "PENDING").length,
-      // approved: testRecords.filter((r) => r.status === "APPROVED").length,
-      // rejected: testRecords.filter((r) => r.status === "REJECTED").length,
     };
   }, [testRecords]);
   const handleCreateSuccess = () => {
@@ -89,7 +86,6 @@ export default function RecentTestsPage() {
         )}
       </div>
 
-      {/* ✅ 5. Add the Stat Cards grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Today's Total Tests"
@@ -103,29 +99,27 @@ export default function RecentTestsPage() {
           isLoading={isLoading}
           icon={<Clock className="h-4 w-4 text-muted-foreground" />}
         />
-        {/* <StatCard
-          title="Approved Today"
-          value={stats.approved}
-          isLoading={isLoading}
-          icon={<CheckCircle className="h-4 w-4 text-muted-foreground" />}
-        />
-        <StatCard
-          title="Rejected Today"
-          value={stats.rejected}
-          isLoading={isLoading}
-          icon={<XCircle className="h-4 w-4 text-muted-foreground" />}
-        /> */}
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        {/* Search Icon */}
+        <Search className="pointer-events-none absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+
+        {/* Input Field */}
         <Input
           ref={searchInputRef}
-          placeholder="Search today's records... (Ctrl+K)"
-          className="pl-9"
+          placeholder="Search products..."
+          className="pl-10 pr-20 h-10 w-full rounded-md border border-input bg-background text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+
+        {/* Shortcut key display */}
+        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-1 text-xs text-muted-foreground bg-muted border rounded px-2 py-0.5 h-5">
+          <Command className="w-3.5 h-3.5" />{" "}
+          {/* Command icon from lucide-react */}
+          <span className="font-mono text-[0.7rem]">K</span>
+        </div>
       </div>
 
       {isLoading && (
@@ -134,7 +128,11 @@ export default function RecentTestsPage() {
         </div>
       )}
       {error && <div className="text-red-600">Failed to load records.</div>}
-      {testRecords && <TestRecordsTable records={testRecords} />}
+      {testRecords && (
+        <TestRecordsTable
+          records={testRecords}
+        />
+      )}
 
       <CreateTestModal
         isOpen={isModalOpen}

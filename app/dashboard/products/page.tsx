@@ -11,7 +11,7 @@ import { ProductTable } from "@/components/inventory/products/ProductTable";
 import { PaginationControls } from "@/components/shared/PaginationControls";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Command } from "lucide-react";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
@@ -83,24 +83,20 @@ export default function ProductsPage() {
         </div>
 
         <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 
           <Input
             ref={searchInputRef}
             placeholder="Search products..."
-            className="pl-10 pr-20 h-10 rounded-md border border-input bg-background text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring"
+            className="pl-10 pr-20 h-10 w-full rounded-md border border-input bg-background text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
 
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center space-x-1 text-xs text-muted-foreground bg-muted border rounded px-2 py-0.5">
-            <span className="font-mono">
-              {typeof window !== "undefined" &&
-              navigator.platform.includes("Mac")
-                ? "⌘"
-                : "Ctrl"}
-            </span>
-            <span className="font-mono">K</span>
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-1 text-xs text-muted-foreground bg-muted border rounded px-2 py-0.5 h-5">
+            <Command className="w-3.5 h-3.5" />{" "}
+            {/* Command icon from lucide-react */}
+            <span className="font-mono text-[0.7rem]">K</span>
           </div>
         </div>
 

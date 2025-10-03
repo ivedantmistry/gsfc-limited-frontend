@@ -22,29 +22,29 @@ const getStatusVariant = (
 ) => {
   switch (status) {
     case "APPROVED":
-      return "success"; // We'll style this to be green
+      return "success";
     case "PENDING":
-      return "warning"; // We'll style this to be yellow
+      return "warning";
     case "REJECTED":
-      return "destructive"; // Already red
+      return "destructive";
     case "CLOSED":
     case "RETEST_ORDERED":
     default:
-      return "secondary"; // Gray
+      return "secondary";
   }
 };
 
 interface TestRecordsTableProps {
   records: TestRecordInList[];
 }
-
 export default function TestRecordsTable({ records }: TestRecordsTableProps) {
   return (
     <div className="rounded-lg border bg-white shadow-sm">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[150px]">Record ID</TableHead>
+            {/* ✅ FIX: Revert to simple TableHead components */}
+            <TableHead>Record ID</TableHead>
             <TableHead>Product</TableHead>
             <TableHead>Analyst</TableHead>
             <TableHead>Lab</TableHead>

@@ -27,11 +27,13 @@ export function useTestRecords(params: {
   view_type?: "recent" | "historical";
   status?: "PENDING" | "APPROVED" | "REJECTED" | "CLOSED" | "RETEST_ORDERED";
   analystId?: number;
+  labId?: string | null;
   searchTerm?: string;
   page?: number;
   pageSize?: number;
   date_after?: string | null;
   date_before?: string | null;
+  ordering?: string | null; //
 }) {
   const urlParams = new URLSearchParams();
   // ✅ ADD LOGIC TO HANDLE THE NEW PARAMETER
@@ -46,7 +48,11 @@ export function useTestRecords(params: {
     urlParams.append("page_size", params.pageSize.toString());
   if (params.date_after) urlParams.append("date_after", params.date_after);
   if (params.date_before) urlParams.append("date_before", params.date_before);
-
+  if (params.ordering) {
+    urlParams.append("ordering", params.ordering);
+  }
+  if (params.status) urlParams.append("status", params.status);
+  if (params.labId) urlParams.append("lab", params.labId);
   const url = `${TESTS_ENDPOINT}?${urlParams.toString()}`;
 
   // Use the correct type for the paginated response.

@@ -1,15 +1,15 @@
 // /app/dashboard/layout.tsx
 "use client";
 
-import React, { ReactNode, useEffect, useState } from "react"; // ADDED: useState
+import React, { ReactNode, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { navItems } from "@/config/navItems";
-import { LogOut, Settings, Bell, Menu } from "lucide-react"; // ADDED: Menu icon
+import { LogOut, Settings, Bell, Menu } from "lucide-react";
 
-// --- Re-engineered Components for macOS Style ---
+// --- Components ---
 
 const SidebarLink = ({
   href,
@@ -29,8 +29,8 @@ const SidebarLink = ({
       <span
         className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${
           isActive
-            ? "bg-slate-200/70 text-slate-800"
-            : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-800"
+            ? "bg-slate-100 text-slate-900" // Adjusted for better contrast on white
+            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
         }`}
       >
         <Icon className="w-5 h-5" />
@@ -40,21 +40,19 @@ const SidebarLink = ({
   );
 };
 
-// MODIFIED: Sidebar now accepts props to control its visibility
 const Sidebar = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
   const { user, logout } = useAuth();
   const hasPermission = useHasPermission;
 
   return (
-    // MODIFIED: Added classes for responsive behavior and transitions.
-    // It's fixed on mobile and slides in/out, and static on desktop.
+    // ✅ REVAMPED: Changed to a solid white background for a clean, card-like appearance.
     <aside
-      className={`fixed inset-y-0 left-0 z-40 h-full w-64 bg-slate-100/80 backdrop-blur-md border-r border-slate-200/80 flex flex-col transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-40 h-full w-64 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
         isSidebarOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
       {/* Header */}
-      <div className="flex items-center gap-2.5 h-16 border-b border-slate-200/80 px-4">
+      <div className="flex items-center gap-2.5 h-16 border-b border-slate-200 px-4">
         <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold text-sm">
           {user?.username.charAt(0).toUpperCase()}
         </div>
@@ -76,7 +74,7 @@ const Sidebar = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
       </nav>
 
       {/* Footer Actions */}
-      <div className="p-4 border-t border-slate-200/80">
+      <div className="p-4 border-t border-slate-200">
         <button
           onClick={logout}
           className="flex items-center gap-3 text-sm font-medium w-full text-slate-600 hover:text-red-600 transition-colors"
@@ -89,7 +87,6 @@ const Sidebar = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
   );
 };
 
-// MODIFIED: AppToolbar now accepts props to toggle the sidebar
 const AppToolbar = ({
   isSidebarOpen,
   setSidebarOpen,
@@ -97,10 +94,10 @@ const AppToolbar = ({
   isSidebarOpen: boolean;
   setSidebarOpen: (isOpen: boolean) => void;
 }) => {
+  // Toolbar is semi-transparent, creating a nice layered effect over scrolling content.
   return (
     <header className="flex-shrink-0 flex items-center justify-between h-16 bg-white/60 backdrop-blur-md border-b border-slate-200/80 px-6">
       <div className="flex items-center gap-4">
-        {/* ADDED: Hamburger menu button, visible only on small screens */}
         <button
           onClick={() => setSidebarOpen(!isSidebarOpen)}
           className="p-2 rounded-full text-slate-500 hover:bg-slate-200/60 hover:text-slate-700 transition-colors lg:hidden"
@@ -127,15 +124,15 @@ const AppToolbar = ({
 const DashboardSkeleton = () => (
   <div className="h-screen w-screen flex bg-slate-100 font-sans">
     {/* MODIFIED: Sidebar skeleton is now hidden on small screens */}
-    <aside className="hidden lg:block h-full w-64 bg-slate-200 border-r border-slate-300 animate-pulse"></aside>
+    <aside className="hidden lg:block h-full w-64 bg-white border-r border-slate-200 animate-pulse"></aside>
     <div className="flex-1 flex flex-col">
-      <header className="flex-shrink-0 h-16 bg-slate-200 border-b border-slate-300 animate-pulse"></header>
+      <header className="flex-shrink-0 h-16 bg-white border-b border-slate-200 animate-pulse"></header>
       <main className="flex-1 p-8 space-y-8 animate-pulse">
-        <div className="h-10 w-1/3 bg-slate-300 rounded-lg"></div>
+        <div className="h-10 w-1/3 bg-slate-200 rounded-lg"></div>
         <div className="grid grid-cols-2 gap-6">
-          <div className="h-48 col-span-2 bg-slate-300 rounded-xl"></div>
-          <div className="h-48 bg-slate-300 rounded-xl"></div>
-          <div className="h-48 bg-slate-300 rounded-xl"></div>
+          <div className="h-48 col-span-2 bg-slate-200 rounded-xl"></div>
+          <div className="h-48 bg-slate-200 rounded-xl"></div>
+          <div className="h-48 bg-slate-200 rounded-xl"></div>
         </div>
       </main>
     </div>
@@ -145,7 +142,6 @@ const DashboardSkeleton = () => (
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  // ADDED: State to manage sidebar visibility on mobile
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -159,18 +155,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }
 
   return (
+    // Main background is light gray, making the white sidebar and content cards pop.
     <div className="h-screen w-screen flex bg-slate-100 font-sans overflow-hidden">
-      {/* ADDED: Overlay for mobile when sidebar is open */}
       {isSidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
         />
       )}
-      {/* MODIFIED: Pass state to Sidebar */}
       <Sidebar isSidebarOpen={isSidebarOpen} />
       <div className="flex-1 flex flex-col">
-        {/* MODIFIED: Pass state and setter to AppToolbar */}
         <AppToolbar
           isSidebarOpen={isSidebarOpen}
           setSidebarOpen={setSidebarOpen}
