@@ -4,6 +4,7 @@ import useSWR from "swr";
 import api from "@/lib/api";
 import { PaginatedResponse, TestRecordInList, User } from "@/lib/types";
 import { TestRecord, TestRecordInput, TestResultInput } from "@/lib/types/";
+import { format } from "date-fns";
 
 const TESTS_ENDPOINT = "/inventory/tests/";
 
@@ -23,32 +24,36 @@ const singleFetcher = (url: string) => api.get(url).then((res) => res.data);
  * the 'view all' permission.
  */
 export function useTestRecords(params: {
-  view_type?: 'recent' | 'historical'; // ✅ ADD THIS PARAMETER
+  view_type?: "recent" | "historical";
   status?: "PENDING" | "APPROVED" | "REJECTED" | "CLOSED" | "RETEST_ORDERED";
   analystId?: number;
   searchTerm?: string;
   page?: number;
   pageSize?: number;
+  date_after?: string | null;
+  date_before?: string | null;
 }) {
   const urlParams = new URLSearchParams();
   // ✅ ADD LOGIC TO HANDLE THE NEW PARAMETER
-  if (params.view_type) urlParams.append("view_type", params.view_type); 
-  
+  if (params.view_type) urlParams.append("view_type", params.view_type);
+
   if (params.status) urlParams.append("status", params.status);
-  if (params.analystId) urlParams.append("analyst", params.analystId.toString());
+  if (params.analystId)
+    urlParams.append("analyst", params.analystId.toString());
   if (params.searchTerm) urlParams.append("search", params.searchTerm);
   if (params.page) urlParams.append("page", params.page.toString());
-  if (params.pageSize) urlParams.append("page_size", params.pageSize.toString());
+  if (params.pageSize)
+    urlParams.append("page_size", params.pageSize.toString());
+  if (params.date_after) urlParams.append("date_after", params.date_after);
+  if (params.date_before) urlParams.append("date_before", params.date_before);
 
   const url = `${TESTS_ENDPOINT}?${urlParams.toString()}`;
 
   // Use the correct type for the paginated response.
   // We'll create a new TestRecordInList type for our lightweight serializers.
-  const { data, error, isLoading, mutate } = useSWR<PaginatedResponse<TestRecordInList>>(
-    url,
-    listFetcher,
-    { keepPreviousData: true }
-  );
+  const { data, error, isLoading, mutate } = useSWR<
+    PaginatedResponse<TestRecordInList>
+  >(url, listFetcher, { keepPreviousData: true });
 
   return {
     testRecords: data?.results,
@@ -83,7 +88,9 @@ export function useTestRecord(recordId: number | string | null) {
 /**
  * Creates a new test record.
  */
-export const createTestRecord = async (data: TestRecordInput): Promise<TestRecord> => {
+export const createTestRecord = async (
+  data: TestRecordInput
+): Promise<TestRecord> => {
   const response = await api.post(TESTS_ENDPOINT, data);
   return response.data;
 };
@@ -102,7 +109,10 @@ export const updateTestRecordResults = async (
 /**
  * Assigns a test to an analyst. (Supervisor/Manager action)
  */
-export const assignTest = async (recordId: number, analystId: number): Promise<TestRecord> => {
+export const assignTest = async (
+  recordId: number,
+  analystId: number
+): Promise<TestRecord> => {
   const response = await api.patch(`${TESTS_ENDPOINT}${recordId}/assign/`, {
     analyst_id: analystId,
   });
@@ -129,18 +139,26 @@ export const approveOrRejectTest = async (
 /**
  * Orders a retest for a given record. (Supervisor/Manager action)
  */
-export const orderRetest = async (recordId: number, analystIdToAssign: number): Promise<TestRecord> => {
-    const response = await api.post(`${TESTS_ENDPOINT}${recordId}/order_retest/`, {
-        analyst_id: analystIdToAssign
-    });
-    return response.data; // This returns the *new* retest record
-}
+export const orderRetest = async (
+  recordId: number,
+  analystIdToAssign: number
+): Promise<TestRecord> => {
+  const response = await api.post(
+    `${TESTS_ENDPOINT}${recordId}/order_retest/`,
+    {
+      analyst_id: analystIdToAssign,
+    }
+  );
+  return response.data; // This returns the *new* retest record
+};
 
 // ✅ NEW FUNCTION: Add this to the end of your file
 /**
  * Closes an approved or rejected test record. (Supervisor/Manager action)
  */
-export const closeTestRecord = async (recordId: number): Promise<TestRecord> => {
-    const response = await api.post(`${TESTS_ENDPOINT}${recordId}/close_record/`);
-    return response.data;
-}
+export const closeTestRecord = async (
+  recordId: number
+): Promise<TestRecord> => {
+  const response = await api.post(`${TESTS_ENDPOINT}${recordId}/close_record/`);
+  return response.data;
+};
