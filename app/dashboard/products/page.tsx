@@ -82,27 +82,27 @@ export default function ProductsPage() {
           )}
         </div>
 
-        {/* ✅ 4. Revert to the inline search bar and attach the ref */}
         <div className="relative w-full max-w-md">
-  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 
-  <Input
-    ref={searchInputRef}
-    placeholder="Search products..."
-    className="pl-10 pr-20 h-10 rounded-md border border-input bg-background text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring"
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-  />
+          <Input
+            ref={searchInputRef}
+            placeholder="Search products..."
+            className="pl-10 pr-20 h-10 rounded-md border border-input bg-background text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
 
-  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center space-x-1 text-xs text-muted-foreground bg-muted border rounded px-2 py-0.5">
-    <span className="font-mono">
-      {typeof window !== "undefined" && navigator.platform.includes("Mac") ? "⌘" : "Ctrl"}
-    </span>
-    <span className="font-mono">K</span>
-  </div>
-</div>
-
-
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center space-x-1 text-xs text-muted-foreground bg-muted border rounded px-2 py-0.5">
+            <span className="font-mono">
+              {typeof window !== "undefined" &&
+              navigator.platform.includes("Mac")
+                ? "⌘"
+                : "Ctrl"}
+            </span>
+            <span className="font-mono">K</span>
+          </div>
+        </div>
 
         <ProductTable
           products={products}
