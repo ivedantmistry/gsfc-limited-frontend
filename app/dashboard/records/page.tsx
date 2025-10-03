@@ -3,7 +3,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useSearchParams } from "next/navigation"; // ✅ 1. Import useSearchParams
 import { useTestRecords } from "@/lib/api/test";
+import { useDailyRecordStats } from "@/lib/api/stats";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import {
   PlusCircle,
@@ -12,15 +14,21 @@ import {
   ListChecks,
   Clock,
   Command,
-} from "lucide-react"; // ✅ 2. Import new icons
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import CreateTestModal from "@/components/modals/create-test-wizard/CreateTestModal";
 import TestRecordsTable from "@/components/inventory/records/TestRecordsTable";
 import { StatCard } from "@/components/shared/StatCard";
-
+import { PaginationControls } from "@/components/shared/PaginationControls"; // ✅ 2. Import PaginationControls
 
 export default function RecentTestsPage() {
+  const searchParams = useSearchParams(); // ✅ 3. Initialize searchParams
+
+  // ✅ 4. Read page and pageSize from the URL
+  const page = Number(searchParams.get("page") ?? "1");
+  const pageSize = Number(searchParams.get("page_size") ?? "25"); // Default to 25
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const canCreateTest = useHasPermission("inventory.add_testrecord");
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,24 +52,29 @@ export default function RecentTestsPage() {
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
-
+  const { stats, isLoading: isLoadingStats } = useDailyRecordStats();
 
   const {
     testRecords,
-    totalCount,
-    isLoading,
+    totalCount: filteredTotal, // totalCount now reflects the filtered/paginated count
+    isLoading: isLoadingTable,
     error,
     mutate: mutateTestRecords,
-  } = useTestRecords({ searchTerm: debouncedSearchTerm, });
+  } = useTestRecords({
+    searchTerm: debouncedSearchTerm,
+    page: page,
+    pageSize: pageSize,
+  });
 
-  const stats = useMemo(() => {
-    if (!testRecords) {
-      return { pending: 0, approved: 0, rejected: 0 };
-    }
-    return {
-      pending: testRecords.filter((r) => r.status === "PENDING").length,
-    };
-  }, [testRecords]);
+  // const stats = useMemo(() => {
+  //   if (!testRecords) {
+  //     return { pending: 0, approved: 0, rejected: 0 };
+  //   }
+  //   return {
+  //     pending: testRecords.filter((r) => r.status === "PENDING").length,
+  //   };
+  // }, [testRecords]);
+
   const handleCreateSuccess = () => {
     setIsModalOpen(false);
     mutateTestRecords();
@@ -87,18 +100,31 @@ export default function RecentTestsPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* ✅ 4. Point Stat Cards to the new stats object */}
         <StatCard
           title="Today's Total Tests"
-          value={totalCount}
-          isLoading={isLoading}
+          value={stats?.total_tests}
+          isLoading={isLoadingStats}
           icon={<ListChecks className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Pending Review"
-          value={stats.pending}
-          isLoading={isLoading}
+          value={stats?.pending_tests}
+          isLoading={isLoadingStats}
           icon={<Clock className="h-4 w-4 text-muted-foreground" />}
         />
+        {/* <StatCard
+          title="Approved Today"
+          value={stats?.approved_tests}
+          isLoading={isLoadingStats}
+          icon={<CheckCircle className="h-4 w-4 text-muted-foreground" />}
+        />
+        <StatCard
+          title="Rejected Today"
+          value={stats?.rejected_tests}
+          isLoading={isLoadingStats}
+          icon={<XCircle className="h-4 w-4 text-muted-foreground" />}
+        /> */}
       </div>
 
       <div className="relative">
@@ -122,16 +148,23 @@ export default function RecentTestsPage() {
         </div>
       </div>
 
-      {isLoading && (
+      {isLoadingTable && (
         <div className="flex justify-center p-12">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       )}
       {error && <div className="text-red-600">Failed to load records.</div>}
       {testRecords && (
-        <TestRecordsTable
-          records={testRecords}
-        />
+        <>
+          <TestRecordsTable records={testRecords} />
+          {filteredTotal && filteredTotal > pageSize && (
+            <PaginationControls
+              totalCount={filteredTotal}
+              currentPage={page}
+              pageSize={pageSize}
+            />
+          )}
+        </>
       )}
 
       <CreateTestModal

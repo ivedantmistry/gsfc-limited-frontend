@@ -42,10 +42,17 @@ export function PaginationControls({
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  // ✅ NEW: Calculate the range of records being shown
+  const startRecord = (currentPage - 1) * pageSize + 1;
+  const endRecord = Math.min(currentPage * pageSize, totalCount);
+
   return (
     <div className="flex items-center justify-between mt-4 px-2">
       <div className="flex-1 text-sm text-muted-foreground">
-        {totalCount} total rows
+        {/* ✅ FIX: Display the new, more descriptive text */}
+        {totalCount > 0
+          ? `Showing ${startRecord} - ${endRecord} of ${totalCount} records`
+          : "No records found"}
       </div>
       <div className="flex items-center space-x-6 lg:space-x-8">
         <div className="flex items-center space-x-2">
@@ -55,14 +62,16 @@ export function PaginationControls({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {[10, 20, 50, 100].map((size) => (
-                <SelectItem key={size} value={String(size)}>{size}</SelectItem>
+              {[25, 50, 75, 100].map((size) => (
+                <SelectItem key={size} value={String(size)}>
+                  {size}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          Page {currentPage} of {totalPages}
+          Page {currentPage} of {totalPages > 0 ? totalPages : 1}
         </div>
         <div className="flex items-center space-x-2">
           <Button
