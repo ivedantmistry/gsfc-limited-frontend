@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 
 export default function TestLayout({ children }: { children: ReactNode }) {
   // Guard the entire route. A user must be able to add a test to see this page.
-  const canEnterTestData = useHasPermission("inventory.add_testrecord");
+  const canEnterTestData = useHasPermission("inventory.view_testrecord");
 
   if (!canEnterTestData) {
     notFound();
