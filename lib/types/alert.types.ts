@@ -36,11 +36,11 @@ export interface AlertInList {
  * Matches the `TestRecordForAlertContextSerializer`.
  */
 export interface TestRecordInAlertContext {
-    id: number;
-    sample_id: string;
-    created_at: string;
-    status: TestRecord['status'];
-    results: TestResultDisplay[];
+  id: number;
+  sample_id: string;
+  created_at: string;
+  status: TestRecord["status"];
+  results: TestResultDisplay[];
 }
 
 /**
@@ -48,10 +48,11 @@ export interface TestRecordInAlertContext {
  * Matches the `AlertContextSerializer`.
  */
 export interface AlertDetail {
-    id: number;
-    status: AlertStatus;
-    details: AlertDetails;
-    created_at: string;
-    product_name: string;
-    test_record_data: TestRecordInAlertContext;
+  id: number;
+  alert_id: number;
+  status: AlertStatus;
+  details: AlertDetails;
+  created_at: string;
+  product_name: string;
+  test_record_data: TestRecordInAlertContext;
 }

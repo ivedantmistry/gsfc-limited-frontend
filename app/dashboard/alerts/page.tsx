@@ -16,7 +16,6 @@ export default function UnresolvedAlertsPage() {
   const page = Number(searchParams.get("page") ?? "1");
   const pageSize = Number(searchParams.get("page_size") ?? "25");
 
-  // Fetch only NEW and ACKNOWLEDGED alerts for this page
   const {
     alerts,
     totalCount,
