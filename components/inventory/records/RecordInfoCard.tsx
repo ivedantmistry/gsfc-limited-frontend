@@ -28,7 +28,6 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
         <h3 className="text-lg font-semibold text-slate-800">Record Details</h3>
       </div>
       <div className="p-4 space-y-3">
-        {/* ✅ FIX THE LINKS */}
         {testRecord.retest_of && (
           <InfoRow
             label="Original Record"
@@ -60,20 +59,42 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
             }
           />
         )}
-
-        <InfoRow label="Analyst" value={testRecord.analyst_full_name} />
-        <InfoRow label="Lab" value={testRecord.lab_name} />
+        <InfoRow label="Analyst Name:" value={testRecord.analyst_full_name} />
+        <InfoRow label="Lab tested at:" value={testRecord.lab_name} />
+        {/* ✅ CHANGED: Wrap the product name in a Link component */}
         <InfoRow
-          label="Sample ID"
+          label="Product:"
+          value={
+            <Link
+              href={`/dashboard/products/${testRecord.product_id}`}
+              className="font-medium text-indigo-600 hover:underline"
+            >
+              {testRecord.product_name}
+            </Link>
+          }
+        />
+        <InfoRow label="Product Grade:" value={testRecord.product_grade_name} />
+      <InfoRow
+          label="Testing Version:"
+          value={
+            <Link
+              href={`/dashboard/products/${testRecord.product_id}/versions/${testRecord.version}`}
+              className="font-medium text-indigo-600 hover:underline"
+            >
+              {testRecord.version_name}
+            </Link>
+          }
+        />
+        <InfoRow
+          label="Sample ID:"
           value={<span className="font-mono">{testRecord.sample_id}</span>}
         />
         <InfoRow
-          label="Batch No"
+          label="Batch No:"
           value={<span className="font-mono">{testRecord.batch_no}</span>}
         />
-        <InfoRow label="Product Grade" value={testRecord.product_grade_name} />
         <InfoRow
-          label="Created At"
+          label="Tested At:"
           value={format(
             new Date(testRecord.created_at),
             "dd MMM yyyy, hh:mm a"
@@ -81,13 +102,13 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
         />
         {testRecord.approved_by_full_name && (
           <InfoRow
-            label="Approved By"
+            label="Approved By:"
             value={testRecord.approved_by_full_name}
           />
         )}
         {testRecord.approved_at && (
           <InfoRow
-            label="Approved At"
+            label="Approved At:"
             value={format(
               new Date(testRecord.approved_at),
               "dd MMM yyyy, hh:mm a"
@@ -96,13 +117,13 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
         )}
         {testRecord.retest_ordered_by_full_name && (
           <InfoRow
-            label="Retest Ordered By"
+            label="Retest Ordered By:"
             value={testRecord.retest_ordered_by_full_name}
           />
         )}
         {testRecord.retest_ordered_at && (
           <InfoRow
-            label="Retest Ordered At"
+            label="Retest Ordered At:"
             value={format(
               new Date(testRecord.retest_ordered_at),
               "dd MMM yyyy, hh:mm a"
@@ -111,11 +132,11 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
         )}
 
         {testRecord.closed_by_full_name && (
-          <InfoRow label="Closed By" value={testRecord.closed_by_full_name} />
+          <InfoRow label="Closed By:" value={testRecord.closed_by_full_name} />
         )}
         {testRecord.closed_at && (
           <InfoRow
-            label="Closed At"
+            label="Closed At:"
             value={format(
               new Date(testRecord.closed_at),
               "dd MMM yyyy, hh:mm a"

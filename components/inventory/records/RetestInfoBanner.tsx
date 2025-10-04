@@ -28,7 +28,7 @@ export default function RetestInfoBanner({
           >
             {testRecord.retest_of.record_id}
           </Link>
-          . Please perform the analysis and enter the results below.
+          Please perform the analysis and enter the results below.
         </AlertDescription>
       </Alert>
     );

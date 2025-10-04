@@ -38,6 +38,7 @@ export interface TestRecord {
   id: number;
   record_id: string;
   version: number;
+  version_name:string,
   lab: number;
   lab_name: string;
   product_grade: number | null;
@@ -58,6 +59,7 @@ export interface TestRecord {
   retest_ordered_by_full_name: string | null;
   created_at: string;
   updated_at: string;
+    product_id: number;
   product_name: string;
   product_grade_name: string | null;
   parameter_values: TestResultDisplay[];

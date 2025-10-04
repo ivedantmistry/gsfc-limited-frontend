@@ -28,7 +28,9 @@ export default function RecordDetailPage() {
   // ✅ 2. The logic is now clear and correct for all cases.
   // The form should show if the test is PENDING and assigned to the current user.
   const canEdit =
-    testRecord.status === "PENDING" && user?.id === testRecord.analyst;
+    testRecord.status === "PENDING" &&
+    user?.id === testRecord.analyst &&
+    testRecord.parameter_values.length === 0;
 
   // Actions are available if the record is not in a final state.
   const showActions = testRecord.status !== "CLOSED";
