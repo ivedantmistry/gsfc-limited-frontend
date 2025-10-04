@@ -3,9 +3,10 @@
 "use client";
 
 import React, { ReactNode } from "react";
+import Link from "next/link"; // ✅ 1. Import Link
 import { useTestRecord } from "@/lib/api/test"; // Corrected import path
 import { notFound, useParams } from "next/navigation";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, ChevronRight } from "lucide-react";
 import { RecordDetailContext } from "@/context/RecordDetailContext"; // ✅ 1. IMPORT THE CONTEXT
 
 export default function RecordDetailLayout({
@@ -41,15 +42,41 @@ export default function RecordDetailLayout({
     );
   }
 
-  // NOTE: The `if (!testRecord)` guard is no longer strictly necessary here
-  // because the page component will now handle the undefined case.
+  if (!testRecord) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
 
-  // ✅ 2. WRAP THE CHILDREN IN THE CONTEXT PROVIDER
-  // This makes the 'testRecord', 'isLoading', and 'error' values available
-  // to the page and any other components inside this layout.
   return (
     <RecordDetailContext.Provider value={{ testRecord, isLoading, error }}>
-      <div className="space-y-6">{children}</div>
+      <div className="space-y-6">
+        {/* ✅ 3. ADD THE BREADCRUMB NAVIGATION */}
+        <nav className="flex" aria-label="Breadcrumb">
+          <ol className="inline-flex items-center space-x-1 md:space-x-2">
+            <li className="inline-flex items-center">
+              <Link
+                href="/dashboard/records"
+                className="text-sm font-medium text-slate-700 hover:text-indigo-600"
+              >
+                Recent Records
+              </Link>
+            </li>
+            <li>
+              <div className="flex items-center">
+                <ChevronRight className="h-4 w-4 text-slate-400" />
+                <span className="ml-1 text-sm font-medium text-slate-500 md:ml-2">
+                  {testRecord.record_id}
+                </span>
+              </div>
+            </li>
+          </ol>
+        </nav>
+
+        {children}
+      </div>
     </RecordDetailContext.Provider>
   );
 }
