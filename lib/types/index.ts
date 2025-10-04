@@ -3,6 +3,7 @@
 export * from './product.types';
 export * from './test.types';
 export * from './lab.types';
+export * from './alert.types'
 /**
  * 
  * Represents the structure of a Permission object.
