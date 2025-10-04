@@ -1,6 +1,7 @@
 // src/components/records/RecordInfoCard.tsx
 
 import React from "react";
+import Link from "next/link";
 import { TestRecord } from "@/lib/types/test.types";
 import { format } from "date-fns";
 
@@ -27,6 +28,34 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
         <h3 className="text-lg font-semibold text-slate-800">Record Details</h3>
       </div>
       <div className="p-4 space-y-3">
+        {/* ✅ Add a new row for retest links */}
+        {testRecord.retest_record_id && (
+          <InfoRow
+            label="Original Record"
+            value={
+              <Link
+                href="#"
+                className="font-mono text-indigo-600 hover:underline"
+              >
+                {testRecord.retest_record_id}
+              </Link>
+            }
+          />
+        )}
+        {testRecord.status === "RETEST_ORDERED" &&
+          testRecord.retests.length > 0 && (
+            <InfoRow
+              label="Superseded By"
+              value={
+                <Link
+                  href="#"
+                  className="font-mono text-indigo-600 hover:underline"
+                >
+                  {testRecord.retests[0]}
+                </Link>
+              }
+            />
+          )}
         <InfoRow label="Analyst" value={testRecord.analyst_full_name} />
         <InfoRow label="Lab" value={testRecord.lab_name} />
         <InfoRow
@@ -56,6 +85,33 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
             label="Approved At"
             value={format(
               new Date(testRecord.approved_at),
+              "dd MMM yyyy, hh:mm a"
+            )}
+          />
+        )}
+        {testRecord.retest_ordered_by_full_name && (
+          <InfoRow
+            label="Retest Ordered By"
+            value={testRecord.retest_ordered_by_full_name}
+          />
+        )}
+        {testRecord.retest_ordered_at && (
+          <InfoRow
+            label="Retest Ordered At"
+            value={format(
+              new Date(testRecord.retest_ordered_at),
+              "dd MMM yyyy, hh:mm a"
+            )}
+          />
+        )}
+        {testRecord.closed_by_full_name && (
+          <InfoRow label="Closed By" value={testRecord.closed_by_full_name} />
+        )}
+        {testRecord.closed_at && (
+          <InfoRow
+            label="Closed At"
+            value={format(
+              new Date(testRecord.closed_at),
               "dd MMM yyyy, hh:mm a"
             )}
           />

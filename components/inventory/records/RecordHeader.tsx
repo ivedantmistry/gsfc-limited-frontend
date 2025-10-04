@@ -39,6 +39,11 @@ export default function RecordHeader({ testRecord }: RecordHeaderProps) {
           <Badge className={`badge-${getStatusVariant(testRecord.status)}`}>
             {testRecord.status}
           </Badge>
+          {testRecord.retest_record_id && (
+            <Badge variant="outline" className="border-blue-300 text-blue-700">
+              RETEST
+            </Badge>
+          )}
         </div>
       </div>
     </div>

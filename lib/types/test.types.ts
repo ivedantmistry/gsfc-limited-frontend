@@ -41,6 +41,12 @@ export interface TestRecord {
   approved_by: number | null;
   approved_by_full_name: string | null;
   approved_at: string | null;
+  closed_by: number | null;
+  closed_at: string | null;
+  closed_by_full_name: string | null;
+  retest_ordered_by: number | null;
+  retest_ordered_at: string | null;
+  retest_ordered_by_full_name: string | null;
   created_at: string;
   updated_at: string;
   product_name: string;
@@ -73,4 +79,13 @@ export interface TestRecordInList {
   created_at: string;
   lab_name: string;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CLOSED" | "RETEST_ORDERED";
+}
+
+/**
+ * ✅ NEW: Represents the data structure for the editable results form.
+ */
+export interface ResultsFormInput {
+  results: {
+    [key: string]: string | number | boolean;
+  };
 }

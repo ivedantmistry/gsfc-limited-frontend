@@ -3,16 +3,19 @@
 "use client";
 
 import React from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { useRecordDetail } from "@/context/RecordDetailContext";
 import RecordHeader from "@/components/inventory/records/RecordHeader";
 import RecordInfoCard from "@/components/inventory/records/RecordInfoCard";
 import ResultsTable from "@/components/inventory/records/ResultsTable";
-import RecordActions from "@/components/inventory/records/RecordActions/index"; // Corrected import path
+import ResultsEntryForm from "@/components/inventory/records/ResultsEntryForm"; 
+import RecordActions from "@/components/inventory/records/RecordActions/index";
 import { Loader2 } from "lucide-react";
+import RetestInfoBanner from "@/components/inventory/records/RetestInfoBanner";
 
 export default function RecordDetailPage() {
   const { testRecord } = useRecordDetail();
-
+  const { user } = useAuth();
   if (!testRecord) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -21,18 +24,30 @@ export default function RecordDetailPage() {
     );
   }
 
+  // ✅ 2. The logic is now clear and correct for all cases.
+  // The form should show if the test is PENDING and assigned to the current user.
+  const canEdit = testRecord.status === "PENDING" && user?.id === testRecord.analyst;
+  
+  // Actions are available if the record is not in a final state.
+  const showActions = testRecord.status !== "CLOSED" && testRecord.status !== "RETEST_ORDERED";
+
   return (
     <>
       <RecordHeader testRecord={testRecord} />
+      <RetestInfoBanner testRecord={testRecord} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <ResultsTable results={testRecord.parameter_values} />
-          <RecordInfoCard testRecord={testRecord} />
+          {/* ✅ 3. Conditionally render the correct component */}
+          {canEdit ? (
+            <ResultsEntryForm testRecord={testRecord} />
+          ) : (
+            <ResultsTable results={testRecord.parameter_values} />
+          )}
         </div>
         <div className="space-y-6">
-          {/* ✅ Swapped order to match your preference */}
-          <RecordActions testRecord={testRecord} />
+          {showActions && <RecordActions testRecord={testRecord} />}
+          <RecordInfoCard testRecord={testRecord} />
         </div>
       </div>
     </>
