@@ -30,14 +30,16 @@ export interface TestRecord {
   record_id: string;
   version: number;
   lab: number;
+  lab_name: string;
   product_grade: number | null;
   sample_id: string;
   batch_no: string;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "CLOSED" | "RETEST_ORDERED"; // Corrected statuses
+  status: "PENDING" | "APPROVED" | "REJECTED" | "CLOSED" | "RETEST_ORDERED";
   analyst: number | null;
-  analyst_username: string;
+  analyst_full_name: string | null;
   supervisor_comments: string | null;
   approved_by: number | null;
+  approved_by_full_name: string | null;
   approved_at: string | null;
   created_at: string;
   updated_at: string;
@@ -45,7 +47,7 @@ export interface TestRecord {
   product_grade_name: string | null;
   parameter_values: TestResultDisplay[];
   retest_record_id: string | null;
-  retests: string[]; // List of record_ids
+  retests: string[];
 }
 
 /**
@@ -67,7 +69,7 @@ export interface TestRecordInList {
   id: number;
   record_id: string;
   product_name: string;
-  analyst_username: string | null;
+  analyst_full_name: string | null;
   created_at: string;
   lab_name: string;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CLOSED" | "RETEST_ORDERED";

@@ -68,7 +68,7 @@ export default function TestRecordsTable({ records }: TestRecordsTableProps) {
                   </Link>
                 </TableCell>
                 <TableCell>{record.product_name}</TableCell>
-                <TableCell>{record.analyst_username || "N/A"}</TableCell>
+                <TableCell>{record.analyst_full_name || "N/A"}</TableCell>
                 <TableCell>{record.lab_name}</TableCell>
                 <TableCell>
                   <Badge className={`badge-${getStatusVariant(record.status)}`}>
