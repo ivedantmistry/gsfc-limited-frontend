@@ -6,10 +6,9 @@ import { useTestRecords } from "@/lib/api/test";
 import { Loader2 } from "lucide-react";
 import { format, isValid } from "date-fns";
 import TestRecordsTable from "@/components/inventory/records/TestRecordsTable";
-import PaginationControls from "@/components/inventory/records/PaginationControls";
+import PaginationControls from "@/components/shared/PaginationControls";
 import RecordFilters from "@/components/inventory/records/RecordFilters";
 
-// Helper to parse dates from URL
 const parseDate = (dateString: string | null): Date | undefined => {
   if (!dateString) return undefined;
   const date = new Date(dateString);
@@ -21,9 +20,8 @@ export default function AllRecordsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Read all initial state from URL
   const page = Number(searchParams.get("page") ?? "1");
-  const pageSize = Number(searchParams.get("page_size") ?? "10");
+  const pageSize = Number(searchParams.get("page_size") ?? "25");
   const initialSearch = searchParams.get("search") ?? "";
   const initialDateAfter = searchParams.get("date_after");
   const initialDateBefore = searchParams.get("date_before");
@@ -31,7 +29,6 @@ export default function AllRecordsPage() {
   const initialLabId = searchParams.get("lab");
   const initialOrdering = searchParams.get("ordering");
 
-  // State for all filters now lives here
   const [status, setStatus] = useState(initialStatus);
   const [labId, setLabId] = useState(initialLabId);
   const [searchTerm, setSearchTerm] = useState(initialSearch);
@@ -50,7 +47,6 @@ export default function AllRecordsPage() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Single useEffect to sync all state to the URL
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
     params.set("page", "1");
@@ -120,7 +116,6 @@ export default function AllRecordsPage() {
         </p>
       </div>
 
-      {/* ✅ 2. Render the new, consolidated filter component */}
       <RecordFilters
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -146,9 +141,8 @@ export default function AllRecordsPage() {
       {error && <div className="text-red-600">Failed to load records.</div>}
       {testRecords && (
         <>
-          {/* ✅ 3. Pass only the records to the simplified table */}
           <TestRecordsTable records={testRecords} />
-          {totalCount && totalCount > pageSize && (
+          {totalCount != null && totalCount > 0 && (
             <PaginationControls
               totalCount={totalCount}
               currentPage={page}

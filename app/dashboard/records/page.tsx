@@ -2,83 +2,105 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useSearchParams } from "next/navigation"; // ✅ 1. Import useSearchParams
+import React, { useState, useEffect, useMemo } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTestRecords } from "@/lib/api/test";
 import { useDailyRecordStats } from "@/lib/api/stats";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import {
   PlusCircle,
   Loader2,
-  Search,
   ListChecks,
   Clock,
-  Command,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import CreateTestModal from "@/components/modals/create-test-wizard/CreateTestModal";
 import TestRecordsTable from "@/components/inventory/records/TestRecordsTable";
 import { StatCard } from "@/components/shared/StatCard";
-import { PaginationControls } from "@/components/shared/PaginationControls"; // ✅ 2. Import PaginationControls
+import PaginationControls from "@/components/shared/PaginationControls";
+import RecordFilters from "@/components/inventory/records/RecordFilters"; // ✅ 1. Import the new component
 
 export default function RecentTestsPage() {
-  const searchParams = useSearchParams(); // ✅ 3. Initialize searchParams
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  // ✅ 4. Read page and pageSize from the URL
+  // ✅ 2. Read all state from the URL, same as the 'All Records' page
   const page = Number(searchParams.get("page") ?? "1");
-  const pageSize = Number(searchParams.get("page_size") ?? "25"); // Default to 25
+  const pageSize = Number(searchParams.get("page_size") ?? "25");
+  const initialSearch = searchParams.get("search") ?? "";
+  const initialStatus = searchParams.get("status") ?? "";
+  const initialLabId = searchParams.get("lab");
+  const initialOrdering = searchParams.get("ordering");
 
+  // ✅ 3. Add state for all filters
   const [isModalOpen, setIsModalOpen] = useState(false);
   const canCreateTest = useHasPermission("inventory.add_testrecord");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [status, setStatus] = useState(initialStatus);
+  const [labId, setLabId] = useState<string | null>(initialLabId);
+  const [ordering, setOrdering] = useState<string | null>(initialOrdering);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(initialSearch);
 
-  // Debouncing effect for search
+  // Debouncing effect
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Keyboard shortcut effect to focus search
+  // ✅ 4. Effect to sync all filters and sorting to the URL
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-      }
-    };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, []);
+    const params = new URLSearchParams(searchParams);
+    // Don't reset page on every filter change on this page
+    // params.set("page", "1");
+
+    if (debouncedSearchTerm) params.set("search", debouncedSearchTerm);
+    else params.delete("search");
+    if (status) params.set("status", status);
+    else params.delete("status");
+    if (labId) params.set("lab", labId);
+    else params.delete("lab");
+    if (ordering) params.set("ordering", ordering);
+    else params.delete("ordering");
+
+    router.replace(`${pathname}?${params.toString()}`);
+  }, [debouncedSearchTerm, status, labId, ordering, pathname, router]);
+
+  // Stats hook remains separate and correct
   const { stats, isLoading: isLoadingStats } = useDailyRecordStats();
 
+  // The hook for the table now includes all filter/sort/pagination state
   const {
     testRecords,
-    totalCount: filteredTotal, // totalCount now reflects the filtered/paginated count
+    totalCount: filteredTotal,
     isLoading: isLoadingTable,
     error,
     mutate: mutateTestRecords,
   } = useTestRecords({
+    // view_type is 'recent' by default
     searchTerm: debouncedSearchTerm,
+    status: status as any,
+    labId: labId,
+    ordering: ordering,
     page: page,
     pageSize: pageSize,
   });
-
-  // const stats = useMemo(() => {
-  //   if (!testRecords) {
-  //     return { pending: 0, approved: 0, rejected: 0 };
-  //   }
-  //   return {
-  //     pending: testRecords.filter((r) => r.status === "PENDING").length,
-  //   };
-  // }, [testRecords]);
 
   const handleCreateSuccess = () => {
     setIsModalOpen(false);
     mutateTestRecords();
   };
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setStatus("");
+    setLabId(null);
+    setOrdering(null);
+  };
+
+  const areFiltersActive = searchTerm || status || labId || ordering;
 
   return (
     <div className="space-y-6">
@@ -100,7 +122,6 @@ export default function RecentTestsPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* ✅ 4. Point Stat Cards to the new stats object */}
         <StatCard
           title="Today's Total Tests"
           value={stats?.total_tests}
@@ -113,40 +134,25 @@ export default function RecentTestsPage() {
           isLoading={isLoadingStats}
           icon={<Clock className="h-4 w-4 text-muted-foreground" />}
         />
-        {/* <StatCard
-          title="Approved Today"
-          value={stats?.approved_tests}
-          isLoading={isLoadingStats}
-          icon={<CheckCircle className="h-4 w-4 text-muted-foreground" />}
-        />
-        <StatCard
-          title="Rejected Today"
-          value={stats?.rejected_tests}
-          isLoading={isLoadingStats}
-          icon={<XCircle className="h-4 w-4 text-muted-foreground" />}
-        /> */}
       </div>
 
-      <div className="relative">
-        {/* Search Icon */}
-        <Search className="pointer-events-none absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-
-        {/* Input Field */}
-        <Input
-          ref={searchInputRef}
-          placeholder="Search products..."
-          className="pl-10 pr-20 h-10 w-full rounded-md border border-input bg-white text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-
-        {/* Shortcut key display */}
-        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-1 text-xs text-muted-foreground bg-muted border rounded px-2 py-0.5 h-5">
-          <Command className="w-3.5 h-3.5" />{" "}
-          {/* Command icon from lucide-react */}
-          <span className="font-mono text-[0.7rem]">K</span>
-        </div>
-      </div>
+      {/* ✅ 5. Render the RecordFilters component */}
+      <RecordFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        status={status}
+        setStatus={setStatus}
+        labId={labId}
+        setLabId={setLabId}
+        ordering={ordering}
+        setOrdering={setOrdering}
+        clearFilters={clearFilters}
+        areFiltersActive={areFiltersActive}
+        dateAfter={undefined}
+        setDateAfter={undefined}
+        dateBefore={undefined}
+        setDateBefore={undefined}
+      />
 
       {isLoadingTable && (
         <div className="flex justify-center p-12">
@@ -154,10 +160,13 @@ export default function RecentTestsPage() {
         </div>
       )}
       {error && <div className="text-red-600">Failed to load records.</div>}
+
+      {/* ✅ 6. Render the table and pagination */}
       {testRecords && (
         <>
           <TestRecordsTable records={testRecords} />
-          {filteredTotal && filteredTotal > pageSize && (
+          {/* Always render pagination if there are results, to show the count */}
+          {filteredTotal != null && (
             <PaginationControls
               totalCount={filteredTotal}
               currentPage={page}

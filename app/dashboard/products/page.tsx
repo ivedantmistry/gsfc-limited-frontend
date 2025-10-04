@@ -8,7 +8,7 @@ import { useProducts } from "@/lib/api/product";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import AddProductModal from "@/components/modals/AddProductModal";
 import { ProductTable } from "@/components/inventory/products/ProductTable";
-import { PaginationControls } from "@/components/shared/PaginationControls";
+import  PaginationControls  from "@/components/shared/PaginationControls";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Plus, Command } from "lucide-react";
@@ -16,7 +16,7 @@ import { Search, Plus, Command } from "lucide-react";
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const page = Number(searchParams.get("page") ?? "1");
-  const pageSize = Number(searchParams.get("page_size") ?? "10");
+  const pageSize = Number(searchParams.get("page_size") ?? "25");
   const initialSearch = searchParams.get("search") ?? "";
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -88,7 +88,7 @@ export default function ProductsPage() {
           <Input
             ref={searchInputRef}
             placeholder="Search products..."
-            className="pl-10 pr-20 h-10 w-full rounded-md border border-input bg-background text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring"
+            className="pl-10 pr-20 h-10 w-full rounded-md border border-input bg-white text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -106,7 +106,7 @@ export default function ProductsPage() {
           canManage={canManageProducts}
         />
 
-        {totalCount && totalCount > pageSize && (
+        {totalCount != null && totalCount > 0 && (
           <PaginationControls
             totalCount={totalCount}
             currentPage={page}
