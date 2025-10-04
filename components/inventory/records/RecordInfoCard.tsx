@@ -28,34 +28,39 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
         <h3 className="text-lg font-semibold text-slate-800">Record Details</h3>
       </div>
       <div className="p-4 space-y-3">
-        {/* ✅ Add a new row for retest links */}
-        {testRecord.retest_record_id && (
+        {/* ✅ FIX THE LINKS */}
+        {testRecord.retest_of && (
           <InfoRow
             label="Original Record"
             value={
               <Link
-                href="#"
+                href={`/dashboard/records/${testRecord.retest_of.id}`}
                 className="font-mono text-indigo-600 hover:underline"
               >
-                {testRecord.retest_record_id}
+                {testRecord.retest_of.record_id}
               </Link>
             }
           />
         )}
-        {testRecord.status === "RETEST_ORDERED" &&
-          testRecord.retests.length > 0 && (
-            <InfoRow
-              label="Superseded By"
-              value={
-                <Link
-                  href="#"
-                  className="font-mono text-indigo-600 hover:underline"
-                >
-                  {testRecord.retests[0]}
-                </Link>
-              }
-            />
-          )}
+        {testRecord.retests && testRecord.retests.length > 0 && (
+          <InfoRow
+            label="Retest Order: "
+            value={
+              <div className="flex flex-col items-end gap-1">
+                {testRecord.retests.map((retest, index) => (
+                  <Link
+                    key={retest.id}
+                    href={`/dashboard/records/${retest.id}`}
+                    className="font-mono text-indigo-600 hover:underline"
+                  >
+                    {retest.record_id}
+                  </Link>
+                ))}
+              </div>
+            }
+          />
+        )}
+
         <InfoRow label="Analyst" value={testRecord.analyst_full_name} />
         <InfoRow label="Lab" value={testRecord.lab_name} />
         <InfoRow
@@ -104,6 +109,7 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
             )}
           />
         )}
+
         {testRecord.closed_by_full_name && (
           <InfoRow label="Closed By" value={testRecord.closed_by_full_name} />
         )}

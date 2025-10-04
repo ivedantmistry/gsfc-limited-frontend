@@ -21,6 +21,10 @@ export interface TestResultInput {
   value: string | number | boolean | null;
 }
 
+export interface RelatedTestRecord {
+  id: number;
+  record_id: string;
+}
 /**
  * Represents a full Test Record received from the API.
  * Matches TestRecordSerializer.
@@ -53,7 +57,8 @@ export interface TestRecord {
   product_grade_name: string | null;
   parameter_values: TestResultDisplay[];
   retest_record_id: string | null;
-  retests: string[];
+  retest_of: RelatedTestRecord | null; // This is the original record
+  retests: RelatedTestRecord[]; // This is a list of new retests
 }
 
 /**

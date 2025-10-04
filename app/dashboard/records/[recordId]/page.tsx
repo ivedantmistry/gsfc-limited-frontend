@@ -8,7 +8,7 @@ import { useRecordDetail } from "@/context/RecordDetailContext";
 import RecordHeader from "@/components/inventory/records/RecordHeader";
 import RecordInfoCard from "@/components/inventory/records/RecordInfoCard";
 import ResultsTable from "@/components/inventory/records/ResultsTable";
-import ResultsEntryForm from "@/components/inventory/records/ResultsEntryForm"; 
+import ResultsEntryForm from "@/components/inventory/records/ResultsEntryForm";
 import RecordActions from "@/components/inventory/records/RecordActions/index";
 import { Loader2 } from "lucide-react";
 import RetestInfoBanner from "@/components/inventory/records/RetestInfoBanner";
@@ -26,10 +26,11 @@ export default function RecordDetailPage() {
 
   // ✅ 2. The logic is now clear and correct for all cases.
   // The form should show if the test is PENDING and assigned to the current user.
-  const canEdit = testRecord.status === "PENDING" && user?.id === testRecord.analyst;
-  
+  const canEdit =
+    testRecord.status === "PENDING" && user?.id === testRecord.analyst;
+
   // Actions are available if the record is not in a final state.
-  const showActions = testRecord.status !== "CLOSED" && testRecord.status !== "RETEST_ORDERED";
+  const showActions = testRecord.status !== "CLOSED";
 
   return (
     <>

@@ -30,13 +30,11 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
     setIsApproving(true);
     try {
       await approveOrRejectTest(testRecord.id, { status: "APPROVED" });
-      // ✅ 3. Update the toast call
       toast.success("Success", {
         description: "Test record has been approved.",
       });
       router.refresh();
     } catch (error) {
-      // ✅ 3. Update the toast call
       toast.error("Error", { description: "Failed to approve record." });
     } finally {
       setIsApproving(false);
@@ -58,9 +56,6 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
     }
   };
 
-  if (!canApprove) {
-    return null;
-  }
   if (!canApprove) {
     return null;
   }
@@ -93,7 +88,9 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
               </Button>
             </div>
           )}
-          {/* {(testRecord.status === "APPROVED" ||
+
+          {/* ✅ 1. SHOW "ORDER RETEST" FOR APPROVED/REJECTED */}
+          {(testRecord.status === "APPROVED" ||
             testRecord.status === "REJECTED") && (
             <Button
               className="w-full"
@@ -101,33 +98,23 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
             >
               Order Retest
             </Button>
-          )} */}
+          )}
+
+          {/* ✅ 2. SHOW "CLOSE RECORD" FOR APPROVED, REJECTED, OR RETEST_ORDERED */}
           {(testRecord.status === "APPROVED" ||
-            testRecord.status === "REJECTED") && (
-            // ✅ 4. Display Close and Retest buttons when approved/rejected
-            <div className="space-y-2">
-              <Button
-                variant="secondary"
-                className="w-full"
-                onClick={handleClose}
-                disabled={isClosing}
-              >
-                {isClosing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Close Record
-              </Button>
-              <Button
-                className="w-full"
-                onClick={() => setIsRetestModalOpen(true)}
-              >
-                Order Retest
-              </Button>
-            </div>
+            testRecord.status === "REJECTED" ||
+            testRecord.status === "RETEST_ORDERED") && (
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={handleClose}
+              disabled={isClosing}
+            >
+              {isClosing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Close Record
+            </Button>
           )}
-          {testRecord.status === "RETEST_ORDERED" && (
-            <p className="text-sm text-center text-slate-500">
-              A retest has been ordered for this record.
-            </p>
-          )}
+
           {testRecord.status === "CLOSED" && (
             <p className="text-sm text-center text-slate-500">
               This record is closed.
@@ -136,7 +123,6 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
         </div>
       </div>
 
-      {/* Modals are now separate components */}
       <RejectModal
         isOpen={isRejectModalOpen}
         onClose={() => setIsRejectModalOpen(false)}
