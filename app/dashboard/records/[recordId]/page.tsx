@@ -12,6 +12,7 @@ import ResultsEntryForm from "@/components/inventory/records/ResultsEntryForm";
 import RecordActions from "@/components/inventory/records/RecordActions/index";
 import { Loader2 } from "lucide-react";
 import RetestInfoBanner from "@/components/inventory/records/RetestInfoBanner";
+import RecordAlertsCard from "@/components/inventory/records/RecordAlertsCard";
 
 export default function RecordDetailPage() {
   const { testRecord } = useRecordDetail();
@@ -45,8 +46,10 @@ export default function RecordDetailPage() {
           ) : (
             <ResultsTable results={testRecord.parameter_values} />
           )}
+          <RecordAlertsCard testRecord={testRecord} />
         </div>
         <div className="space-y-6">
+
           {showActions && <RecordActions testRecord={testRecord} />}
           <RecordInfoCard testRecord={testRecord} />
         </div>

@@ -25,6 +25,11 @@ export interface RelatedTestRecord {
   id: number;
   record_id: string;
 }
+
+export interface RelatedAlert {
+  id: number;
+  alert_id: string;
+}
 /**
  * Represents a full Test Record received from the API.
  * Matches TestRecordSerializer.
@@ -57,8 +62,9 @@ export interface TestRecord {
   product_grade_name: string | null;
   parameter_values: TestResultDisplay[];
   retest_record_id: string | null;
-  retest_of: RelatedTestRecord | null; // This is the original record
-  retests: RelatedTestRecord[]; // This is a list of new retests
+  retest_of: RelatedTestRecord | null;
+  retests: RelatedTestRecord[];
+  alerts: RelatedAlert[];
 }
 
 /**
