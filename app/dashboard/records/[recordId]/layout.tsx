@@ -17,7 +17,7 @@ export default function RecordDetailLayout({
   const params = useParams();
   const recordId = params.recordId as string;
 
-  const { testRecord, isLoading, error } = useTestRecord(recordId);
+  const { testRecord, isLoading, error, mutate } = useTestRecord(recordId);
 
   if (isLoading) {
     return (
@@ -51,7 +51,9 @@ export default function RecordDetailLayout({
   }
 
   return (
-    <RecordDetailContext.Provider value={{ testRecord, isLoading, error }}>
+    <RecordDetailContext.Provider
+      value={{ testRecord, isLoading, error, mutate }}
+    >
       <div className="space-y-6">
         {/* ✅ 3. ADD THE BREADCRUMB NAVIGATION */}
         <nav className="flex" aria-label="Breadcrumb">

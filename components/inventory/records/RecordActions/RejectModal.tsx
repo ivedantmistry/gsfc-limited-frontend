@@ -21,12 +21,14 @@ interface RejectModalProps {
   isOpen: boolean;
   onClose: () => void;
   recordId: number;
+   onSuccess: () => void; 
 }
 
 export default function RejectModal({
   isOpen,
   onClose,
   recordId,
+    onSuccess,
 }: RejectModalProps) {
   const router = useRouter();
   const {
@@ -48,6 +50,7 @@ export default function RejectModal({
       });
       reset();
       onClose();
+        onSuccess();
       router.refresh();
     } catch (error) {
       // ✅ 3. Update the toast call

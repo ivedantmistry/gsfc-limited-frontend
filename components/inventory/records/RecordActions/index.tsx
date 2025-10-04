@@ -4,6 +4,7 @@
 
 import React, { useState } from "react";
 import { TestRecord } from "@/lib/types/test.types";
+import { useRecordDetail } from "@/context/RecordDetailContext";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { approveOrRejectTest, closeTestRecord } from "@/lib/api/test";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ interface RecordActionsProps {
 
 export default function RecordActions({ testRecord }: RecordActionsProps) {
   const router = useRouter();
+  const { mutate } = useRecordDetail();
   const canApprove = useHasPermission("inventory.can_approve_test_records");
 
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
@@ -33,6 +35,7 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
       toast.success("Success", {
         description: "Test record has been approved.",
       });
+      mutate();
       router.refresh();
     } catch (error) {
       toast.error("Error", { description: "Failed to approve record." });
@@ -48,6 +51,7 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
       toast.success("Success", {
         description: "Test record has been closed.",
       });
+      mutate();
       router.refresh();
     } catch (error) {
       toast.error("Error", { description: "Failed to close record." });
@@ -127,11 +131,13 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
         isOpen={isRejectModalOpen}
         onClose={() => setIsRejectModalOpen(false)}
         recordId={testRecord.id}
+        onSuccess={mutate}
       />
       <RetestModal
         isOpen={isRetestModalOpen}
         onClose={() => setIsRetestModalOpen(false)}
         recordId={testRecord.id}
+        onSuccess={mutate}
       />
     </>
   );

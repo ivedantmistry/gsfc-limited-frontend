@@ -4,12 +4,15 @@
 
 import { createContext, useContext } from 'react';
 import { TestRecord } from '@/lib/types/test.types';
+import { KeyedMutator } from "swr";
 
 // Define the shape of the data our context will hold
 interface RecordDetailContextType {
     testRecord: TestRecord | undefined;
     isLoading: boolean;
     error: any;
+      mutate: KeyedMutator<TestRecord>; // Add mutate here
+
 }
 
 // Create the context with a default value of undefined
