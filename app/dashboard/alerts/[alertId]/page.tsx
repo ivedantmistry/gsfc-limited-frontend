@@ -29,10 +29,10 @@ export default function AlertDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* We reuse the ResultsTable to show the full test context */}
           <ResultsTable results={alert.test_record_data.results} />
+          <AlertInfoCard alert={alert} />
         </div>
         <div className="space-y-6">
           <AlertActions alert={alert} />
-          <AlertInfoCard alert={alert} />
         </div>
       </div>
     </>

@@ -49,10 +49,14 @@ export interface TestRecordInAlertContext {
  */
 export interface AlertDetail {
   id: number;
-  alert_id: number;
+  alert_id: string;
   status: AlertStatus;
   details: AlertDetails;
   created_at: string;
   product_name: string;
   test_record_data: TestRecordInAlertContext;
+  acknowledged_at: string | null;
+  acknowledged_by_full_name: string | null;
+  resolved_at: string | null;
+  resolved_by_full_name: string | null;
 }

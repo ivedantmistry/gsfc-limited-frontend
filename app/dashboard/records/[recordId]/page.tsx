@@ -28,11 +28,11 @@ export default function RecordDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <ResultsTable results={testRecord.parameter_values} />
+          <RecordInfoCard testRecord={testRecord} />
         </div>
         <div className="space-y-6">
           {/* ✅ Swapped order to match your preference */}
           <RecordActions testRecord={testRecord} />
-          <RecordInfoCard testRecord={testRecord} />
         </div>
       </div>
     </>
