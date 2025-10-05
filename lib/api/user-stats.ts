@@ -37,7 +37,7 @@ export function useUserPerformanceChart(
   if (params.date_before) urlParams.append("date_before", params.date_before);
 
   const url = userId
-    ? `/inventory/stats/user/${userId}/performance-chart/?${urlParams.toString()}`
+    ? `/inventory/stats/users/${userId}/performance-chart/?${urlParams.toString()}`
     : null;
 
   return useSWR<UserPerformanceDataPoint[]>(url, fetcher);
@@ -47,7 +47,7 @@ export function useUserPerformanceChart(
  * Fetches summary counts for a user's activity.
  */
 export function useUserSummaryCounts(userId: number | null) {
-  const url = userId ? `/inventory/stats/user/${userId}/summary-counts/` : null;
+  const url = userId ? `/inventory/stats/users/${userId}/summary-counts/` : null;
 
   return useSWR<UserSummaryCounts>(url, fetcher);
 }
