@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { User, KeyRound, Eye, EyeOff, LoaderCircle } from "lucide-react";
 import logo from "@/public/logo.png";

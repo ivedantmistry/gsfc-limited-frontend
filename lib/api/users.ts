@@ -18,6 +18,7 @@ export interface UserSummaryCounts {
   count_3_months: number;
   count_6_months: number;
   count_year: number;
+  count_custom:number;
 }
 
 // --- HOOKS ---
@@ -82,9 +83,22 @@ export function useUserPerformanceChart(
 /**
  * Fetches summary counts for a user's activity.
  */
-export function useUserSummaryCounts(userId: number | null) {
+export function useUserSummaryCounts(
+  userId: number | null,
+  date_after?: string,
+  date_before?: string
+) {
+  const urlParams = new URLSearchParams();
+  if (date_after) urlParams.append("date_after", date_after);
+  if (date_before) urlParams.append("date_before", date_before);
+
+  const queryString = urlParams.toString();
+
   const url = userId
-    ? `/inventory/stats/users/${userId}/summary-counts/`
+    ? `/inventory/stats/users/${userId}/summary-counts/${
+        queryString ? "?" + queryString : ""
+      }`
     : null;
+
   return useSWR<UserSummaryCounts>(url, fetcher);
 }

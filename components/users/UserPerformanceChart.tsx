@@ -28,48 +28,72 @@ import {
   Line,
 } from "recharts";
 import { Loader2 } from "lucide-react";
-import { format } from "date-fns";
+import { format, startOfDay } from "date-fns";
+import { DateRange } from "react-day-picker";
+import { DatePicker } from "@/components/ui/date-picker";
 
-// Define the options for the dropdown
 const timeRangeOptions = [
   { value: "week", label: "Last 7 Days" },
   { value: "month", label: "Last 30 Days" },
   { value: "3_months", label: "Last 3 Months" },
   { value: "6_months", label: "Last 6 Months" },
   { value: "year", label: "Last Year" },
+  { value: "custom", label: "Custom Range" },
 ];
 
 export default function UserPerformanceChart() {
-  // Get the userId from the context provided by the layout
   const { userId } = useUserProfile();
-
-  // State for the dropdown selection
   const [timeRange, setTimeRange] = useState("week");
+  const [customDateRange, setCustomDateRange] = useState<
+    DateRange | undefined
+  >();
 
-  // Fetch the summary counts once. This data is static.
+  const dateAfter = customDateRange?.from
+    ? format(startOfDay(customDateRange.from), "yyyy-MM-dd")
+    : undefined;
+  const dateBefore = customDateRange?.to
+    ? format(startOfDay(customDateRange.to), "yyyy-MM-dd")
+    : undefined;
+
   const { data: summaryData, isLoading: isLoadingSummary } =
-    useUserSummaryCounts(userId);
+    useUserSummaryCounts(
+      userId,
+      timeRange === "custom" ? dateAfter : undefined,
+      timeRange === "custom" ? dateBefore : undefined
+    );
 
-  // Derive the parameters for the chart data hook based on the dropdown
   const chartParams = useMemo(() => {
-    switch (timeRange) {
-      case "week":
+    if (timeRange === "custom") {
+      return {
+        group_by: "day" as const,
+        date_after: dateAfter,
+        date_before: dateBefore,
+      };
+    }
+     switch (timeRange) {
+      case "week": // Last 7 Days
         return { group_by: "day" as const };
-      case "month":
-      case "3_months":
+
+      // ✅ FIX: Change this case to group by 'day' instead of 'week'
+      case "month": // Last 30 Days
+        return { group_by: "day" as const };
+
+      case "3_months": // Last 3 Months
         return { group_by: "week" as const };
-      default:
+        
+      default: // 6 months or 1 year
         return { group_by: "month" as const };
     }
-  }, [timeRange]);
+  }, [timeRange, dateAfter, dateBefore]);
 
-  // Fetch the chart data. SWR will re-fetch when `chartParams` changes.
   const { data: chartData, isLoading: isLoadingChart } =
     useUserPerformanceChart(userId, chartParams);
 
-  // Derive the total count to display based on the selected time range
   const displayCount = useMemo(() => {
     if (!summaryData) return 0;
+    if (timeRange === "custom") {
+      return summaryData.count_custom ?? 0;
+    }
     switch (timeRange) {
       case "week":
         return summaryData.count_week;
@@ -123,6 +147,26 @@ export default function UserPerformanceChart() {
             <p className="text-xs text-muted-foreground mb-4">
               Total records in the last selected period
             </p>
+            {timeRange === "custom" && (
+              <div className="grid grid-cols-2 gap-4 my-4">
+                <DatePicker
+                  date={customDateRange?.from}
+                  // ✅ FIX: Explicitly construct the DateRange object
+                  setDate={(date) =>
+                    setCustomDateRange((prev) => ({ from: date, to: prev?.to }))
+                  }
+                  placeholder="From Date"
+                />
+                <DatePicker
+                  date={customDateRange?.to}
+                  // ✅ FIX: Explicitly construct the DateRange object
+                  setDate={(date) =>
+                    setCustomDateRange((prev) => ({ from: prev?.from, to: date }))
+                  }
+                  placeholder="To Date"
+                />
+              </div>
+            )}
             <div className="h-[250px]">
               {isLoadingChart ? (
                 <div className="flex justify-center items-center h-full">

@@ -3,7 +3,7 @@
 "use client";
 
 import React from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthContext";
 import { useRecordDetail } from "@/context/RecordDetailContext";
 import RecordHeader from "@/components/inventory/records/RecordHeader";
 import RecordInfoCard from "@/components/inventory/records/RecordInfoCard";
