@@ -14,7 +14,7 @@ export default function UserProfileLayout({
   children: ReactNode;
 }) {
   const params = useParams();
-  const userIdParam = params.usersId as string;
+  const userIdParam = params.userId as string;
   const userId =
     userIdParam && !isNaN(Number(userIdParam)) ? Number(userIdParam) : null;
 
