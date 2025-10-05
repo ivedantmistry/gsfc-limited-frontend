@@ -83,7 +83,7 @@ export default function TestRecordsTable({ records }: TestRecordsTableProps) {
           ) : (
             <TableRow>
               <TableCell colSpan={6} className="h-24 text-center">
-                No records found.
+             No records have been created today.
               </TableCell>
             </TableRow>
           )}
