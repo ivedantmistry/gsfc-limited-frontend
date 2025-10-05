@@ -5,7 +5,7 @@
 import React, { useState } from "react";
 import { TestRecord } from "@/lib/types/test.types";
 import { useRecordDetail } from "@/context/RecordDetailContext";
-import { useHasPermission } from "@/hooks/useHasPermission";
+import { useHasPermission } from "@/context/AuthContext";
 import { approveOrRejectTest, closeTestRecord } from "@/lib/api/test";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";

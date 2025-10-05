@@ -1,4 +1,4 @@
-// /app/dashboard/admin/users/[userId]/page.tsx
+// /app/dashboard/users/[userId]/page.tsx
 "use client";
 
 import React from "react";
@@ -18,7 +18,7 @@ export default function UserProfilePage() {
           Analytics and activity for @{user?.username}
         </p>
       </div>
-      
+
       {/* The Chart and Stats component will go here */}
       <UserPerformanceChart />
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { ReactNode } from "react";
-import { useHasPermission } from "@/hooks/useHasPermission";
+import { useHasPermission } from "@/context/AuthContext";
 import { notFound } from "next/navigation";
 
 export default function ProductLayout({ children }: { children: ReactNode }) {

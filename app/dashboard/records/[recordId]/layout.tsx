@@ -3,12 +3,11 @@
 "use client";
 
 import React, { ReactNode } from "react";
-import Link from "next/link"; // ✅ 1. Import Link
-import { useTestRecord } from "@/lib/api/test"; // Corrected import path
+import Link from "next/link";
+import { useTestRecord } from "@/lib/api/test";
 import { notFound, useParams } from "next/navigation";
 import { Loader2, AlertCircle, ChevronRight } from "lucide-react";
-import { RecordDetailContext } from "@/context/RecordDetailContext"; // ✅ 1. IMPORT THE CONTEXT
-
+import { RecordDetailContext } from "@/context/RecordDetailContext";
 export default function RecordDetailLayout({
   children,
 }: {
@@ -55,7 +54,6 @@ export default function RecordDetailLayout({
       value={{ testRecord, isLoading, error, mutate }}
     >
       <div className="space-y-6">
-        {/* ✅ 3. ADD THE BREADCRUMB NAVIGATION */}
         <nav className="flex" aria-label="Breadcrumb">
           <ol className="inline-flex items-center space-x-1 md:space-x-2">
             <li className="inline-flex items-center">

@@ -6,7 +6,7 @@ import { useProduct } from "@/lib/api/product";
 import { useVersion, updateVersion } from "@/lib/api/version";
 import { VersionDetailView } from "@/components/inventory/version-detail/VersionDetailView";
 import { ChevronRight } from "lucide-react";
-import { useHasPermission } from "@/hooks/useHasPermission";
+import { useHasPermission } from "@/context/AuthContext";
 
 export default function VersionDetailPage({
   params,

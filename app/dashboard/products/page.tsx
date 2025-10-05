@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useRef } from "react"; // ✅ 1. Import useRef
 import { useSearchParams } from "next/navigation";
 import { useProducts } from "@/lib/api/product";
-import { useHasPermission } from "@/hooks/useHasPermission";
+import { useHasPermission } from "@/context/AuthContext";
 import AddProductModal from "@/components/modals/AddProductModal";
 import { ProductTable } from "@/components/inventory/products/ProductTable";
 import  PaginationControls  from "@/components/shared/PaginationControls";

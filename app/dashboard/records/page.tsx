@@ -6,7 +6,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTestRecords } from "@/lib/api/test";
 import { useDailyRecordStats } from "@/lib/api/stats";
-import { useHasPermission } from "@/hooks/useHasPermission";
+import { useHasPermission } from "@/context/AuthContext";
 import {
   PlusCircle,
   Loader2,

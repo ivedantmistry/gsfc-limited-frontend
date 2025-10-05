@@ -6,7 +6,7 @@
 // import { useRouter } from "next/navigation";
 // import { useForm } from "react-hook-form";
 // import { TestRecord } from "@/lib/types/test.types";
-// import { useHasPermission } from "@/hooks/useHasPermission";
+// import { useHasPermission } from "@/context/AuthContext";
 // import { useUsers } from "@/lib/api/user";
 // import { approveOrRejectTest, orderRetest } from "@/lib/api/test";
 // import { Button } from "@/components/ui/button";

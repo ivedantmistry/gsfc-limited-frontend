@@ -1,7 +1,7 @@
 // src/lib/api/user-stats.ts
 import useSWR from "swr";
 import api from "@/lib/api";
-import { User } from "./users"; // Assuming User type is in user.ts
+import { User } from "@/lib/api/users"; // Assuming User type is in user.ts
 
 const fetcher = (url: string) => api.get(url).then((res) => res.data);
 

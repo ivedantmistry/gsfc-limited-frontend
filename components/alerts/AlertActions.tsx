@@ -5,7 +5,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertDetail } from "@/lib/types/alert.types";
-import { useHasPermission } from "@/hooks/useHasPermission";
+import { useHasPermission } from "@/context/AuthContext";
 import { updateAlertStatus } from "@/lib/api/alerts";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"; // ✅ Use Sonner's toast function

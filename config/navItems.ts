@@ -35,10 +35,10 @@ export const navItems: NavItem[] = [
     permission: "inventory.can_view_test_records",
   },
   {
-    href: "/dashboard/tests",
-    icon: PlusCircle,
-    label: "Create New Test",
-    permission: "inventory.add_testrecord",
+    href: "/dashboard/statistics",
+    icon: BarChart2,
+    label: "Quality Stats",
+    // permission: "inventory.ad",
   },
   {
     href: "/dashboard/users",

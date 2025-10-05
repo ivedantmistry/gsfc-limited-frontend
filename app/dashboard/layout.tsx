@@ -4,8 +4,8 @@
 import React, { ReactNode, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/hooks/useAuth";
-import { useHasPermission } from "@/hooks/useHasPermission";
+import { useAuth } from "@/context/AuthContext";
+import { useHasPermission } from "@/context/AuthContext";
 import { navItems } from "@/config/navItems";
 import { LogOut, Settings, Bell, Menu } from "lucide-react";
 

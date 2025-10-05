@@ -17,7 +17,7 @@ import { ConfirmLockModal } from "@/components/modals/ConfirmLockModal";
 import { ConfirmActivateModal } from "@/components/modals/ConfirmActivateModal";
 import { ConfirmDeleteModal } from "@/components/modals/ConfirmDeleteModal";
 import { Version } from "@/lib/types";
-import { useHasPermission } from "@/hooks/useHasPermission";
+import { useHasPermission } from "@/context/AuthContext";
 
 export default function VersionManagementPage({
   params,

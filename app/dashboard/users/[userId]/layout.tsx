@@ -1,4 +1,4 @@
-// /app/dashboard/admin/users/[userId]/layout.tsx
+// /app/dashboard/users/[userId]/layout.tsx
 "use client";
 
 import React, { ReactNode } from "react";
@@ -8,14 +8,24 @@ import { useUser } from "@/lib/api/user-stats"; // Use the new single user hook
 import { UserProfileContext } from "@/context/UserProfileContext";
 import { Loader2, ChevronRight, User as UserIcon } from "lucide-react";
 
-export default function UserProfileLayout({ children }: { children: ReactNode }) {
+export default function UserProfileLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const params = useParams();
-  const userId = Number(params.userId);
+  const userIdParam = params.usersId as string;
+  const userId =
+    userIdParam && !isNaN(Number(userIdParam)) ? Number(userIdParam) : null;
 
   const { data: user, isLoading, error } = useUser(userId);
 
   if (isLoading) {
-    return <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   if (error) {
@@ -23,12 +33,13 @@ export default function UserProfileLayout({ children }: { children: ReactNode })
   }
 
   return (
-      <UserProfileContext.Provider value={{ user: user || null, userId, isLoading }}>
-
+    <UserProfileContext.Provider
+      value={{ user: user || null, userId, isLoading }}
+    >
       <div className="space-y-6">
         <nav className="flex items-center text-sm font-medium text-slate-500">
           <UserIcon className="h-4 w-4 mr-2" />
-          <Link href="/dashboard/admin/users" className="hover:text-slate-900">
+          <Link href="/dashboard/users" className="hover:text-slate-900">
             User Management
           </Link>
           <ChevronRight className="h-4 w-4 mx-2" />
