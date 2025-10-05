@@ -1,3 +1,4 @@
+// src/components/modals/create-test-wizard/CreateTestModal.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -8,7 +9,7 @@ import Step2_DetailsAndResults from "../create-test-wizard/Step2_DetailsAndResul
 import { TestRecordInput } from "@/lib/types/test.types";
 import { createTestRecord } from "@/lib/api/test";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner"
+import { toast } from "sonner";
 
 interface CreateTestModalProps {
   isOpen: boolean;
@@ -42,33 +43,34 @@ export default function CreateTestModal({
     setApiError(null);
     try {
       const newTestRecord = await createTestRecord(data);
-     toast("Test record created!");
+      toast.success("Test record created successfully!"); // Changed for better feedback
 
       onSuccess();
-      router.push(`/dashboard/records/${newTestRecord.id}`); // Redirect to the new record
+      router.push(`/dashboard/records/${newTestRecord.id}`);
     } catch (error: any) {
       const errorMsg =
         error.response?.data?.detail || "An unexpected error occurred.";
       setApiError(errorMsg);
       console.error(error);
+      toast.error("Failed to create test record."); // Added error toast
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleClose = () => {
-    // Reset state when closing the modal
     setTimeout(() => {
-        setCurrentStep(1);
-        setSelectedProduct(null);
-        setApiError(null);
-    }, 300); // Delay to allow animation
+      setCurrentStep(1);
+      setSelectedProduct(null);
+      setApiError(null);
+    }, 300);
     onClose();
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl p-0">
+      {/* ✅ UI FIX: Added a soft background color to the modal content area */}
+      <DialogContent className="sm:max-w-3xl p-0 bg-slate-50">
         {currentStep === 1 && (
           <Step1_ProductSelect onSelectProduct={handleProductSelect} />
         )}

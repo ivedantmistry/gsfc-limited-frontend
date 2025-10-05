@@ -31,10 +31,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { AlertTriangle, FileText, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import SampleDetailsForm from "./SampleDetailsForm";
 import ParameterInputs from "./ParameterInputs";
+
+const FormSection = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <div className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+    <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b pb-3">
+      {title}
+    </h3>
+    <div className="space-y-4">{children}</div>
+  </div>
+);
 
 interface Step2Props {
   product: Product;
@@ -176,8 +191,9 @@ export default function Step2_DetailsAndResults({
 
   return (
     <>
-      <DialogHeader className="p-6 pb-4 border-b">
-        <DialogTitle className="text-lg font-semibold">
+      <DialogHeader className="p-6 pb-4 border-b bg-white">
+        <DialogTitle className="text-xl font-bold text-slate-800 flex items-center">
+          <FileText className="mr-3 h-6 w-6 text-indigo-600" />
           Step 2: Enter Details & Results
         </DialogTitle>
         <DialogDescription>
@@ -186,70 +202,83 @@ export default function Step2_DetailsAndResults({
           for product <span className="font-semibold">{product.name}</span>.
         </DialogDescription>
       </DialogHeader>
+
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)}>
+        <form
+          onSubmit={form.handleSubmit(handleSubmit)}
+          className="flex flex-col"
+        >
           <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
-            <SampleDetailsForm control={form.control} labs={labs} />
+            <FormSection title="Sample Details">
+              <SampleDetailsForm control={form.control} labs={labs} />
+            </FormSection>
 
             {activeVersion.grades && activeVersion.grades.length > 0 && (
-              <FormField
-                control={form.control}
-                name="product_grade"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Grade</FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        setSelectedGradeId(value);
-                      }}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a grade to see its parameters" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {activeVersion.grades.map((grade) => (
-                          <SelectItem key={grade.id} value={String(grade.id)}>
-                            {grade.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormSection title="Product Grade">
+                <FormField
+                  control={form.control}
+                  name="product_grade"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Select Grade (Optional)</FormLabel>
+                      <Select
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          setSelectedGradeId(value);
+                        }}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Default parameters are shown. Select a grade to see its specific parameters." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {activeVersion.grades.map((grade) => (
+                            <SelectItem key={grade.id} value={String(grade.id)}>
+                              {grade.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </FormSection>
             )}
 
-            <hr />
-
-            <ParameterInputs
-              control={form.control}
-              parameters={parametersToRender}
-              message={
-                activeVersion.grades.length > 0 && !selectedGradeId
-                  ? "Please select a grade to see its parameters."
-                  : "No parameters defined for this selection."
-              }
-            />
+            <FormSection title="Parameters">
+              <ParameterInputs
+                control={form.control}
+                parameters={parametersToRender}
+                message={
+                  activeVersion.grades.length > 0 && !selectedGradeId
+                    ? "Please select a grade to view its parameters."
+                    : "No parameters defined for this selection."
+                }
+              />
+            </FormSection>
           </div>
 
           {apiError && (
             <div className="px-6 pb-4">
               <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>{apiError}</AlertDescription>
               </Alert>
             </div>
           )}
 
-          <div className="flex justify-between items-center p-4 bg-slate-100 border-t">
+          <div className="flex justify-between items-center p-4 bg-slate-100 border-t mt-auto">
             <Button type="button" variant="outline" onClick={onBack}>
               Back
             </Button>
-            <Button type="submit" disabled={isSubmitting || !labs}>
+            <Button
+              type="submit"
+              disabled={isSubmitting || !labs}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
               {isSubmitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}

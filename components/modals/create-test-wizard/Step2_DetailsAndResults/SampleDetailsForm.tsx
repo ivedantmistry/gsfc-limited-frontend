@@ -2,9 +2,21 @@
 
 import React from "react";
 import { Control } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Lab } from "@/lib/api/lab";
 
 interface SampleDetailsFormProps {
@@ -12,9 +24,13 @@ interface SampleDetailsFormProps {
   labs: Lab[] | undefined;
 }
 
-export default function SampleDetailsForm({ control, labs }: SampleDetailsFormProps) {
+export default function SampleDetailsForm({
+  control,
+  labs,
+}: SampleDetailsFormProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    // ✅ UI FIX: Increased gap for better spacing between fields
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <FormField
         control={control}
         name="lab"
@@ -22,8 +38,19 @@ export default function SampleDetailsForm({ control, labs }: SampleDetailsFormPr
           <FormItem>
             <FormLabel>Lab</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <FormControl><SelectTrigger><SelectValue placeholder="Select a lab" /></SelectTrigger></FormControl>
-              <SelectContent>{labs?.map((lab) => (<SelectItem key={lab.id} value={String(lab.id)}>{lab.name}</SelectItem>))}</SelectContent>
+              {/* ✅ UI FIX: Added focus state styling */}
+              <FormControl>
+                <SelectTrigger className="focus:ring-2 focus:ring-indigo-500">
+                  <SelectValue placeholder="Select a lab" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {labs?.map((lab) => (
+                  <SelectItem key={lab.id} value={String(lab.id)}>
+                    {lab.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
             <FormMessage />
           </FormItem>
@@ -35,7 +62,13 @@ export default function SampleDetailsForm({ control, labs }: SampleDetailsFormPr
         render={({ field }) => (
           <FormItem>
             <FormLabel>Batch Number</FormLabel>
-            <FormControl><Input {...field} /></FormControl>
+            {/* ✅ UI FIX: Added focus state styling */}
+            <FormControl>
+              <Input
+                {...field}
+                className="focus:ring-2 focus:ring-indigo-500"
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}
@@ -46,7 +79,13 @@ export default function SampleDetailsForm({ control, labs }: SampleDetailsFormPr
         render={({ field }) => (
           <FormItem>
             <FormLabel>Sample ID</FormLabel>
-            <FormControl><Input {...field} /></FormControl>
+            {/* ✅ UI FIX: Added focus state styling */}
+            <FormControl>
+              <Input
+                {...field}
+                className="focus:ring-2 focus:ring-indigo-500"
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}
