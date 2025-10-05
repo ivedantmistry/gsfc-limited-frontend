@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { orderRetest } from "@/lib/api/test";
-import { useUsers } from "@/lib/api/auth";
+import { useUsers } from "@/lib/api/users";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

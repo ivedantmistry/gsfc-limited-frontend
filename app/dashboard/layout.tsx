@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useHasPermission } from "@/context/AuthContext";
 import { navItems } from "@/config/navItems";
 import { LogOut, Settings, Bell, Menu } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // --- Components ---
 
@@ -51,13 +52,21 @@ const Sidebar = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
       }`}
     >
       <div className="flex items-center gap-2.5 h-16 border-b border-slate-200 px-4">
-        <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold text-sm">
-          {user?.username.charAt(0).toUpperCase()}
-        </div>
+        <Avatar className="h-8 w-8">
+          <AvatarFallback className="bg-indigo-500 text-white text-sm font-bold">
+            {`${user?.first_name?.charAt(0) ?? ""}${
+              user?.last_name?.charAt(0) ?? ""
+            }`.toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+
         <div>
           <p className="text-sm font-semibold text-slate-800">
-            {user?.username}
+            {user?.first_name || user?.last_name
+              ? `${user?.first_name ?? ""} ${user?.last_name ?? ""}`
+              : user?.username}
           </p>
+
           <p className="text-xs text-slate-500">GSFC Laboratory</p>
         </div>
       </div>

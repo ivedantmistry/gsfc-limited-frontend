@@ -114,7 +114,10 @@ export default function RecentTestsPage() {
           </p>
         </div>
         {canCreateTest && (
-          <Button onClick={() => setIsModalOpen(true)}>
+          <Button
+            className="text-white bg-indigo-500 hover:bg-indigo-600"
+            onClick={() => setIsModalOpen(true)}
+          >
             <PlusCircle className="mr-2 h-4 w-4" />
             Create New Test
           </Button>

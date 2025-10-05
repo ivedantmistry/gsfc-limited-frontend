@@ -8,10 +8,10 @@ import { useProducts } from "@/lib/api/product";
 import { useHasPermission } from "@/context/AuthContext";
 import AddProductModal from "@/components/modals/AddProductModal";
 import { ProductTable } from "@/components/inventory/products/ProductTable";
-import  PaginationControls  from "@/components/shared/PaginationControls";
+import PaginationControls from "@/components/shared/PaginationControls";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Command } from "lucide-react";
+import { Search, Plus, Command, PlusCircle } from "lucide-react";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
@@ -75,9 +75,12 @@ export default function ProductsPage() {
             </p>
           </div>
           {canManageProducts && (
-            <Button onClick={() => setIsModalOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Product
+            <Button
+              className="text-white bg-indigo-500 hover:bg-indigo-600"
+              onClick={() => setIsModalOpen(true)}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create New Product
             </Button>
           )}
         </div>
