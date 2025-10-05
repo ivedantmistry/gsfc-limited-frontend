@@ -2,10 +2,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import {
-  useUserPerformanceChart,
-  useUserSummaryCounts,
-} from "@/lib/api/user-stats";
+import { useUserPerformanceChart, useUserSummaryCounts } from "@/lib/api/users";
 import { useUserProfile } from "@/context/UserProfileContext";
 import {
   Card,
@@ -74,12 +71,18 @@ export default function UserPerformanceChart() {
   const displayCount = useMemo(() => {
     if (!summaryData) return 0;
     switch (timeRange) {
-      case "week": return summaryData.count_week;
-      case "month": return summaryData.count_month;
-      case "3_months": return summaryData.count_3_months;
-      case "6_months": return summaryData.count_6_months;
-      case "year": return summaryData.count_year;
-      default: return 0;
+      case "week":
+        return summaryData.count_week;
+      case "month":
+        return summaryData.count_month;
+      case "3_months":
+        return summaryData.count_3_months;
+      case "6_months":
+        return summaryData.count_6_months;
+      case "year":
+        return summaryData.count_year;
+      default:
+        return 0;
     }
   }, [timeRange, summaryData]);
 
@@ -109,9 +112,9 @@ export default function UserPerformanceChart() {
       </CardHeader>
       <CardContent>
         {isLoadingSummary ? (
-           <div className="flex justify-center items-center h-[350px]">
-             <Loader2 className="h-8 w-8 animate-spin" />
-           </div>
+          <div className="flex justify-center items-center h-[350px]">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
         ) : (
           <>
             <div className="text-4xl font-bold">
@@ -122,9 +125,9 @@ export default function UserPerformanceChart() {
             </p>
             <div className="h-[250px]">
               {isLoadingChart ? (
-                 <div className="flex justify-center items-center h-full">
-                   <Loader2 className="h-6 w-6 animate-spin" />
-                 </div>
+                <div className="flex justify-center items-center h-full">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
@@ -135,7 +138,11 @@ export default function UserPerformanceChart() {
                       stroke="#888888"
                       fontSize={12}
                     />
-                    <YAxis allowDecimals={false} stroke="#888888" fontSize={12} />
+                    <YAxis
+                      allowDecimals={false}
+                      stroke="#888888"
+                      fontSize={12}
+                    />
                     <Tooltip />
                     <Line
                       type="monotone"

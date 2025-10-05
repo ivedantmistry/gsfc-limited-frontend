@@ -4,7 +4,7 @@
 import React, { ReactNode } from "react";
 import Link from "next/link";
 import { useParams, notFound } from "next/navigation";
-import { useUser } from "@/lib/api/user-stats"; // Use the new single user hook
+import { useUser } from "@/lib/api/users"; // Use the new single user hook
 import { UserProfileContext } from "@/context/UserProfileContext";
 import { Loader2, ChevronRight, User as UserIcon } from "lucide-react";
 
@@ -14,7 +14,7 @@ export default function UserProfileLayout({
   children: ReactNode;
 }) {
   const params = useParams();
-  const userIdParam = params.userId as string;
+  const userIdParam = params.usersId as string;
   const userId =
     userIdParam && !isNaN(Number(userIdParam)) ? Number(userIdParam) : null;
 
