@@ -2,7 +2,8 @@
 "use client";
 
 import React from "react";
-import { User } from "@/lib/api/users";
+import { User } from "@/lib/types";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -18,6 +19,10 @@ interface UsersTableProps {
 }
 
 export default function UsersTable({ users }: UsersTableProps) {
+  const router = useRouter();
+  const handleRowClick = (userId: number) => {
+    router.push(`/dashboard/users/${userId}`);
+  };
   return (
     <div className="rounded-lg border bg-white shadow-sm">
       <Table>
@@ -27,12 +32,15 @@ export default function UsersTable({ users }: UsersTableProps) {
             <TableHead>Full Name</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Designation</TableHead>
-            {/* <TableHead className="text-right">Status</TableHead> */}
           </TableRow>
         </TableHeader>
         <TableBody>
           {users.map((user) => (
-            <TableRow key={user.id}>
+            <TableRow
+              key={user.id}
+              onClick={() => handleRowClick(user.id)}
+              className="cursor-pointer hover:bg-slate-50"
+            >
               <TableCell className="font-medium">{user.username}</TableCell>
               <TableCell>{`${user.first_name} ${user.last_name}`}</TableCell>
               <TableCell>{user.email}</TableCell>
@@ -44,11 +52,6 @@ export default function UsersTable({ users }: UsersTableProps) {
                   </Badge>
                 ))}
               </TableCell>
-              {/* <TableCell className="text-right">
-                <Badge variant={user.is_active ? "success" : "destructive"}>
-                  {user.is_active ? "Active" : "Inactive"}
-                </Badge>
-              </TableCell> */}
             </TableRow>
           ))}
         </TableBody>

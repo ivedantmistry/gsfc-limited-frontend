@@ -28,7 +28,7 @@ import {
   Line,
 } from "recharts";
 import { Loader2 } from "lucide-react";
-import { format, startOfDay } from "date-fns";
+import { format, subDays } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { DatePicker } from "@/components/ui/date-picker";
 
@@ -48,46 +48,55 @@ export default function UserPerformanceChart() {
     DateRange | undefined
   >();
 
-  const dateAfter = customDateRange?.from
-    ? format(startOfDay(customDateRange.from), "yyyy-MM-dd")
-    : undefined;
-  const dateBefore = customDateRange?.to
-    ? format(startOfDay(customDateRange.to), "yyyy-MM-dd")
-    : undefined;
 
-  const { data: summaryData, isLoading: isLoadingSummary } =
-    useUserSummaryCounts(
-      userId,
-      timeRange === "custom" ? dateAfter : undefined,
-      timeRange === "custom" ? dateBefore : undefined
-    );
+  const apiParams = useMemo(() => {
+    const today = new Date();
+    const endDate = format(today, "yyyy-MM-dd");
+    let startDate: string;
 
-  const chartParams = useMemo(() => {
-    if (timeRange === "custom") {
+    if (
+      timeRange === "custom" &&
+      customDateRange?.from &&
+      customDateRange?.to
+    ) {
       return {
         group_by: "day" as const,
-        date_after: dateAfter,
-        date_before: dateBefore,
+        date_after: format(customDateRange.from, "yyyy-MM-dd"),
+        date_before: format(customDateRange.to, "yyyy-MM-dd"),
       };
     }
-     switch (timeRange) {
-      case "week": // Last 7 Days
-        return { group_by: "day" as const };
 
-      // ✅ FIX: Change this case to group by 'day' instead of 'week'
-      case "month": // Last 30 Days
-        return { group_by: "day" as const };
-
-      case "3_months": // Last 3 Months
-        return { group_by: "week" as const };
-        
-      default: // 6 months or 1 year
-        return { group_by: "month" as const };
+    switch (timeRange) {
+      case "month":
+        startDate = format(subDays(today, 29), "yyyy-MM-dd");
+        break;
+      case "3_months":
+        startDate = format(subDays(today, 89), "yyyy-MM-dd");
+        break;
+      case "6_months":
+        startDate = format(subDays(today, 179), "yyyy-MM-dd");
+        break;
+      case "year":
+        startDate = format(subDays(today, 364), "yyyy-MM-dd");
+        break;
+      case "week":
+      default:
+        startDate = format(subDays(today, 6), "yyyy-MM-dd");
+        break;
     }
-  }, [timeRange, dateAfter, dateBefore]);
+
+    return {
+      group_by: "day" as const, 
+      date_after: startDate,
+      date_before: endDate,
+    };
+  }, [timeRange, customDateRange]);
+
+  const { data: summaryData, isLoading: isLoadingSummary } =
+    useUserSummaryCounts(userId, apiParams.date_after, apiParams.date_before);
 
   const { data: chartData, isLoading: isLoadingChart } =
-    useUserPerformanceChart(userId, chartParams);
+    useUserPerformanceChart(userId, apiParams);
 
   const displayCount = useMemo(() => {
     if (!summaryData) return 0;
@@ -151,7 +160,6 @@ export default function UserPerformanceChart() {
               <div className="grid grid-cols-2 gap-4 my-4">
                 <DatePicker
                   date={customDateRange?.from}
-                  // ✅ FIX: Explicitly construct the DateRange object
                   setDate={(date) =>
                     setCustomDateRange((prev) => ({ from: date, to: prev?.to }))
                   }
@@ -159,9 +167,11 @@ export default function UserPerformanceChart() {
                 />
                 <DatePicker
                   date={customDateRange?.to}
-                  // ✅ FIX: Explicitly construct the DateRange object
                   setDate={(date) =>
-                    setCustomDateRange((prev) => ({ from: prev?.from, to: date }))
+                    setCustomDateRange((prev) => ({
+                      from: prev?.from,
+                      to: date,
+                    }))
                   }
                   placeholder="To Date"
                 />
