@@ -25,12 +25,18 @@ const fetcher = (url: string) => api.get(url).then((res) => res.data);
 
 /**
  * Fetches a paginated list of all users.
+ * ✅ 1. ADD searchTerm PARAMETER
  */
-export function useUsers(page = 1, pageSize = 25) {
+export function useUsers(page = 1, pageSize = 25, searchTerm?: string) {
   const urlParams = new URLSearchParams({
     page: String(page),
     page_size: String(pageSize),
   });
+
+  // ✅ 2. ADD SEARCH TERM TO THE URL IF IT EXISTS
+  if (searchTerm) {
+    urlParams.append("search", searchTerm);
+  }
 
   const url = `/auth/users/?${urlParams.toString()}`;
 
