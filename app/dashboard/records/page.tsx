@@ -54,21 +54,16 @@ export default function RecentTestsPage() {
   }, [searchTerm]);
 
   useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-
+    const params = new URLSearchParams();
     if (debouncedSearchTerm) params.set("search", debouncedSearchTerm);
-    else params.delete("search");
     if (status) params.set("status", status);
-    else params.delete("status");
     if (labId) params.set("lab", labId);
-    else params.delete("lab");
     if (ordering) params.set("ordering", ordering);
-    else params.delete("ordering");
     if (analystId) params.set("analyst", analystId);
-    else params.delete("analyst");
 
-    // We only need to preserve page for this page's URL updates
-    params.set("page", String(page));
+    // When a filter changes, always go back to page 1
+    params.set("page", "1");
+    // Preserve the current page size
     params.set("page_size", String(pageSize));
 
     router.replace(`${pathname}?${params.toString()}`);
@@ -80,9 +75,7 @@ export default function RecentTestsPage() {
     analystId,
     pathname,
     router,
-    page,
-    pageSize,
-    searchParams,
+    pageSize, // Note: page is removed from dependencies
   ]);
 
   const { stats, isLoading: isLoadingStats } = useDailyRecordStats();

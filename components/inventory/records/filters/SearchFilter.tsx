@@ -30,7 +30,7 @@ export function SearchFilter({ searchTerm, setSearchTerm }: SearchFilterProps) {
         <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           ref={searchInputRef}
-          placeholder="Search by Products, RecordId .."
+          placeholder="Search by Products or Record Id..."
           className="pl-10 pr-20 h-10 w-full"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}

@@ -62,9 +62,7 @@ export default function AllRecordsPage() {
   }, [searchTerm]);
 
   useEffect(() => {
-    const params = new URLSearchParams(); // Start with fresh params
-    params.set("page", "1"); // Always reset to page 1 on filter change
-
+    const params = new URLSearchParams();
     if (debouncedSearchTerm) params.set("search", debouncedSearchTerm);
     if (dateAfter) params.set("date_after", format(dateAfter, "yyyy-MM-dd"));
     if (dateBefore) params.set("date_before", format(dateBefore, "yyyy-MM-dd"));
@@ -73,10 +71,12 @@ export default function AllRecordsPage() {
     if (ordering) params.set("ordering", ordering);
     if (analystId) params.set("analyst", analystId);
 
-    // Only push to router if the params have changed
-    if (params.toString() !== new URLSearchParams(searchParams).toString()) {
-      router.replace(`${pathname}?${params.toString()}`);
-    }
+    // When a filter changes, always go back to page 1
+    params.set("page", "1");
+    // Preserve the current page size
+    params.set("page_size", String(pageSize));
+
+    router.replace(`${pathname}?${params.toString()}`);
   }, [
     debouncedSearchTerm,
     dateAfter,
@@ -87,7 +87,7 @@ export default function AllRecordsPage() {
     analystId,
     pathname,
     router,
-    searchParams,
+    pageSize, // Note: page is removed from dependencies
   ]);
 
   // ✅ 2. FIX: Use state variables for the API call, not the initial values from the URL.
