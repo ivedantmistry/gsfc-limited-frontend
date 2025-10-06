@@ -10,6 +10,7 @@ import { updateAlertStatus } from "@/lib/api/alerts";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"; // ✅ Use Sonner's toast function
 import { Loader2 } from "lucide-react";
+import { KeyedMutator } from "swr"; 
 
 interface AlertActionsProps {
   alert: AlertDetail;
@@ -24,10 +25,11 @@ export default function AlertActions({ alert }: AlertActionsProps) {
 
   const handleStatusUpdate = async (newStatus: "ACKNOWLEDGED" | "RESOLVED") => {
     setIsSubmitting(true);
-    try {
-      await updateAlertStatus(alert.id, newStatus);
+   try {
+      const updatedAlert = await updateAlertStatus(alert.id, newStatus);
       toast.success(`Alert marked as ${newStatus.toLowerCase()}.`);
-      router.refresh();
+      mutate(updatedAlert, false);
+
     } catch (error) {
       toast.error("Failed to update alert status.");
     } finally {

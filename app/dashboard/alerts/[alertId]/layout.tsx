@@ -49,7 +49,7 @@ export default function AlertDetailLayout({
                 href="/dashboard/alerts"
                 className="text-sm font-medium text-slate-700 hover:text-indigo-600"
               >
-                Unresolved Alerts
+                Alerts
               </Link>
             </li>
             <li>

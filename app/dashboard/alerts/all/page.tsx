@@ -12,7 +12,7 @@ import PaginationControls from "@/components/shared/PaginationControls";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { format, isValid } from "date-fns";
 
-// --- 1. Import the necessary components for the new layout ---
+// --- 1. Import all the necessary filter components ---
 import { DatePicker } from "@/components/ui/date-picker";
 import {
   SearchFilter,
@@ -50,7 +50,6 @@ export default function AllAlertsPage() {
     parseDate(initialDateBefore)
   );
 
-  // --- 3. Effects to Sync State with URL ---
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 500);
     return () => clearTimeout(timer);
@@ -58,7 +57,7 @@ export default function AllAlertsPage() {
 
   useEffect(() => {
     const params = new URLSearchParams();
-    params.set("page", "1"); // Reset to page 1 on any filter change
+    params.set("page", "1");
     params.set("page_size", String(pageSize));
 
     if (debouncedSearchTerm) params.set("search", debouncedSearchTerm);
@@ -77,7 +76,6 @@ export default function AllAlertsPage() {
     pageSize,
   ]);
 
-  // --- 4. Data Fetching with Filters ---
   const { alerts, totalCount, isLoading, error } = useAlerts({
     page,
     pageSize,
@@ -87,14 +85,12 @@ export default function AllAlertsPage() {
     date_before: dateBefore ? format(dateBefore, "yyyy-MM-dd") : undefined,
   });
 
-  // --- 5. Helper functions ---
   const clearFilters = () => {
     setSearchTerm("");
     setStatus("");
     setDateAfter(undefined);
     setDateBefore(undefined);
   };
-
   const areFiltersActive = searchTerm || status || dateAfter || dateBefore;
 
   return (
@@ -102,16 +98,26 @@ export default function AllAlertsPage() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Past Alerts
+            Historical Alerts
           </h1>
           <p className="mt-1 text-sm text-slate-500">
             A complete history of all alerts, including resolved ones.
           </p>
         </div>
+        <Link href="/dashboard/alerts">
+          <Button
+            variant="outline"
+            className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+          >
+            <History className="mr-2 h-4 w-4" />
+            View Unresolved Alerts
+          </Button>
+        </Link>
       </div>
 
+      {/* --- ✅ 2. The New, Clean, and Stacked Filter Panel --- */}
       <div className="p-4 border bg-card rounded-lg shadow-sm space-y-4">
-        {/* Row 1: Preset Buttons */}
+        {/* Row 1: Quick Select Date Presets */}
         <DatePresetButtons
           onPresetSelect={({ from, to }) => {
             setDateAfter(from);
@@ -120,14 +126,28 @@ export default function AllAlertsPage() {
         />
 
         {/* Row 2: Main Filter Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end pt-4 border-t">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end pt-4 border-t">
+          {/* Spanning 2 columns for a wider search bar */}
+          <div className="md:col-span-2">
             <SearchFilter
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
             />
           </div>
+
           <AlertStatusFilter status={status} setStatus={setStatus} />
+
+          {/* This div will now correctly push the clear button to the end */}
+          <div className="flex justify-end">
+            <ClearFiltersButton
+              areFiltersActive={areFiltersActive}
+              clearFilters={clearFilters}
+            />
+          </div>
+        </div>
+
+        {/* Row 3: Custom Date Pickers */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-1">
               Start Date
@@ -149,16 +169,6 @@ export default function AllAlertsPage() {
             />
           </div>
         </div>
-
-        {/* Render Clear button only if filters are active */}
-        {areFiltersActive && (
-          <div className="flex justify-end">
-            <ClearFiltersButton
-              areFiltersActive={areFiltersActive}
-              clearFilters={clearFilters}
-            />
-          </div>
-        )}
       </div>
 
       {isLoading && (
