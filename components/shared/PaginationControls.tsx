@@ -52,7 +52,7 @@ export default function PaginationControls({
         }
         
         <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
-          <SelectTrigger className="w-[70px]">
+          <SelectTrigger className="w-[75px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

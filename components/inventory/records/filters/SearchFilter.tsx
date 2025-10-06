@@ -20,6 +20,11 @@ export function SearchFilter({ searchTerm, setSearchTerm }: SearchFilterProps) {
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      searchInputRef.current?.blur();
+    }
+  };
 
   return (
     <div className="xl:col-span-2">
@@ -34,6 +39,7 @@ export function SearchFilter({ searchTerm, setSearchTerm }: SearchFilterProps) {
           className="pl-10 pr-20 h-10 w-full"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleKeyDown} 
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center space-x-1 text-xs text-muted-foreground bg-muted border rounded px-2 py-0.5 h-5">
           <Command className="w-3.5 h-3.5" />
