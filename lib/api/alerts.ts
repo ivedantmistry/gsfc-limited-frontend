@@ -18,16 +18,20 @@ export function useAlerts(params: {
   status__in?: AlertStatus[];
   page?: number;
   pageSize?: number;
+  searchTerm?: string;
+  date_after?: string;
+  date_before?: string;
 }) {
   const urlParams = new URLSearchParams();
 
   if (params.status) urlParams.append("status", params.status);
-  // Handle array of statuses for "in" lookup
-  if (params.status__in) {
+  if (params.status__in)
     urlParams.append("status__in", params.status__in.join(","));
-  }
   if (params.page) urlParams.append("page", String(params.page));
   if (params.pageSize) urlParams.append("page_size", String(params.pageSize));
+  if (params.searchTerm) urlParams.append("search", params.searchTerm);
+  if (params.date_after) urlParams.append("date_after", params.date_after);
+  if (params.date_before) urlParams.append("date_before", params.date_before);
 
   const url = `${ALERTS_ENDPOINT}?${urlParams.toString()}`;
 

@@ -89,4 +89,4 @@ export default function AlertInfoCard({ alert }: AlertInfoCardProps) {
       </div>
     </div>
   );
-}
+} 

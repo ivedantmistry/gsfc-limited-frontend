@@ -23,6 +23,7 @@ export type AlertStatus = "NEW" | "ACKNOWLEDGED" | "RESOLVED";
  */
 export interface AlertInList {
   id: number;
+  alert_id: string; 
   status: AlertStatus;
   details: AlertDetails;
   created_at: string;
