@@ -76,7 +76,7 @@ export default function ProductsPage() {
           </div>
           {canManageProducts && (
             <Button
-              className="text-white bg-indigo-500 hover:bg-indigo-600"
+                className="text-indigo-500 bg-white hover:text-white hover:bg-indigo-500 border border-indigo-500 shadow-sm transition-colors"
               onClick={() => setIsModalOpen(true)}
             >
               <PlusCircle className="mr-2 h-4 w-4" />

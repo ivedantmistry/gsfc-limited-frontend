@@ -54,7 +54,7 @@ export const VersionListHeader: React.FC<VersionListHeaderProps> = ({
           Version History for {product.name}
         </h1>
         {canManage && onAddNew && (
-          <Button onClick={onAddNew}>
+          <Button onClick={onAddNew} className="text-indigo-500 bg-white hover:text-white hover:bg-indigo-500 border border-indigo-500 shadow-sm transition-colors">
             <Plus className="mr-2 h-4 w-4" /> Create New Version
           </Button>
         )}

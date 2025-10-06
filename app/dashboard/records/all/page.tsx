@@ -1,3 +1,5 @@
+// app/dashboard/records/all/page.tsx
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -5,9 +7,18 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTestRecords } from "@/lib/api/test";
 import { Loader2 } from "lucide-react";
 import { format, isValid } from "date-fns";
-import TestRecordsTable from "@/components/inventory/records/TestRecordsTable";
+import TestRecordsTable from "@/components/inventory/records/RecordsTable";
 import PaginationControls from "@/components/shared/PaginationControls";
-import RecordFilters from "@/components/inventory/records/RecordFilters";
+// import RecordFilters from "@/components/inventory/records/RecordFilters";
+
+import {
+  FilterContainer,
+  SearchFilter,
+  StatusFilter,
+  LabFilter,
+  SortByFilter,
+  ClearFiltersButton,
+} from "@/components/inventory/records/filters";
 
 const parseDate = (dateString: string | null): Date | undefined => {
   if (!dateString) return undefined;
@@ -28,6 +39,7 @@ export default function AllRecordsPage() {
   const initialStatus = searchParams.get("status") ?? "";
   const initialLabId = searchParams.get("lab");
   const initialOrdering = searchParams.get("ordering");
+  const initialAnalystId = searchParams.get("analyst");
 
   const [status, setStatus] = useState(initialStatus);
   const [labId, setLabId] = useState(initialLabId);
@@ -39,7 +51,7 @@ export default function AllRecordsPage() {
     parseDate(initialDateBefore)
   );
   const [ordering, setOrdering] = useState(initialOrdering);
-
+  const [analystId, setAnalystId] = useState<string | null>(initialAnalystId);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(initialSearch);
 
   useEffect(() => {
@@ -63,6 +75,8 @@ export default function AllRecordsPage() {
     else params.delete("lab");
     if (ordering) params.set("ordering", ordering);
     else params.delete("ordering");
+    if (analystId) params.set("analyst", analystId);
+    else params.delete("analyst");
 
     router.replace(`${pathname}?${params.toString()}`);
   }, [
@@ -72,6 +86,7 @@ export default function AllRecordsPage() {
     status,
     labId,
     ordering,
+    analystId,
     pathname,
     router,
   ]);
@@ -85,6 +100,7 @@ export default function AllRecordsPage() {
     date_before: initialDateBefore,
     status: initialStatus as any,
     labId: initialLabId,
+    analystId: analystId,
     ordering: initialOrdering,
   });
 
@@ -95,6 +111,7 @@ export default function AllRecordsPage() {
     setStatus("");
     setLabId(null);
     setOrdering(null);
+    setAnalystId(null);
   };
 
   const areFiltersActive =
@@ -127,6 +144,8 @@ export default function AllRecordsPage() {
         setStatus={setStatus}
         labId={labId}
         setLabId={setLabId}
+        analystId={analystId}
+        setAnalystId={setAnalystId}
         ordering={ordering}
         setOrdering={setOrdering}
         clearFilters={clearFilters}

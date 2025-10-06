@@ -34,10 +34,10 @@ const getStatusVariant = (
   }
 };
 
-interface TestRecordsTableProps {
+interface RecordsTableProps {
   records: TestRecordInList[];
 }
-export default function TestRecordsTable({ records }: TestRecordsTableProps) {
+export default function RecordsTable({ records }: RecordsTableProps) {
   return (
     <div className="rounded-lg border bg-white shadow-sm">
       <Table>

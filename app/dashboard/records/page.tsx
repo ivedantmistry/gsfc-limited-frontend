@@ -7,54 +7,53 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTestRecords } from "@/lib/api/test";
 import { useDailyRecordStats } from "@/lib/api/stats";
 import { useHasPermission } from "@/context/AuthContext";
-import {
-  PlusCircle,
-  Loader2,
-  ListChecks,
-  Clock,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
+import Link from "next/link";
+import { PlusCircle, Loader2, ListChecks, Clock, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CreateTestModal from "@/components/modals/create-test-wizard/CreateTestModal";
-import TestRecordsTable from "@/components/inventory/records/TestRecordsTable";
+import TestRecordsTable from "@/components/inventory/records/RecordsTable";
 import { StatCard } from "@/components/shared/StatCard";
 import PaginationControls from "@/components/shared/PaginationControls";
-import RecordFilters from "@/components/inventory/records/RecordFilters"; // ✅ 1. Import the new component
+import RecordFilters from "@/components/inventory/records/RecordFilters";
+
+import {
+  FilterContainer,
+  SearchFilter,
+  StatusFilter,
+  LabFilter,
+  SortByFilter,
+  ClearFiltersButton,
+} from "@/components/inventory/records/filters";
 
 export default function RecentTestsPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // ✅ 2. Read all state from the URL, same as the 'All Records' page
   const page = Number(searchParams.get("page") ?? "1");
   const pageSize = Number(searchParams.get("page_size") ?? "25");
   const initialSearch = searchParams.get("search") ?? "";
   const initialStatus = searchParams.get("status") ?? "";
   const initialLabId = searchParams.get("lab");
   const initialOrdering = searchParams.get("ordering");
+  const initialAnalystId = searchParams.get("analyst");
 
-  // ✅ 3. Add state for all filters
   const [isModalOpen, setIsModalOpen] = useState(false);
   const canCreateTest = useHasPermission("inventory.add_testrecord");
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [status, setStatus] = useState(initialStatus);
   const [labId, setLabId] = useState<string | null>(initialLabId);
   const [ordering, setOrdering] = useState<string | null>(initialOrdering);
+  const [analystId, setAnalystId] = useState<string | null>(initialAnalystId);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(initialSearch);
 
-  // Debouncing effect
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // ✅ 4. Effect to sync all filters and sorting to the URL
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
-    // Don't reset page on every filter change on this page
-    // params.set("page", "1");
 
     if (debouncedSearchTerm) params.set("search", debouncedSearchTerm);
     else params.delete("search");
@@ -64,14 +63,22 @@ export default function RecentTestsPage() {
     else params.delete("lab");
     if (ordering) params.set("ordering", ordering);
     else params.delete("ordering");
+    if (analystId) params.set("analyst", analystId);
+    else params.delete("analyst");
 
     router.replace(`${pathname}?${params.toString()}`);
-  }, [debouncedSearchTerm, status, labId, ordering, pathname, router]);
+  }, [
+    debouncedSearchTerm,
+    status,
+    labId,
+    ordering,
+    analystId,
+    pathname,
+    router,
+  ]);
 
-  // Stats hook remains separate and correct
   const { stats, isLoading: isLoadingStats } = useDailyRecordStats();
 
-  // The hook for the table now includes all filter/sort/pagination state
   const {
     testRecords,
     totalCount: filteredTotal,
@@ -79,10 +86,10 @@ export default function RecentTestsPage() {
     error,
     mutate: mutateTestRecords,
   } = useTestRecords({
-    // view_type is 'recent' by default
     searchTerm: debouncedSearchTerm,
     status: status as any,
     labId: labId,
+    analystId: analystId,
     ordering: ordering,
     page: page,
     pageSize: pageSize,
@@ -98,6 +105,7 @@ export default function RecentTestsPage() {
     setStatus("");
     setLabId(null);
     setOrdering(null);
+    setAnalystId(null);
   };
 
   const areFiltersActive = searchTerm || status || labId || ordering;
@@ -114,13 +122,25 @@ export default function RecentTestsPage() {
           </p>
         </div>
         {canCreateTest && (
-          <Button
-            className="text-white bg-indigo-500 hover:bg-indigo-600"
-            onClick={() => setIsModalOpen(true)}
-          >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create New Test
-          </Button>
+          // ✅ 3. Wrap buttons in a flex container for proper alignment
+          <div className="flex items-center gap-2">
+            <Link href="/dashboard/records/all">
+              <Button
+                variant="outline"
+                className="text-indigo-500 bg-white hover:text-white hover:bg-indigo-500 border border-indigo-500 shadow-sm transition-colors"
+              >
+                <History className="mr-2 h-4 w-4" />
+                Historical Records
+              </Button>
+            </Link>
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              className="text-indigo-500 bg-white hover:text-white hover:bg-indigo-500 border border-indigo-500 shadow-sm transition-colors"
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create New Test
+            </Button>
+          </div>
         )}
       </div>
 
@@ -147,6 +167,8 @@ export default function RecentTestsPage() {
         setStatus={setStatus}
         labId={labId}
         setLabId={setLabId}
+        analystId={analystId}
+        setAnalystId={setAnalystId}
         ordering={ordering}
         setOrdering={setOrdering}
         clearFilters={clearFilters}

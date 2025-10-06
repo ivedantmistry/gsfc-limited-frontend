@@ -184,7 +184,7 @@ export default function Step2_DetailsAndResults({
   if (versionError || !activeVersion) {
     return (
       <div className="p-6 text-center text-red-600">
-        Failed to load specification for this product.
+        Failed to load data entry for this product.
       </div>
     );
   }
