@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTestRecords } from "@/lib/api/test";
 import { useDailyRecordStats } from "@/lib/api/stats";
@@ -14,13 +14,14 @@ import CreateTestModal from "@/components/modals/create-test-wizard/CreateTestMo
 import TestRecordsTable from "@/components/inventory/records/RecordsTable";
 import { StatCard } from "@/components/shared/StatCard";
 import PaginationControls from "@/components/shared/PaginationControls";
-import RecordFilters from "@/components/inventory/records/RecordFilters";
 
+// ✅ 1. Import the AnalystFilter component as well
 import {
   FilterContainer,
   SearchFilter,
   StatusFilter,
   LabFilter,
+  AnalystFilter,
   SortByFilter,
   ClearFiltersButton,
 } from "@/components/inventory/records/filters";
@@ -66,6 +67,10 @@ export default function RecentTestsPage() {
     if (analystId) params.set("analyst", analystId);
     else params.delete("analyst");
 
+    // We only need to preserve page for this page's URL updates
+    params.set("page", String(page));
+    params.set("page_size", String(pageSize));
+
     router.replace(`${pathname}?${params.toString()}`);
   }, [
     debouncedSearchTerm,
@@ -75,6 +80,9 @@ export default function RecentTestsPage() {
     analystId,
     pathname,
     router,
+    page,
+    pageSize,
+    searchParams,
   ]);
 
   const { stats, isLoading: isLoadingStats } = useDailyRecordStats();
@@ -108,7 +116,9 @@ export default function RecentTestsPage() {
     setAnalystId(null);
   };
 
-  const areFiltersActive = searchTerm || status || labId || ordering;
+  // ✅ 2. FIX: Add analystId to the areFiltersActive check
+  const areFiltersActive =
+    searchTerm || status || labId || ordering || analystId;
 
   return (
     <div className="space-y-6">
@@ -159,25 +169,20 @@ export default function RecentTestsPage() {
         />
       </div>
 
-      {/* ✅ 5. Render the RecordFilters component */}
-      <RecordFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        status={status}
-        setStatus={setStatus}
-        labId={labId}
-        setLabId={setLabId}
-        analystId={analystId}
-        setAnalystId={setAnalystId}
-        ordering={ordering}
-        setOrdering={setOrdering}
-        clearFilters={clearFilters}
-        areFiltersActive={areFiltersActive}
-        dateAfter={undefined}
-        setDateAfter={undefined}
-        dateBefore={undefined}
-        setDateBefore={undefined}
-      />
+      {/* ✅ 3. Replace the old component with the new composable filter layout */}
+      <FilterContainer>
+        <SearchFilter searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <StatusFilter status={status} setStatus={setStatus} />
+        <LabFilter labId={labId} setLabId={setLabId} />
+        <AnalystFilter analystId={analystId} setAnalystId={setAnalystId} />
+        <SortByFilter ordering={ordering} setOrdering={setOrdering} />
+        <div className="flex items-center justify-end">
+          <ClearFiltersButton
+            areFiltersActive={areFiltersActive}
+            clearFilters={clearFilters}
+          />
+        </div>
+      </FilterContainer>
 
       {isLoadingTable && (
         <div className="flex justify-center p-12">
@@ -186,11 +191,9 @@ export default function RecentTestsPage() {
       )}
       {error && <div className="text-red-600">Failed to load records.</div>}
 
-      {/* ✅ 6. Render the table and pagination */}
       {testRecords && (
         <>
           <TestRecordsTable records={testRecords} />
-          {/* Always render pagination if there are results, to show the count */}
           {filteredTotal != null && (
             <PaginationControls
               totalCount={filteredTotal}

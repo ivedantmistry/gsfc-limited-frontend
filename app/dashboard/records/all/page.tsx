@@ -9,14 +9,16 @@ import { Loader2 } from "lucide-react";
 import { format, isValid } from "date-fns";
 import TestRecordsTable from "@/components/inventory/records/RecordsTable";
 import PaginationControls from "@/components/shared/PaginationControls";
-// import RecordFilters from "@/components/inventory/records/RecordFilters";
 
+// ✅ 1. Import all the necessary filter components
 import {
   FilterContainer,
   SearchFilter,
   StatusFilter,
   LabFilter,
+  AnalystFilter,
   SortByFilter,
+  DateRangeFilter,
   ClearFiltersButton,
 } from "@/components/inventory/records/filters";
 
@@ -60,25 +62,21 @@ export default function AllRecordsPage() {
   }, [searchTerm]);
 
   useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-    params.set("page", "1");
+    const params = new URLSearchParams(); // Start with fresh params
+    params.set("page", "1"); // Always reset to page 1 on filter change
 
     if (debouncedSearchTerm) params.set("search", debouncedSearchTerm);
-    else params.delete("search");
     if (dateAfter) params.set("date_after", format(dateAfter, "yyyy-MM-dd"));
-    else params.delete("date_after");
     if (dateBefore) params.set("date_before", format(dateBefore, "yyyy-MM-dd"));
-    else params.delete("date_before");
     if (status) params.set("status", status);
-    else params.delete("status");
     if (labId) params.set("lab", labId);
-    else params.delete("lab");
     if (ordering) params.set("ordering", ordering);
-    else params.delete("ordering");
     if (analystId) params.set("analyst", analystId);
-    else params.delete("analyst");
 
-    router.replace(`${pathname}?${params.toString()}`);
+    // Only push to router if the params have changed
+    if (params.toString() !== new URLSearchParams(searchParams).toString()) {
+      router.replace(`${pathname}?${params.toString()}`);
+    }
   }, [
     debouncedSearchTerm,
     dateAfter,
@@ -89,19 +87,21 @@ export default function AllRecordsPage() {
     analystId,
     pathname,
     router,
+    searchParams,
   ]);
 
+  // ✅ 2. FIX: Use state variables for the API call, not the initial values from the URL.
   const { testRecords, totalCount, isLoading, error } = useTestRecords({
     view_type: "historical",
     page: page,
     pageSize: pageSize,
-    searchTerm: initialSearch,
-    date_after: initialDateAfter,
-    date_before: initialDateBefore,
-    status: initialStatus as any,
-    labId: initialLabId,
+    searchTerm: debouncedSearchTerm,
+    date_after: dateAfter ? format(dateAfter, "yyyy-MM-dd") : undefined,
+    date_before: dateBefore ? format(dateBefore, "yyyy-MM-dd") : undefined,
+    status: status as any,
+    labId: labId,
     analystId: analystId,
-    ordering: initialOrdering,
+    ordering: ordering,
   });
 
   const clearFilters = () => {
@@ -114,13 +114,15 @@ export default function AllRecordsPage() {
     setAnalystId(null);
   };
 
+  // ✅ 3. FIX: Check active state from the current state variables, not the initial ones.
   const areFiltersActive =
-    initialSearch ||
-    initialDateAfter ||
-    initialDateBefore ||
-    initialStatus ||
-    initialLabId ||
-    initialOrdering;
+    searchTerm ||
+    dateAfter ||
+    dateBefore ||
+    status ||
+    labId ||
+    ordering ||
+    analystId;
 
   return (
     <div className="space-y-6">
@@ -133,24 +135,26 @@ export default function AllRecordsPage() {
         </p>
       </div>
 
-      <RecordFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        dateAfter={dateAfter}
-        setDateAfter={setDateAfter}
-        dateBefore={dateBefore}
-        setDateBefore={setDateBefore}
-        status={status}
-        setStatus={setStatus}
-        labId={labId}
-        setLabId={setLabId}
-        analystId={analystId}
-        setAnalystId={setAnalystId}
-        ordering={ordering}
-        setOrdering={setOrdering}
-        clearFilters={clearFilters}
-        areFiltersActive={areFiltersActive}
-      />
+      {/* ✅ 4. Replace the old component with the new composable filter layout */}
+      <FilterContainer>
+        <SearchFilter searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <StatusFilter status={status} setStatus={setStatus} />
+        <LabFilter labId={labId} setLabId={setLabId} />
+        <AnalystFilter analystId={analystId} setAnalystId={setAnalystId} />
+        <SortByFilter ordering={ordering} setOrdering={setOrdering} />
+        <div className="flex items-end gap-2 mt-4 xl:col-span-full">
+          <DateRangeFilter
+            dateAfter={dateAfter}
+            setDateAfter={setDateAfter}
+            dateBefore={dateBefore}
+            setDateBefore={setDateBefore}
+          />
+          <ClearFiltersButton
+            areFiltersActive={areFiltersActive}
+            clearFilters={clearFilters}
+          />
+        </div>
+      </FilterContainer>
 
       {isLoading && (
         <div className="flex justify-center p-12">
