@@ -35,7 +35,7 @@ export const navItems: NavItem[] = [
   {
     href: "/dashboard/quality-trends",
     icon: BarChart2,
-    label: "Quality Stats",
+    label: "Quality Trends",
     permission: "inventory.can_view_quality_trends",
   },
   {

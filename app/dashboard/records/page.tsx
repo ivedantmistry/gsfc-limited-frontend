@@ -1,5 +1,4 @@
 // src/app/dashboard/records/page.tsx
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -15,7 +14,6 @@ import TestRecordsTable from "@/components/inventory/records/RecordsTable";
 import { StatCard } from "@/components/shared/StatCard";
 import PaginationControls from "@/components/shared/PaginationControls";
 
-// ✅ 1. Import the AnalystFilter component as well
 import {
   FilterContainer,
   SearchFilter,
@@ -61,9 +59,7 @@ export default function RecentTestsPage() {
     if (ordering) params.set("ordering", ordering);
     if (analystId) params.set("analyst", analystId);
 
-    // When a filter changes, always go back to page 1
     params.set("page", "1");
-    // Preserve the current page size
     params.set("page_size", String(pageSize));
 
     router.replace(`${pathname}?${params.toString()}`);
@@ -75,7 +71,7 @@ export default function RecentTestsPage() {
     analystId,
     pathname,
     router,
-    pageSize, // Note: page is removed from dependencies
+    pageSize, 
   ]);
 
   const { stats, isLoading: isLoadingStats } = useDailyRecordStats();
@@ -109,7 +105,6 @@ export default function RecentTestsPage() {
     setAnalystId(null);
   };
 
-  // ✅ 2. FIX: Add analystId to the areFiltersActive check
   const areFiltersActive =
     searchTerm || status || labId || ordering || analystId;
 
@@ -125,12 +120,11 @@ export default function RecentTestsPage() {
           </p>
         </div>
         {canCreateTest && (
-          // ✅ 3. Wrap buttons in a flex container for proper alignment
           <div className="flex items-center gap-2">
             <Link href="/dashboard/records/all">
               <Button
                 variant="outline"
-              className="text-indigo-600 bg-white hover:bg-indigo-100 hover:text-indigo-700 border border-indigo-300 shadow-sm transition-colors"
+                className="text-indigo-600 bg-white hover:bg-indigo-100 hover:text-indigo-700 border border-indigo-300 shadow-sm transition-colors"
               >
                 <History className="mr-2 h-4 w-4" />
                 Historical Records
@@ -138,7 +132,7 @@ export default function RecentTestsPage() {
             </Link>
             <Button
               onClick={() => setIsModalOpen(true)}
-             className="text-indigo-600 bg-white hover:bg-indigo-100 hover:text-indigo-700 border border-indigo-300 shadow-sm transition-colors"
+              className="text-indigo-600 bg-white hover:bg-indigo-100 hover:text-indigo-700 border border-indigo-300 shadow-sm transition-colors"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
               Create New Test
@@ -162,7 +156,6 @@ export default function RecentTestsPage() {
         />
       </div>
 
-      {/* ✅ 3. Replace the old component with the new composable filter layout */}
       <FilterContainer>
         <SearchFilter searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         <StatusFilter status={status} setStatus={setStatus} />

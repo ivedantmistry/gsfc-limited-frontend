@@ -13,7 +13,7 @@ export default function QualityTrendsLayout({
   const canViewTrends = useHasPermission("inventory.can_view_quality_trends");
 
   if (!canViewTrends) {
-    <AccessDenied />;
+    return <AccessDenied />;
   }
 
   return <>{children}</>;

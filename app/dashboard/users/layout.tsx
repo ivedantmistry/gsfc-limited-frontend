@@ -3,14 +3,17 @@
 
 import React, { ReactNode } from "react";
 import { useHasPermission } from "@/context/AuthContext";
-import { notFound } from "next/navigation";
+import AccessDenied from "@/components/shared/AccessDenied";
 
-export default function AdminUsersLayout({ children }: { children: ReactNode }) {
-  // Guard the entire route with the specific permission
+export default function AdminUsersLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const canViewUsers = useHasPermission("authentication.view_user_list");
 
   if (!canViewUsers) {
-    notFound();
+    return <AccessDenied />;
   }
 
   return <>{children}</>;
