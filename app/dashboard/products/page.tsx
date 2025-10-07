@@ -39,13 +39,17 @@ export default function ProductsPage() {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        // Instead of opening a dialog, directly focus the input field
         searchInputRef.current?.focus();
       }
     };
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      searchInputRef.current?.blur();
+    }
+  };
 
   const { products, totalCount, isLoading, error, mutate } = useProducts({
     searchTerm: debouncedSearchTerm,
@@ -76,7 +80,7 @@ export default function ProductsPage() {
           </div>
           {canManageProducts && (
             <Button
-                className="text-indigo-500 bg-white hover:text-white hover:bg-indigo-500 border border-indigo-500 shadow-sm transition-colors"
+             className="text-indigo-600 bg-white hover:bg-indigo-100 hover:text-indigo-700 border border-indigo-300 shadow-sm transition-colors"
               onClick={() => setIsModalOpen(true)}
             >
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -94,6 +98,7 @@ export default function ProductsPage() {
             className="pl-10 pr-20 h-10 w-full rounded-md border border-input bg-white text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
 
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-1 text-xs text-muted-foreground bg-muted border rounded px-2 py-0.5 h-5">

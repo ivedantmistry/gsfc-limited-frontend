@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTestRecords } from "@/lib/api/test";
-import { useDailyRecordStats } from "@/lib/api/stats";
+import { useDailyRecordStats } from "@/lib/api/userstats";
 import { useHasPermission } from "@/context/AuthContext";
 import Link from "next/link";
 import { PlusCircle, Loader2, ListChecks, Clock, History } from "lucide-react";
@@ -130,7 +130,7 @@ export default function RecentTestsPage() {
             <Link href="/dashboard/records/all">
               <Button
                 variant="outline"
-                className="text-indigo-500 bg-white hover:text-white hover:bg-indigo-500 border border-indigo-500 shadow-sm transition-colors"
+              className="text-indigo-600 bg-white hover:bg-indigo-100 hover:text-indigo-700 border border-indigo-300 shadow-sm transition-colors"
               >
                 <History className="mr-2 h-4 w-4" />
                 Historical Records
@@ -138,7 +138,7 @@ export default function RecentTestsPage() {
             </Link>
             <Button
               onClick={() => setIsModalOpen(true)}
-              className="text-indigo-500 bg-white hover:text-white hover:bg-indigo-500 border border-indigo-500 shadow-sm transition-colors"
+             className="text-indigo-600 bg-white hover:bg-indigo-100 hover:text-indigo-700 border border-indigo-300 shadow-sm transition-colors"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
               Create New Test

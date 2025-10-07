@@ -3,12 +3,16 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { format } from "date-fns";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-
+import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Product } from "@/lib/types/";
 
@@ -18,22 +22,31 @@ interface ProductTableProps {
   canManage: boolean;
 }
 
-export const ProductTable = ({ products, isLoading, canManage }: ProductTableProps) => {
+export const ProductTable = ({ products, isLoading }: ProductTableProps) => {
+  const router = useRouter();
   if (isLoading) {
     return (
       <div className="rounded-lg border">
         <Table>
-          <TableHeader>
-             {/* ... (table header) ... */}
-          </TableHeader>
+          <TableHeader></TableHeader>
           <TableBody>
             {Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i}>
-                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                <TableCell><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-40" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-32" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -41,7 +54,7 @@ export const ProductTable = ({ products, isLoading, canManage }: ProductTablePro
       </div>
     );
   }
-  
+
   return (
     <div className="rounded-lg border bg-white shadow-sm">
       <Table>
@@ -56,13 +69,21 @@ export const ProductTable = ({ products, isLoading, canManage }: ProductTablePro
         <TableBody>
           {products && products.length > 0 ? (
             products.map((product) => (
-              <TableRow key={product.id}>
+              <TableRow
+                key={product.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() =>
+                  router.push(`/dashboard/products/${product.id}/versions`)
+                }
+              >
                 <TableCell className="font-mono">
-                   <Link href={`/dashboard/products/${product.id}/versions`} className="hover:underline">{product.product_id}</Link>
+                  {product.product_id}
                 </TableCell>
                 <TableCell className="font-medium">{product.name}</TableCell>
                 <TableCell>{product.active_version_name || "N/A"}</TableCell>
-                <TableCell>{format(new Date(product.created_at), 'dd MMM yyyy')}</TableCell>
+                <TableCell>
+                  {format(new Date(product.created_at), "dd MMM yyyy")}
+                </TableCell>
               </TableRow>
             ))
           ) : (

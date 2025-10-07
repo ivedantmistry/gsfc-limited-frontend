@@ -5,7 +5,6 @@ import {
   FileText,
   Users,
   AlertTriangle,
-  PlusCircle,
 } from "lucide-react";
 export interface NavItem {
   href: string;
@@ -18,7 +17,6 @@ export const navItems: NavItem[] = [
   {
     href: "/dashboard/alerts",
     icon: AlertTriangle,
-    //
     label: "Alerts",
     permission: "alerts.view_alert",
   },
@@ -35,10 +33,10 @@ export const navItems: NavItem[] = [
     permission: "inventory.can_view_test_records",
   },
   {
-    href: "/dashboard/statistics",
+    href: "/dashboard/quality-trends",
     icon: BarChart2,
     label: "Quality Stats",
-    // permission: "inventory.ad",
+    permission: "inventory.can_view_quality_trends",
   },
   {
     href: "/dashboard/users",

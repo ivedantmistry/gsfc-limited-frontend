@@ -3,7 +3,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -16,7 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { TestRecord, TestRecordInList } from "@/lib/types/test.types";
 import { format } from "date-fns";
 
-// Helper to get status colors and variants
 const getStatusVariant = (
   status: TestRecord["status"] | TestRecordInList["status"]
 ) => {
@@ -38,12 +37,12 @@ interface RecordsTableProps {
   records: TestRecordInList[];
 }
 export default function RecordsTable({ records }: RecordsTableProps) {
+  const router = useRouter();
   return (
     <div className="rounded-lg border bg-white shadow-sm">
       <Table>
         <TableHeader>
           <TableRow>
-            {/* ✅ FIX: Revert to simple TableHead components */}
             <TableHead>Record ID</TableHead>
             <TableHead>Product</TableHead>
             <TableHead>Analyst</TableHead>
@@ -58,14 +57,10 @@ export default function RecordsTable({ records }: RecordsTableProps) {
               <TableRow
                 key={record.id}
                 className="cursor-pointer hover:bg-muted/50"
+                onClick={() => router.push(`/dashboard/records/${record.id}`)}
               >
                 <TableCell className="font-mono">
-                  <Link
-                    href={`/dashboard/records/${record.id}`}
-                    className="hover:underline"
-                  >
                     {record.record_id}
-                  </Link>
                 </TableCell>
                 <TableCell>{record.product_name}</TableCell>
                 <TableCell>{record.analyst_full_name || "N/A"}</TableCell>
@@ -83,7 +78,7 @@ export default function RecordsTable({ records }: RecordsTableProps) {
           ) : (
             <TableRow>
               <TableCell colSpan={6} className="h-24 text-center">
-             No records have been created today.
+                No records have been created today.
               </TableCell>
             </TableRow>
           )}

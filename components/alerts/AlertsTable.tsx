@@ -3,7 +3,6 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -15,16 +14,16 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { AlertInList, AlertStatus } from "@/lib/types/alert.types";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
 
-// ✅ Helper to get status colors for the badges
 const getStatusVariant = (status: AlertStatus) => {
   switch (status) {
     case "NEW":
-      return "warning"; // Yellow
+      return "warning";
     case "ACKNOWLEDGED":
-      return "default"; // Will be styled as blue or primary
+      return "default";
     case "RESOLVED":
-      return "secondary"; // Gray
+      return "secondary";
     default:
       return "secondary";
   }
@@ -35,6 +34,7 @@ interface AlertsTableProps {
 }
 
 export default function AlertsTable({ alerts }: AlertsTableProps) {
+  const router = useRouter();
   return (
     <div className="rounded-lg border bg-white shadow-sm">
       <Table>
@@ -51,8 +51,12 @@ export default function AlertsTable({ alerts }: AlertsTableProps) {
         <TableBody>
           {alerts.length > 0 ? (
             alerts.map((alert) => (
-              <TableRow key={alert.id} className="hover:bg-muted/50">
-                  <TableCell className="font-mono">{alert.alert_id}</TableCell>
+              <TableRow
+                key={alert.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => router.push(`/dashboard/alerts/${alert.id}`)}
+              >
+                <TableCell className="font-mono">{alert.alert_id}</TableCell>
                 <TableCell>
                   <Badge
                     className={`badge-${getStatusVariant(alert.status)}`}
@@ -62,13 +66,7 @@ export default function AlertsTable({ alerts }: AlertsTableProps) {
                   </Badge>
                 </TableCell>
                 <TableCell className="font-medium">
-                  {/* ✅ Link to the detail page, which we will build next */}
-                  <Link
-                    href={`/dashboard/alerts/${alert.id}`}
-                    // className="hover:underline text-indigo-600"
-                  >
                     {`Parameter '${alert.details.parameter_name}' was ${alert.details.value_entered}`}
-                  </Link>
                   <p className="text-xs text-muted-foreground">
                     (Expected: {alert.details.normal_range})
                   </p>
