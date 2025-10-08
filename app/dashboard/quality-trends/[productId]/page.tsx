@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import QualityChart from "@/components/quality-trends/QualityChart"; // The detailed chart component we built
+import QualityChart from "@/components/quality-trends/QualityChart";
 import {
   Popover,
   PopoverContent,
@@ -40,6 +40,7 @@ const RecentTestsTable = ({ tests }: { tests: RecentTestRecord[] }) => (
           <TableRow>
             <TableHead>Record ID</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Analyst</TableHead>
             <TableHead>Date</TableHead>
           </TableRow>
         </TableHeader>
@@ -163,12 +164,33 @@ export default function ProductQualityDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Main Chart */}
-      <div>
-        {productDetail.trends && productDetail.trends.length > 0 ? (
-          <QualityChart data={productDetail.trends} />
+      {/* Main Chart Section */}
+      <div className="space-y-8">
+        {productDetail.has_grades ? (
+          // Render charts grouped by grade
+          productDetail.grades.map((grade) => (
+            <div key={grade.id}>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-800 mb-4 border-b pb-2">
+                Grade: {grade.name}
+              </h2>
+              {grade.trends && grade.trends.length > 0 ? (
+                <QualityChart data={grade.trends} />
+              ) : (
+                <p>
+                  No trend data available for this grade in the selected period.
+                </p>
+              )}
+            </div>
+          ))
         ) : (
-          <p>No trend data available for the selected period.</p>
+          // Original logic for versions without grades
+          <div>
+            {productDetail.trends && productDetail.trends.length > 0 ? (
+              <QualityChart data={productDetail.trends} />
+            ) : (
+              <p>No trend data available for the selected period.</p>
+            )}
+          </div>
         )}
       </div>
 

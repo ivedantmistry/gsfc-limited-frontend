@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
   createParameterForVersion,
   createParameterForGrade,
+  updateParameter,
 } from "@/lib/api/parameter";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
+import { ParameterDefinition } from "@/lib/types"; // Import the type
 
 const DATA_TYPE_CHOICES = [
   "DECIMAL",
@@ -49,8 +51,15 @@ const formSchema = z
     unit: z.string().optional(),
     is_required: z.boolean().default(true),
     data_type: z.enum(DATA_TYPE_CHOICES, { error: "Data type is required." }),
-    min_value: z.coerce.number().optional(),
-    max_value: z.coerce.number().optional(),
+    // This transform will convert empty strings to 'undefined' so they pass validation
+    min_value: z
+      .union([z.string(), z.number()])
+      .optional()
+      .transform((e) => (e === "" ? undefined : e)),
+    max_value: z
+      .union([z.string(), z.number()])
+      .optional()
+      .transform((e) => (e === "" ? undefined : e)),
     enum_options: z.string().optional(),
     boolean_true_label: z.string().optional(),
     boolean_false_label: z.string().optional(),
@@ -70,12 +79,24 @@ const formSchema = z
   );
 
 type ParameterFormData = z.infer<typeof formSchema>;
-
+const defaultFormValues: ParameterFormData = {
+  name: "",
+  description: "",
+  unit: "",
+  is_required: true,
+  data_type: "STRING",
+  min_value: "",
+  max_value: "",
+  enum_options: "",
+  boolean_true_label: "",
+  boolean_false_label: "",
+};
 interface AddParameterModalProps {
   isOpen: boolean;
   onClose: () => void;
   scope: { versionId?: string | number; gradeId?: string | number };
   onSuccess: () => void;
+  editingParameter?: ParameterDefinition | null;
 }
 
 export default function AddParameterModal({
@@ -83,25 +104,39 @@ export default function AddParameterModal({
   onClose,
   scope,
   onSuccess,
+  editingParameter,
 }: AddParameterModalProps) {
   const [apiError, setApiError] = useState<string | null>(null);
+  const isEditMode = !!editingParameter; // Determine if we are in "edit" mode
 
   const form = useForm<ParameterFormData>({
     resolver: zodResolver(formSchema) as any,
-    defaultValues: {
-      name: "",
-      description: "",
-      unit: "",
-      is_required: true,
-      data_type: "STRING",
-      min_value: undefined,
-      max_value: undefined,
-      enum_options: "",
-      boolean_true_label: "",
-      boolean_false_label: "",
-    },
+    defaultValues: defaultFormValues,
   });
-
+  useEffect(() => {
+    if (isOpen) {
+      if (isEditMode && editingParameter) {
+        form.reset({
+          name: editingParameter.name,
+          description: editingParameter.description || "",
+          data_type: editingParameter.data_type,
+          unit: editingParameter.unit || "",
+          is_required: editingParameter.is_required,
+          enum_options: editingParameter.enum_options?.join(", ") || "",
+          min_value: editingParameter.min_value
+            ? parseFloat(editingParameter.min_value)
+            : undefined,
+          max_value: editingParameter.max_value
+            ? parseFloat(editingParameter.max_value)
+            : undefined,
+          boolean_true_label: editingParameter.boolean_true_label || "",
+          boolean_false_label: editingParameter.boolean_false_label || "",
+        });
+      } else {
+        form.reset(defaultFormValues);
+      }
+    }
+  }, [isOpen, isEditMode, editingParameter, form.reset]);
   const dataType = form.watch("data_type");
   const { isSubmitting } = form.formState;
 
@@ -119,12 +154,16 @@ export default function AddParameterModal({
         boolean_false_label: values.boolean_false_label || null,
       };
 
-      if (scope.versionId) {
-        await createParameterForVersion(Number(scope.versionId), apiValues);
-      } else if (scope.gradeId) {
-        await createParameterForGrade(Number(scope.gradeId), apiValues);
+      if (isEditMode && editingParameter) {
+        await updateParameter(editingParameter.id, apiValues);
       } else {
-        throw new Error("Invalid scope: No versionId or gradeId provided.");
+        if (scope.versionId) {
+          await createParameterForVersion(Number(scope.versionId), apiValues);
+        } else if (scope.gradeId) {
+          await createParameterForGrade(Number(scope.gradeId), apiValues);
+        } else {
+          throw new Error("Invalid scope: No versionId or gradeId provided.");
+        }
       }
 
       onSuccess();
@@ -144,8 +183,8 @@ export default function AddParameterModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg bg-slate-50 p-0 rounded-xl border border-slate-200/80">
         <DialogHeader className="p-6 pb-4 border-b border-slate-200/80">
-          <DialogTitle className="text-lg font-semibold text-slate-900">
-            Define a New Parameter
+          <DialogTitle>
+            {isEditMode ? "Edit Parameter" : "Define a New Parameter"}
           </DialogTitle>
           <DialogDescription className="text-slate-600">
             Specify the details and constraints for this quality parameter.
@@ -233,6 +272,10 @@ export default function AddParameterModal({
                           <Input
                             type="number"
                             className={inputStyles}
+                            onKeyDown={(evt) =>
+                              ["e", "E", "+", "-"].includes(evt.key) &&
+                              evt.preventDefault()
+                            }
                             {...field}
                           />
                         </FormControl>
@@ -250,6 +293,10 @@ export default function AddParameterModal({
                           <Input
                             type="number"
                             className={inputStyles}
+                            onKeyDown={(evt) =>
+                              ["e", "E", "+", "-"].includes(evt.key) &&
+                              evt.preventDefault()
+                            }
                             {...field}
                           />
                         </FormControl>

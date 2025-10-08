@@ -1,5 +1,5 @@
 import React from "react";
-import { ProductGrade } from "@/lib/types";
+import { ProductGrade, ParameterDefinition } from "@/lib/types";
 import { Plus } from "lucide-react";
 import { GradeCard } from "./GradeCard";
 
@@ -9,7 +9,11 @@ interface GradeSectionProps {
   grades: ProductGrade[];
   onOpenGradeModal: (versionId: number) => void;
   onOpenParamModal: (scope: { gradeId?: number }) => void;
-   canManage: boolean;
+  canManage: boolean;
+  onEditGrade: (grade: ProductGrade) => void;
+  onEditParameter: (parameter: ParameterDefinition) => void;
+  onDeleteGrade: (grade: ProductGrade) => void;
+  onDeleteParameter: (parameter: ParameterDefinition) => void; // ✅ 1. Add this prop
 }
 
 export const GradeSection = ({
@@ -19,11 +23,15 @@ export const GradeSection = ({
   canManage,
   onOpenGradeModal,
   onOpenParamModal,
+  onEditGrade,
+  onEditParameter,
+  onDeleteGrade,
+  onDeleteParameter, // ✅ 2. Get the prop
 }: GradeSectionProps) => (
   <div className="space-y-4">
     <div className="flex justify-between items-center">
       <h2 className="text-2xl font-bold text-slate-900">Product Grades</h2>
-    {isDraft && canManage && (
+      {isDraft && canManage && (
         <button
           onClick={() => onOpenGradeModal(versionId)}
           className="inline-flex items-center gap-2 rounded-md bg-white text-slate-700 font-medium px-3 py-2 text-sm border border-slate-300 hover:bg-slate-50"
@@ -38,7 +46,11 @@ export const GradeSection = ({
         grade={g}
         isDraft={isDraft}
         onAddParameter={() => onOpenParamModal({ gradeId: g.id })}
-          canManage={canManage}
+        canManage={canManage}
+        onEdit={() => onEditGrade(g)}
+        onEditParameter={onEditParameter}
+        onDelete={() => onDeleteGrade(g)}
+        onDeleteParameter={onDeleteParameter} // ✅ 3. Pass the prop down to GradeCard
       />
     ))}
   </div>

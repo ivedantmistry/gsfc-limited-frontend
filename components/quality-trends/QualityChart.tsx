@@ -13,26 +13,21 @@ import {
   Legend,
   ResponsiveContainer,
   ReferenceLine,
-  Dot, // Import Dot for type annotation
+  Dot,
 } from "recharts";
 import { AggregatedTrend } from "@/lib/types/dashboard.types";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-// ✅ 1. Define the Custom Dot component
 const CustomDot = (props: any) => {
   const { cx, cy, payload, minSpec, maxSpec } = props;
   const { avg } = payload;
 
-  // Check if the average is outside the specification limits
   const isOutOfSpec = (minSpec && avg < minSpec) || (maxSpec && avg > maxSpec);
 
   if (isOutOfSpec) {
-    // If out of spec, render a larger, visible red dot
     return <Dot cx={cx} cy={cy} r={5} fill="#ef4444" stroke="#fff" strokeWidth={2} />;
   }
-
-  // Otherwise, render nothing (or a very small, transparent dot if you prefer)
   return null;
 };
 
@@ -50,8 +45,6 @@ export default function QualityChart({ data }: QualityChartProps) {
       {data.map((parameterData) => {
         const chartData = parameterData.data_points;
         const yAxisLabel = parameterData.unit ? `Value (${parameterData.unit})` : "Value";
-        
-        // Convert string spec limits to numbers for comparison
         const minSpec = parameterData.min_value ? parseFloat(parameterData.min_value) : null;
         const maxSpec = parameterData.max_value ? parseFloat(parameterData.max_value) : null;
 
@@ -91,7 +84,6 @@ export default function QualityChart({ data }: QualityChartProps) {
                   />
                   <Legend />
 
-                  {/* Specification Lines */}
                   {minSpec !== null && (
                     <ReferenceLine y={minSpec} label="Min Spec" stroke="red" strokeDasharray="3 3" />
                   )}
@@ -99,21 +91,18 @@ export default function QualityChart({ data }: QualityChartProps) {
                     <ReferenceLine y={maxSpec} label="Max Spec" stroke="red" strokeDasharray="3 3" />
                   )}
                   
-                  {/* Daily Min/Max Range Area */}
                   <Area
                     type="monotone"
                     dataKey={(payload) => [payload.min, payload.max]}
                     stroke="#a5b4fc" fill="#e0e7ff" fillOpacity={0.6} name="Daily Range"
                   />
 
-                  {/* ✅ 2. Update the Line to use the custom dot */}
                   <Line
                     type="monotone"
                     dataKey="avg"
                     name="Daily Avg"
                     stroke="#4f46e5" // Always use indigo for the line
                     strokeWidth={2}
-                    // Pass the custom dot component and the spec limits as props
                     dot={<CustomDot minSpec={minSpec} maxSpec={maxSpec} />}
                     activeDot={{ r: 8, fill: '#4f46e5' }}
                   />

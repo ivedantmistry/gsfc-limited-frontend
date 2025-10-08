@@ -14,8 +14,7 @@ type CreateParameterData = Omit<
   enum_options?: string;
 };
 
-// ✅ FIX: Omit the conflicting 'enum_options' from CreateParameterData
-// before adding the correctly typed one for the final payload.
+// CreateParameterData before adding the correctly typed one for the final payload.
 type CreateParameterPayload = Omit<CreateParameterData, "enum_options"> & {
   version_id?: number;
   grade_id?: number;
@@ -62,4 +61,29 @@ export const createParameterForGrade = async (
     payload
   );
   return response.data;
+};
+/**
+ * Updates an existing parameter definition.
+ *
+ * @param parameterId The ID of the parameter to update.
+ * @param parameterData The data to update.
+ */
+export const updateParameter = async (
+  parameterId: number,
+  parameterData: any // Using 'any' to match your create functions
+) => {
+  const response = await api.patch<ParameterDefinition>(
+    `${PARAMETERS_ENDPOINT}${parameterId}/`,
+    parameterData
+  );
+  return response.data;
+};
+
+/**
+ *  Deletes a parameter definition.
+ *
+ * @param parameterId The ID of the parameter to delete.
+ */
+export const deleteParameter = async (parameterId: number) => {
+  await api.delete(`${PARAMETERS_ENDPOINT}${parameterId}/`);
 };

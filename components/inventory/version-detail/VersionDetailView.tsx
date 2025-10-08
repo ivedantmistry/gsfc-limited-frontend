@@ -1,13 +1,23 @@
 "use client";
 
 import React, { useState } from "react";
-import { Product, VersionNested } from "@/lib/types";
+import {
+  Product,
+  VersionNested,
+  ProductGrade,
+  ParameterDefinition,
+} from "@/lib/types";
 import AddGradeModal from "@/components/modals/AddGradeModal";
 import AddParameterModal from "@/components/modals/AddParameterModal";
+import EditGradeModal from "@/components/modals/EditGradeModal";
 import { VersionHeader } from "./VersionHeader";
 import { EmptyState } from "./EmptyState";
 import { ParameterSection } from "./ParameterSection";
 import { GradeSection } from "./GradeSection";
+import { deleteGrade } from "@/lib/api/grade";
+import { deleteParameter } from "@/lib/api/parameter";
+import DeleteConfirmationDialog from "@/components/modals/DeleteConfirmationDialog";
+import { toast } from "sonner";
 
 interface VersionDetailViewProps {
   product: Product;
@@ -30,6 +40,14 @@ export function VersionDetailView({
     gradeId?: number;
   }>({});
 
+  const [editingGrade, setEditingGrade] = useState<ProductGrade | null>(null);
+  const [editingParameter, setEditingParameter] =
+    useState<ParameterDefinition | null>(null);
+  const [deletingParameter, setDeletingParameter] =
+    useState<ParameterDefinition | null>(null);
+  const [deletingGrade, setDeletingGrade] = useState<ProductGrade | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const openGradeModal = () => {
     setIsGradeModalOpen(true);
   };
@@ -37,6 +55,72 @@ export function VersionDetailView({
   const openParamModal = (scope: { versionId?: number; gradeId?: number }) => {
     setParamModalScope(scope);
     setIsParamModalOpen(true);
+  };
+
+  const openEditParamModal = (parameter: ParameterDefinition) => {
+    setEditingParameter(parameter);
+    setIsParamModalOpen(true);
+  };
+
+  const closeParamModal = () => {
+    setIsParamModalOpen(false);
+    setEditingParameter(null);
+  };
+
+  const handleOpenEditGradeModal = (grade: ProductGrade) => {
+    setEditingGrade(grade);
+  };
+
+  const handleCloseEditGradeModal = () => {
+    setEditingGrade(null);
+  };
+  const handleOpenDeleteModal = (grade: ProductGrade) => {
+    setDeletingGrade(grade);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setDeletingGrade(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingGrade) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteGrade(deletingGrade.id);
+      toast.success(`Grade "${deletingGrade.name}" deleted successfully.`);
+      onDataChange(); // Re-fetch version data
+      handleCloseDeleteModal();
+    } catch (error) {
+      toast.error("Failed to delete grade. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+  const handleOpenDeleteParamModal = (parameter: ParameterDefinition) => {
+    setDeletingParameter(parameter);
+  };
+
+  const handleCloseDeleteParamModal = () => {
+    setDeletingParameter(null);
+  };
+
+  const handleConfirmDeleteParam = async () => {
+    if (!deletingParameter) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteParameter(deletingParameter.id);
+      toast.success(
+        `Parameter "${deletingParameter.name}" deleted successfully.`
+      );
+      onDataChange(); // Re-fetch version data
+      handleCloseDeleteParamModal();
+    } catch (error) {
+      toast.error("Failed to delete parameter. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const parameters = version.parameters ?? [];
@@ -56,11 +140,34 @@ export function VersionDetailView({
       />
       <AddParameterModal
         isOpen={isParamModalOpen}
-        onClose={() => setIsParamModalOpen(false)}
+        onClose={closeParamModal}
         scope={paramModalScope}
         onSuccess={onDataChange}
+        editingParameter={editingParameter}
       />
 
+      <EditGradeModal
+        isOpen={!!editingGrade}
+        onClose={handleCloseEditGradeModal}
+        grade={editingGrade}
+        versionId={version.id}
+      />
+      <DeleteConfirmationDialog
+        isOpen={!!deletingGrade}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Are you sure you want to delete this grade?"
+        description={`This will permanently delete the grade "${deletingGrade?.name}". This action cannot be undone.`}
+        isDeleting={isDeleting}
+      />
+      <DeleteConfirmationDialog
+        isOpen={!!deletingParameter}
+        onClose={handleCloseDeleteParamModal}
+        onConfirm={handleConfirmDeleteParam}
+        title="Are you sure you want to delete this parameter?"
+        description={`This will permanently delete the parameter "${deletingParameter?.name}". This action cannot be undone.`}
+        isDeleting={isDeleting}
+      />
       <div className="space-y-6">
         <VersionHeader
           version={version}
@@ -79,13 +186,15 @@ export function VersionDetailView({
             canManage={canManage}
           />
         )}
-         {hasParameters && (
+      {hasParameters && (
           <ParameterSection
             isDraft={isDraft}
             versionId={version.id}
             parameters={parameters}
             onOpenParamModal={openParamModal}
-            canManage={canManage} 
+            canManage={canManage}
+            onEditParameter={openEditParamModal}
+            onDeleteParameter={handleOpenDeleteParamModal} 
           />
         )}
         {hasGrades && (
@@ -93,9 +202,12 @@ export function VersionDetailView({
             isDraft={isDraft}
             versionId={version.id}
             grades={grades}
-            onOpenGradeModal={openGradeModal}
             onOpenParamModal={openParamModal}
-             canManage={canManage}
+            canManage={canManage}
+            onEditGrade={handleOpenEditGradeModal}
+            onDeleteGrade={handleOpenDeleteModal}
+            onEditParameter={openEditParamModal}
+            onDeleteParameter={handleOpenDeleteParamModal} 
           />
         )}
       </div>
