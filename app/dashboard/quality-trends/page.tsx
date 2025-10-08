@@ -1,306 +1,193 @@
 // app/dashboard/quality-trends/page.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useAllProducts } from "@/lib/api/product";
-import { useQualityTrends } from "@/lib/api/stats";
-import {
-  ParameterDefinition,
-  Product,
-  Version,
-  ProductGrade,
-} from "@/lib/types";
-import { useVersions, useVersion } from "@/lib/api/version";
-import QualityChart from "@/components/quality-trends/QualityChart";
-
+import React, { useState } from "react";
+import Link from "next/link";
+import { useProductHealthDashboard } from "@/lib/api/dashboard";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+  AreaChart,
+  Area,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { format, formatDistanceToNow } from "date-fns";
+import { ArrowRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar as CalendarIcon, LineChart } from "lucide-react";
-import { DateRange } from "react-day-picker";
-import { format } from "date-fns";
+import { Label } from "@/components/ui/label";
+import { AggregatedDataPoint } from "@/lib/types/dashboard.types"; // ✅ 1. Import the new type
 
-export default function QualityTrendsPage() {
-  // State for user selections
-  const [selectedProductId, setSelectedProductId] = useState<number | null>(
-    null
+const MiniChart = ({
+  data,
+  parameterName,
+}: {
+  data: AggregatedDataPoint[];
+  parameterName: string;
+}) => {
+  const allValues = data.flatMap((d) => [d.min, d.max]);
+  const dataMin = Math.min(...allValues);
+  const dataMax = Math.max(...allValues);
+
+  return (
+    <ResponsiveContainer width="100%" height={100}>
+      <AreaChart
+        data={data}
+        margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
+      >
+        <Tooltip
+          contentStyle={{ fontSize: "0.75rem", padding: "2px 8px" }}
+          labelFormatter={(label) => format(new Date(label), "MMM dd")}
+          // ✅ 2. Fix the formatter to handle numbers correctly and prevent type errors
+          formatter={(value, name) => {
+            if (
+              Array.isArray(value) &&
+              typeof value[0] === "number" &&
+              typeof value[1] === "number"
+            ) {
+              // This now shows the actual range as you requested!
+              return [`${value[0].toFixed(2)} - ${value[1].toFixed(2)}`, name];
+            }
+            if (typeof value === "number") {
+              return [value.toFixed(2), name];
+            }
+            return [value, name];
+          }}
+        />
+        <XAxis
+          dataKey="date"
+          tickFormatter={(dateStr) => format(new Date(dateStr), "MMM dd")}
+          fontSize="0.75rem"
+          tickLine={false}
+          axisLine={false}
+          interval="preserveStartEnd"
+        />
+        <YAxis
+          domain={[
+            dataMin - (dataMax - dataMin) * 0.1,
+            dataMax + (dataMax - dataMin) * 0.1,
+          ]}
+          fontSize="0.75rem"
+          tickLine={false}
+          axisLine={false}
+          allowDecimals={false}
+          tickFormatter={(value) => Math.round(value).toString()}
+        />
+        <Area
+          type="monotone"
+          dataKey={(payload) => [payload.min, payload.max]}
+          stroke="#a5b4fc"
+          fill="#e0e7ff"
+          fillOpacity={0.6}
+          name="Daily Range" // This label is now mainly for the legend if we add one
+        />
+        <Line
+          type="monotone"
+          dataKey="avg"
+          stroke="#4f46e5"
+          strokeWidth={2}
+          dot={false}
+          name="Daily Avg"
+        />
+      </AreaChart>
+    </ResponsiveContainer>
   );
-  const [selectedVersionId, setSelectedVersionId] = useState<number | null>(
-    null
-  );
-  const [selectedGradeId, setSelectedGradeId] = useState<number | null>(null);
+};
 
-  const [availableParams, setAvailableParams] = useState<ParameterDefinition[]>(
-    []
-  );
-  const [selectedParameterIds, setSelectedParameterIds] = useState<number[]>(
-    []
-  );
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-    to: new Date(),
-  });
+export default function QualityTrendsHubPage() {
+  const [includeOutliers, setIncludeOutliers] = useState(true);
+  // ✅ 3. Fix the hook call by passing the 'includeOutliers' argument
+  const { dashboardData, isLoading, error } =
+    useProductHealthDashboard(includeOutliers);
 
-  // State to trigger the final API call
-  const [fetchParams, setFetchParams] = useState<{
-    versionId: number | null;
-    parameterIds: number[];
-    startDate: string | null;
-    endDate: string | null;
-  }>({ versionId: null, parameterIds: [], startDate: null, endDate: null });
-
-  // SWR Hooks to fetch filter data
-  const { products } = useAllProducts();
-  const { versions } = useVersions(selectedProductId || "");
-  const { version } = useVersion(selectedVersionId || "");
-
-  // ✅ 2. Revamped useEffect to handle both grades and direct parameters
-  useEffect(() => {
-    if (!version) {
-      setAvailableParams([]);
-      return;
-    }
-
-    // Case 1: The selected version has grades
-    if (version.grades && version.grades.length > 0) {
-      if (selectedGradeId) {
-        const selectedGrade = version.grades.find(
-          (g) => g.id === selectedGradeId
-        );
-        setAvailableParams(selectedGrade?.parameters || []);
-      } else {
-        // If no grade is selected yet, there are no parameters to show
-        setAvailableParams([]);
-      }
-    }
-    // Case 2: The version has direct parameters
-    else if (version.parameters) {
-      setAvailableParams(version.parameters);
-    }
-    // Case 3: No parameters found
-    else {
-      setAvailableParams([]);
-    }
-  }, [version, selectedGradeId]); // This effect runs whenever the 'version' object from SWR changes
-
-  // Main SWR hook for fetching graph data
-  const { data: trendData, isLoading, error } = useQualityTrends(fetchParams);
-
-  const handleProductChange = (productId: string) => {
-    setSelectedProductId(Number(productId));
-    setSelectedVersionId(null);
-    setSelectedGradeId(null);
-    setSelectedParameterIds([]);
-  };
-
-  const handleVersionChange = (versionId: string) => {
-    setSelectedVersionId(Number(versionId));
-    setSelectedParameterIds([]);
-  };
-  const handleGradeChange = (gradeId: string) => {
-    setSelectedGradeId(Number(gradeId));
-    setSelectedParameterIds([]);
-  };
-  const handleParameterToggle = (paramId: number) => {
-    setSelectedParameterIds((prev) =>
-      prev.includes(paramId)
-        ? prev.filter((id) => id !== paramId)
-        : [...prev, paramId]
-    );
-  };
-
-  const handleGenerateReport = () => {
-    setFetchParams({
-      versionId: selectedVersionId,
-      parameterIds: selectedParameterIds,
-      startDate: dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : null,
-      endDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : null,
-    });
-  };
-  const hasGrades = version && version.grades && version.grades.length > 0;
+  if (isLoading) return <p>Loading dashboard...</p>;
+  if (error) return <p>Failed to load dashboard data.</p>;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Quality Trends Analysis
+            Product Health Dashboard
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Visualize parameter trends over time for any product version.
+            Real-time quality overview of active product versions.
           </p>
+        </div>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="include-outliers"
+              checked={includeOutliers}
+              onCheckedChange={(checked) =>
+                setIncludeOutliers(checked as boolean)
+              }
+            />
+            <Label htmlFor="include-outliers" className="text-sm font-medium">
+              Include Out-of-Spec Results
+            </Label>
+          </div>
+          <Link href="/dashboard/quality-trends/report" passHref>
+            <Button>
+              Detailed Report <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </div>
 
-      {/* Filters Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 md:space-y-0 md:flex md:space-x-4">
-          {/* Product Select */}
-          <Select onValueChange={handleProductChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="1. Select a Product" />
-            </SelectTrigger>
-            <SelectContent>
-              {products?.map((p: Product) => (
-                <SelectItem key={p.id} value={String(p.id)}>
-                  {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Version Select */}
-          <Select
-            onValueChange={handleVersionChange}
-            disabled={!selectedProductId || !versions}
-            value={selectedVersionId ? String(selectedVersionId) : ""}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {dashboardData?.map((product) => (
+          <Link
+            key={product.product_id}
+            href={`/dashboard/quality-trends/report?product=${product.product_id}&version=${product.active_version_id}`}
+            passHref
           >
-            <SelectTrigger>
-              <SelectValue placeholder="2. Select a Version" />
-            </SelectTrigger>
-            <SelectContent>
-              {versions?.map((v: Version) => (
-                <SelectItem key={v.id} value={String(v.id)}>
-                  {v.version_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* ✅ 4. Conditionally render the Grade dropdown */}
-          {hasGrades && (
-            <Select
-              onValueChange={handleGradeChange}
-              disabled={!selectedVersionId}
-              value={selectedGradeId ? String(selectedGradeId) : ""}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="3. Select Grade" />
-              </SelectTrigger>
-              <SelectContent>
-                {version?.grades.map((g: ProductGrade) => (
-                  <SelectItem key={g.id} value={String(g.id)}>
-                    {g.name}
-                  </SelectItem>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader>
+                <CardTitle>{product.product_name}</CardTitle>
+                <CardDescription>
+                  Active Version: {product.active_version_name}
+                  {product.last_updated_at && (
+                    <span className="block text-xs">
+                      Last Closed Record:{" "}
+                      {formatDistanceToNow(new Date(product.last_updated_at), {
+                        addSuffix: true,
+                      })}
+                    </span>
+                  )}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {product.trends.map((trend) => (
+                  <div key={trend.id}>
+                    <h4 className="text-sm font-medium text-muted-foreground">
+                      {trend.name}
+                    </h4>
+                    {/* ✅ 4. The data mapping is now correctly typed and requires no changes */}
+                    <MiniChart
+                      parameterName={trend.name}
+                      data={trend.data_points.map((dp) => ({
+                        date: dp.date,
+                        avg: dp.avg, // No parseFloat needed if types are correct
+                        min: dp.min,
+                        max: dp.max,
+                      }))}
+                    />
+                  </div>
                 ))}
-              </SelectContent>
-            </Select>
-          )}
-
-          {/* Date Range Picker */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className="w-full md:w-auto justify-start text-left font-normal"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateRange?.from ? (
-                  dateRange.to ? (
-                    <>
-                      {format(dateRange.from, "LLL dd, y")} -{" "}
-                      {format(dateRange.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(dateRange.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Pick a date range</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="range"
-                selected={dateRange}
-                onSelect={setDateRange}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-
-          <Button
-            onClick={handleGenerateReport}
-            disabled={
-              !selectedVersionId ||
-              selectedParameterIds.length === 0 ||
-              !dateRange?.from ||
-              !dateRange?.to
-            }
-          >
-            <LineChart className="mr-2 h-4 w-4" />
-            Generate Report
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Parameter Selection */}
-      {selectedVersionId && availableParams.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Select Parameters</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {availableParams.map((param) => (
-              <div key={param.id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`param-${param.id}`}
-                  checked={selectedParameterIds.includes(param.id)}
-                  onCheckedChange={() => handleParameterToggle(param.id)}
-                />
-                <label
-                  htmlFor={`param-${param.id}`}
-                  className="text-sm font-medium leading-none"
-                >
-                  {param.name}
-                </label>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Chart Display Area */}
-      <div className="mt-6">
-        {isLoading && <p>Loading chart data...</p>}
-        {error && (
-          <p className="text-red-500">Failed to load data. Please try again.</p>
-        )}
-
-        {/* ✅ 2. USE THE REAL CHART COMPONENT HERE */}
-        {trendData && trendData.length > 0 && <QualityChart data={trendData} />}
-
-        {/* Handle case where data is an empty array */}
-        {trendData && trendData.length === 0 && (
-          <div className="text-center py-12 text-slate-500">
-            <p>No test results found for the selected criteria.</p>
-          </div>
-        )}
-
-        {!trendData && !isLoading && !error && (
-          <div className="text-center py-12 text-slate-500">
-            <p>
-              Please select your filters and click "Generate Report" to view
-              trends.
-            </p>
-          </div>
-        )}
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
       </div>
     </div>
   );
