@@ -3,7 +3,8 @@
 
 import React from "react";
 import {
-  LineChart,
+  AreaChart,
+  Area,
   Line,
   XAxis,
   YAxis,
@@ -12,13 +13,31 @@ import {
   Legend,
   ResponsiveContainer,
   ReferenceLine,
+  Dot, // Import Dot for type annotation
 } from "recharts";
-import { QualityTrend } from "@/lib/types";
+import { AggregatedTrend } from "@/lib/types/dashboard.types";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+// ✅ 1. Define the Custom Dot component
+const CustomDot = (props: any) => {
+  const { cx, cy, payload, minSpec, maxSpec } = props;
+  const { avg } = payload;
+
+  // Check if the average is outside the specification limits
+  const isOutOfSpec = (minSpec && avg < minSpec) || (maxSpec && avg > maxSpec);
+
+  if (isOutOfSpec) {
+    // If out of spec, render a larger, visible red dot
+    return <Dot cx={cx} cy={cy} r={5} fill="#ef4444" stroke="#fff" strokeWidth={2} />;
+  }
+
+  // Otherwise, render nothing (or a very small, transparent dot if you prefer)
+  return null;
+};
+
 interface QualityChartProps {
-  data: QualityTrend[];
+  data: AggregatedTrend[];
 }
 
 export default function QualityChart({ data }: QualityChartProps) {
@@ -26,21 +45,15 @@ export default function QualityChart({ data }: QualityChartProps) {
     return <p>No data available to display.</p>;
   }
 
-  // A color palette for the lines if you plot multiple on one chart later
-  const colors = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300"];
-
   return (
     <div className="space-y-6">
-      {data.map((parameterData, index) => {
-        // Prepare data points: parse string values to numbers for plotting
-        const chartData = parameterData.data_points.map((dp) => ({
-          ...dp,
-          value: parseFloat(dp.value), // Convert string value to a number
-        }));
-
-        const yAxisLabel = parameterData.unit
-          ? `Value (${parameterData.unit})`
-          : "Value";
+      {data.map((parameterData) => {
+        const chartData = parameterData.data_points;
+        const yAxisLabel = parameterData.unit ? `Value (${parameterData.unit})` : "Value";
+        
+        // Convert string spec limits to numbers for comparison
+        const minSpec = parameterData.min_value ? parseFloat(parameterData.min_value) : null;
+        const maxSpec = parameterData.max_value ? parseFloat(parameterData.max_value) : null;
 
         return (
           <Card key={parameterData.id}>
@@ -49,58 +62,62 @@ export default function QualityChart({ data }: QualityChartProps) {
             </CardHeader>
             <CardContent className="h-96">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart
+                <AreaChart
                   data={chartData}
                   margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
                     dataKey="date"
-                    tickFormatter={(dateStr) =>
-                      format(new Date(dateStr), "MMM dd")
-                    }
+                    tickFormatter={(dateStr) => format(new Date(dateStr), "MMM dd")}
                     name="Date"
                   />
                   <YAxis
-                    label={{
-                      value: yAxisLabel,
-                      angle: -90,
-                      position: "insideLeft",
-                    }}
+                    label={{ value: yAxisLabel, angle: -90, position: "insideLeft" }}
+                    domain={['auto', 'auto']}
+                    allowDataOverflow
                   />
                   <Tooltip
                     labelFormatter={(label) => format(new Date(label), "PPpp")}
-                    formatter={(value: number) => [value, parameterData.name]}
+                    formatter={(value, name) => {
+                      if (Array.isArray(value) && typeof value[0] === 'number' && typeof value[1] === 'number') {
+                        return [`${value[0].toFixed(2)} - ${value[1].toFixed(2)}`, name];
+                      }
+                      if (typeof value === "number") {
+                        return [value.toFixed(2), name];
+                      }
+                      return [value, name];
+                    }}
                   />
                   <Legend />
 
-                  {/* Tolerance Lines for Min/Max Values */}
-                  {parameterData.min_value && (
-                    <ReferenceLine
-                      y={parseFloat(parameterData.min_value)}
-                      label="Min Spec"
-                      stroke="red"
-                      strokeDasharray="3 3"
-                    />
+                  {/* Specification Lines */}
+                  {minSpec !== null && (
+                    <ReferenceLine y={minSpec} label="Min Spec" stroke="red" strokeDasharray="3 3" />
                   )}
-                  {parameterData.max_value && (
-                    <ReferenceLine
-                      y={parseFloat(parameterData.max_value)}
-                      label="Max Spec"
-                      stroke="red"
-                      strokeDasharray="3 3"
-                    />
+                  {maxSpec !== null && (
+                    <ReferenceLine y={maxSpec} label="Max Spec" stroke="red" strokeDasharray="3 3" />
                   )}
+                  
+                  {/* Daily Min/Max Range Area */}
+                  <Area
+                    type="monotone"
+                    dataKey={(payload) => [payload.min, payload.max]}
+                    stroke="#a5b4fc" fill="#e0e7ff" fillOpacity={0.6} name="Daily Range"
+                  />
 
-                  {/* Main Data Line */}
+                  {/* ✅ 2. Update the Line to use the custom dot */}
                   <Line
                     type="monotone"
-                    dataKey="value"
-                    name={parameterData.name}
-                    stroke={colors[index % colors.length]}
-                    activeDot={{ r: 8 }}
+                    dataKey="avg"
+                    name="Daily Avg"
+                    stroke="#4f46e5" // Always use indigo for the line
+                    strokeWidth={2}
+                    // Pass the custom dot component and the spec limits as props
+                    dot={<CustomDot minSpec={minSpec} maxSpec={maxSpec} />}
+                    activeDot={{ r: 8, fill: '#4f46e5' }}
                   />
-                </LineChart>
+                </AreaChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>

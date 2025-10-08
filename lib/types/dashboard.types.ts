@@ -1,6 +1,6 @@
 // src/types/dashboard.types.ts
 
-// Represents a single, aggregated data point for a day
+// Represents a single, aggregated data point for a day from the backend
 export interface AggregatedDataPoint {
   date: string;
   avg: number;
