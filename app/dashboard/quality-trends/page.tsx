@@ -4,7 +4,12 @@
 import React, { useState, useEffect } from "react";
 import { useAllProducts } from "@/lib/api/product";
 import { useQualityTrends } from "@/lib/api/stats";
-import { ParameterDefinition, Product, Version } from "@/lib/types";
+import {
+  ParameterDefinition,
+  Product,
+  Version,
+  ProductGrade,
+} from "@/lib/types";
 import { useVersions, useVersion } from "@/lib/api/version";
 import QualityChart from "@/components/quality-trends/QualityChart";
 
@@ -28,26 +33,6 @@ import { Calendar as CalendarIcon, LineChart } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 
-// Placeholder for your charting component
-// const QualityChart = ({ data }: { data: any }) => {
-//   return (
-//     <Card>
-//       <CardHeader>
-//         <CardTitle>Trend Analysis</CardTitle>
-//       </CardHeader>
-//       <CardContent className="h-96">
-//         {/* Your charting library (e.g., Recharts, Chart.js) would go here */}
-//         <div className="flex items-center justify-center h-full text-slate-500">
-//           <p>Chart will be rendered here.</p>
-//           <pre className="mt-4 p-4 bg-slate-100 rounded text-xs w-full overflow-auto">
-//             {JSON.stringify(data, null, 2)}
-//           </pre>
-//         </div>
-//       </CardContent>
-//     </Card>
-//   );
-// };
-
 export default function QualityTrendsPage() {
   // State for user selections
   const [selectedProductId, setSelectedProductId] = useState<number | null>(
@@ -56,6 +41,8 @@ export default function QualityTrendsPage() {
   const [selectedVersionId, setSelectedVersionId] = useState<number | null>(
     null
   );
+  const [selectedGradeId, setSelectedGradeId] = useState<number | null>(null);
+
   const [availableParams, setAvailableParams] = useState<ParameterDefinition[]>(
     []
   );
@@ -80,15 +67,34 @@ export default function QualityTrendsPage() {
   const { versions } = useVersions(selectedProductId || "");
   const { version } = useVersion(selectedVersionId || "");
 
-  // ✅ 3. This useEffect now REACTS to the data from the useVersion hook
+  // ✅ 2. Revamped useEffect to handle both grades and direct parameters
   useEffect(() => {
-    if (version?.parameters) {
+    if (!version) {
+      setAvailableParams([]);
+      return;
+    }
+
+    // Case 1: The selected version has grades
+    if (version.grades && version.grades.length > 0) {
+      if (selectedGradeId) {
+        const selectedGrade = version.grades.find(
+          (g) => g.id === selectedGradeId
+        );
+        setAvailableParams(selectedGrade?.parameters || []);
+      } else {
+        // If no grade is selected yet, there are no parameters to show
+        setAvailableParams([]);
+      }
+    }
+    // Case 2: The version has direct parameters
+    else if (version.parameters) {
       setAvailableParams(version.parameters);
-    } else {
-      // Clear params if no version is selected or if the version has no params
+    }
+    // Case 3: No parameters found
+    else {
       setAvailableParams([]);
     }
-  }, [version]); // This effect runs whenever the 'version' object from SWR changes
+  }, [version, selectedGradeId]); // This effect runs whenever the 'version' object from SWR changes
 
   // Main SWR hook for fetching graph data
   const { data: trendData, isLoading, error } = useQualityTrends(fetchParams);
@@ -96,6 +102,7 @@ export default function QualityTrendsPage() {
   const handleProductChange = (productId: string) => {
     setSelectedProductId(Number(productId));
     setSelectedVersionId(null);
+    setSelectedGradeId(null);
     setSelectedParameterIds([]);
   };
 
@@ -103,7 +110,10 @@ export default function QualityTrendsPage() {
     setSelectedVersionId(Number(versionId));
     setSelectedParameterIds([]);
   };
-
+  const handleGradeChange = (gradeId: string) => {
+    setSelectedGradeId(Number(gradeId));
+    setSelectedParameterIds([]);
+  };
   const handleParameterToggle = (paramId: number) => {
     setSelectedParameterIds((prev) =>
       prev.includes(paramId)
@@ -120,6 +130,7 @@ export default function QualityTrendsPage() {
       endDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : null,
     });
   };
+  const hasGrades = version && version.grades && version.grades.length > 0;
 
   return (
     <div className="space-y-6">
@@ -171,6 +182,26 @@ export default function QualityTrendsPage() {
               ))}
             </SelectContent>
           </Select>
+
+          {/* ✅ 4. Conditionally render the Grade dropdown */}
+          {hasGrades && (
+            <Select
+              onValueChange={handleGradeChange}
+              disabled={!selectedVersionId}
+              value={selectedGradeId ? String(selectedGradeId) : ""}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="3. Select Grade" />
+              </SelectTrigger>
+              <SelectContent>
+                {version?.grades.map((g: ProductGrade) => (
+                  <SelectItem key={g.id} value={String(g.id)}>
+                    {g.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
           {/* Date Range Picker */}
           <Popover>

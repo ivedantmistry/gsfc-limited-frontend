@@ -71,7 +71,7 @@ export default function RecentTestsPage() {
     analystId,
     pathname,
     router,
-    pageSize, 
+    pageSize,
   ]);
 
   const { stats, isLoading: isLoadingStats } = useDailyRecordStats();
@@ -107,7 +107,9 @@ export default function RecentTestsPage() {
 
   const areFiltersActive =
     searchTerm || status || labId || ordering || analystId;
-
+  const canViewAllRecords = useHasPermission(
+    "inventory.can_view_all_test_records"
+  );
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">
@@ -160,7 +162,10 @@ export default function RecentTestsPage() {
         <SearchFilter searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         <StatusFilter status={status} setStatus={setStatus} />
         <LabFilter labId={labId} setLabId={setLabId} />
-        <AnalystFilter analystId={analystId} setAnalystId={setAnalystId} />
+
+        {canViewAllRecords && (
+          <AnalystFilter analystId={analystId} setAnalystId={setAnalystId} />
+        )}
         <SortByFilter ordering={ordering} setOrdering={setOrdering} />
         <div className="flex items-center justify-end">
           <ClearFiltersButton

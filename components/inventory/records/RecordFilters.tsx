@@ -10,9 +10,9 @@ import {
   SortByFilter,
   DateRangeFilter,
   ClearFiltersButton,
-} from "./filters"; // Import all the new components
+} from "./filters";
+import { useHasPermission } from "@/context/AuthContext";
 
-// The props interface remains the same
 interface RecordFiltersProps {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
@@ -50,12 +50,19 @@ export default function RecordFilters({
   clearFilters,
   areFiltersActive,
 }: RecordFiltersProps) {
+  const canViewAllRecords = useHasPermission(
+  "inventory.can_view_all_test_records"
+);
   return (
     <FilterContainer>
       <SearchFilter searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       <StatusFilter status={status} setStatus={setStatus} />
       <LabFilter labId={labId} setLabId={setLabId} />
-      <AnalystFilter analystId={analystId} setAnalystId={setAnalystId} />
+
+      {canViewAllRecords && (
+        <AnalystFilter analystId={analystId} setAnalystId={setAnalystId} />
+      )}
+
       <SortByFilter ordering={ordering} setOrdering={setOrdering} />
       <div className="flex items-end gap-2 mt-4 xl:col-span-full">
         <DateRangeFilter
