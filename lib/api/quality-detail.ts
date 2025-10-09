@@ -2,7 +2,7 @@ import useSWR from "swr";
 import api from "@/lib/api";
 import { ProductQualityDetail } from "@/lib/types/quality-detail.types"; // Import the new type
 
-const PRODUCTS_ENDPOINT = "/inventory/products/";
+const PRODUCTS_ENDPOINT = "inventory/products/";
 
 /**
  * Fetches all the data needed for a single product's quality detail page.

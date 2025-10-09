@@ -5,10 +5,10 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useProductQualityDetail } from "@/lib/api/quality-detail";
 import { RecentTestRecord } from "@/lib/types/quality-detail.types";
-
-// UI & Charting Components
+import { getFullApiUrl } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import api from "@/lib/api"; // ✅ 1. Import your configured api client
 import {
   Table,
   TableBody,
@@ -31,11 +31,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { ArrowLeft, Calendar as CalendarIcon, FileSpreadsheet } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar as CalendarIcon,
+  FileSpreadsheet,
+  Loader2,
+} from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { format, subDays } from "date-fns";
 
-// A simple component for the recent tests table
 const RecentTestsTable = ({ tests }: { tests: RecentTestRecord[] }) => (
   <Card>
     <CardHeader>
@@ -77,31 +81,65 @@ export default function ProductQualityDetailPage() {
 
   // State to manage the selected grade
   const [selectedGradeId, setSelectedGradeId] = useState<number | null>(null);
-
+  const [isExporting, setIsExporting] = useState(false);
   // Fetch data using our new hook
   const { productDetail, isLoading, error } = useProductQualityDetail(
     productId,
     dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : undefined,
     dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined
   );
- const handleExport = () => {
-    const startDate = dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : '';
-    const endDate = dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : '';
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const startDate = dateRange?.from
+        ? format(dateRange.from, "yyyy-MM-dd")
+        : "";
+      const endDate = dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : "";
 
-    // Construct the full URL with the format=excel parameter
-    const exportUrl = `/api/inventory/products/${productId}/quality-details/?start_date=${startDate}&end_date=${endDate}&format=excel`;
-    
-    // Open the URL in a new tab, which will trigger the browser's download prompt
-    window.open(exportUrl, '_blank');
+      // The relative path for the API call
+      const url = `inventory/products/${productId}/quality-details/?start_date=${startDate}&end_date=${endDate}&format=excel`;
+
+      // Use the 'api' client to make an authenticated request for the file
+      const response = await api.get(url, {
+        responseType: "blob", // Important: tells axios to expect binary data
+      });
+
+      // Create a URL for the blob data
+      const fileURL = window.URL.createObjectURL(new Blob([response.data]));
+
+      // Create a temporary link element to trigger the download
+      const link = document.createElement("a");
+      link.href = fileURL;
+
+      // Extract filename from the 'Content-Disposition' header sent by the backend
+      const contentDisposition = response.headers["content-disposition"];
+      let filename = "quality-report.xlsx"; // a default filename
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch && filenameMatch.length > 1) {
+          filename = filenameMatch[1];
+        }
+      }
+      link.setAttribute("download", filename);
+
+      // Append to the document, click, and then remove
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(fileURL); // Clean up the blob URL
+    } catch (err) {
+      console.error("Export failed", err);
+      // You can add a user-facing error message here (e.g., using toast)
+    } finally {
+      setIsExporting(false);
+    }
   };
-  // Effect to set a default grade when the data loads
   useEffect(() => {
     if (
       productDetail?.has_grades &&
       productDetail.grades.length > 0 &&
       !selectedGradeId
     ) {
-      // Default to the first grade in the list
       setSelectedGradeId(productDetail.grades[0].id);
     }
   }, [productDetail, selectedGradeId]);
@@ -116,14 +154,12 @@ export default function ProductQualityDetailPage() {
     );
   if (!productDetail) return null;
 
-  // Find the currently selected grade's data
   const selectedGrade = productDetail.has_grades
     ? productDetail.grades.find((g) => g.id === selectedGradeId)
     : null;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <Link href="/dashboard/quality-trends" passHref>
           <Button variant="outline" className="mb-4">
@@ -142,7 +178,6 @@ export default function ProductQualityDetailPage() {
         </p>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardHeader>
           <h2 className="text-lg font-semibold">Filters & Export</h2>
@@ -221,17 +256,19 @@ export default function ProductQualityDetailPage() {
               </SelectContent>
             </Select>
           )}
-          <Button onClick={handleExport}>
-            <FileSpreadsheet className="mr-2 h-4 w-4" />
-            Export as Excel
+          <Button onClick={handleExport} disabled={isExporting}>
+            {isExporting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+            )}
+            {isExporting ? "Exporting..." : "Export as Excel"}
           </Button>
         </CardContent>
       </Card>
 
-      {/* Main Chart Section */}
       <div className="space-y-8">
         {productDetail.has_grades ? (
-          // Render charts for the selected grade
           selectedGrade ? (
             <div>
               <h2 className="text-2xl font-bold tracking-tight text-slate-800 mb-4 border-b pb-2">
@@ -251,7 +288,6 @@ export default function ProductQualityDetailPage() {
             </p>
           )
         ) : (
-          // Original logic for versions without grades
           <div>
             {productDetail.trends && productDetail.trends.length > 0 ? (
               <QualityChart data={productDetail.trends} />
@@ -262,7 +298,6 @@ export default function ProductQualityDetailPage() {
         )}
       </div>
 
-      {/* Recent Tests Table */}
       <div>
         {productDetail.recent_tests && productDetail.recent_tests.length > 0 ? (
           <RecentTestsTable tests={productDetail.recent_tests} />

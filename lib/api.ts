@@ -4,7 +4,15 @@ import { LoginResponse, User } from "./types";
 
 // The base URL for your Django backend
 const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL;
-
+/**
+ * Constructs the full API URL for a given path.
+ * @param path - The relative path for the API endpoint (e.g., 'inventory/products/').
+ */
+export const getFullApiUrl = (path: string) => {
+  const baseUrl = process.env.NEXT_PUBLIC_DJANGO_API_URL || "";
+  // Ensure there are no double slashes
+  return `${baseUrl.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
+};
 const api = axios.create({
   baseURL: API_URL,
   headers: {
