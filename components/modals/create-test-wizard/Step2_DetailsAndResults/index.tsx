@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -120,7 +120,7 @@ export default function Step2_DetailsAndResults({
         ?.parameters || []
     : activeVersion?.parameters || [];
 
-  const formSchema = buildSchema(parametersToRender);
+  const formSchema = useMemo(() => buildSchema(parametersToRender), [parametersToRender]);
   type FormValues = z.infer<typeof formSchema>;
 
   const form = useForm<FormValues>({

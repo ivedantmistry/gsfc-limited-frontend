@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useProductQualityDetail } from "@/lib/api/quality-detail";
@@ -19,12 +19,19 @@ import {
 } from "@/components/ui/table";
 import QualityChart from "@/components/quality-trends/QualityChart";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { ArrowLeft, Calendar as CalendarIcon } from "lucide-react";
+import { ArrowLeft, Calendar as CalendarIcon, FileSpreadsheet } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { format, subDays } from "date-fns";
 
@@ -68,12 +75,36 @@ export default function ProductQualityDetailPage() {
     to: new Date(),
   });
 
+  // State to manage the selected grade
+  const [selectedGradeId, setSelectedGradeId] = useState<number | null>(null);
+
   // Fetch data using our new hook
   const { productDetail, isLoading, error } = useProductQualityDetail(
     productId,
     dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : undefined,
     dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined
   );
+ const handleExport = () => {
+    const startDate = dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : '';
+    const endDate = dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : '';
+
+    // Construct the full URL with the format=excel parameter
+    const exportUrl = `/api/inventory/products/${productId}/quality-details/?start_date=${startDate}&end_date=${endDate}&format=excel`;
+    
+    // Open the URL in a new tab, which will trigger the browser's download prompt
+    window.open(exportUrl, '_blank');
+  };
+  // Effect to set a default grade when the data loads
+  useEffect(() => {
+    if (
+      productDetail?.has_grades &&
+      productDetail.grades.length > 0 &&
+      !selectedGradeId
+    ) {
+      // Default to the first grade in the list
+      setSelectedGradeId(productDetail.grades[0].id);
+    }
+  }, [productDetail, selectedGradeId]);
 
   if (isLoading)
     return <p className="text-center p-8">Loading quality details...</p>;
@@ -84,6 +115,11 @@ export default function ProductQualityDetailPage() {
       </p>
     );
   if (!productDetail) return null;
+
+  // Find the currently selected grade's data
+  const selectedGrade = productDetail.has_grades
+    ? productDetail.grades.find((g) => g.id === selectedGradeId)
+    : null;
 
   return (
     <div className="space-y-6">
@@ -108,7 +144,11 @@ export default function ProductQualityDetailPage() {
 
       {/* Filters */}
       <Card>
-        <CardContent className="pt-6 flex items-center gap-2">
+        <CardHeader>
+          <h2 className="text-lg font-semibold">Filters & Export</h2>
+        </CardHeader>
+
+        <CardContent className="pt-6 flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             onClick={() => setDateRange({ from: new Date(), to: new Date() })}
@@ -131,11 +171,12 @@ export default function ProductQualityDetailPage() {
           >
             Last 30 Days
           </Button>
+
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant={"outline"}
-                className="w-[280px] justify-start text-left font-normal"
+                className="w-full sm:w-[280px] justify-start text-left font-normal"
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {dateRange?.from ? (
@@ -161,27 +202,54 @@ export default function ProductQualityDetailPage() {
               />
             </PopoverContent>
           </Popover>
+
+          {productDetail.has_grades && (
+            <Select
+              value={selectedGradeId ? String(selectedGradeId) : ""}
+              onValueChange={(value) => setSelectedGradeId(Number(value))}
+            >
+              <SelectTrigger className="w-full sm:w-[280px] border border-slate-200 bg-transparent hover:bg-slate-100 text-slate-900">
+                <SelectValue placeholder="Select a Grade" />
+              </SelectTrigger>
+
+              <SelectContent>
+                {productDetail.grades.map((grade) => (
+                  <SelectItem key={grade.id} value={String(grade.id)}>
+                    {grade.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <Button onClick={handleExport}>
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            Export as Excel
+          </Button>
         </CardContent>
       </Card>
 
       {/* Main Chart Section */}
       <div className="space-y-8">
         {productDetail.has_grades ? (
-          // Render charts grouped by grade
-          productDetail.grades.map((grade) => (
-            <div key={grade.id}>
+          // Render charts for the selected grade
+          selectedGrade ? (
+            <div>
               <h2 className="text-2xl font-bold tracking-tight text-slate-800 mb-4 border-b pb-2">
-                Grade: {grade.name}
+                Grade: {selectedGrade.name}
               </h2>
-              {grade.trends && grade.trends.length > 0 ? (
-                <QualityChart data={grade.trends} />
+              {selectedGrade.trends && selectedGrade.trends.length > 0 ? (
+                <QualityChart data={selectedGrade.trends} />
               ) : (
                 <p>
                   No trend data available for this grade in the selected period.
                 </p>
               )}
             </div>
-          ))
+          ) : (
+            <p className="text-center py-8">
+              Please select a grade to view its trends.
+            </p>
+          )
         ) : (
           // Original logic for versions without grades
           <div>
