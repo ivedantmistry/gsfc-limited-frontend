@@ -61,7 +61,6 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
         )}
         <InfoRow label="Analyst Name:" value={testRecord.analyst_full_name} />
         <InfoRow label="Lab tested at:" value={testRecord.lab_name} />
-        {/* ✅ CHANGED: Wrap the product name in a Link component */}
         <InfoRow
           label="Product:"
           value={

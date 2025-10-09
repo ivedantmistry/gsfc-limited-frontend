@@ -34,40 +34,92 @@ import { Calendar } from "@/components/ui/calendar";
 import {
   ArrowLeft,
   Calendar as CalendarIcon,
+  Check,
+  Copy,
   FileSpreadsheet,
   Loader2,
 } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { format, subDays } from "date-fns";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const RecentTestsTable = ({ tests }: { tests: RecentTestRecord[] }) => (
-  <Card>
-    <CardHeader>
-      <CardTitle>Recent Test Records</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Record ID</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Analyst</TableHead>
-            <TableHead>Date</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {tests.map((test) => (
-            <TableRow key={test.id}>
-              <TableCell className="font-medium">{test.record_id}</TableCell>
-              <TableCell>{test.status}</TableCell>
-              <TableCell>{format(new Date(test.created_at), "PPp")}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </CardContent>
-  </Card>
-);
+// 👇 REPLACE the old RecentTestsTable with this new version
+const RecentTestsTable = ({ tests }: { tests: RecentTestRecord[] }) => {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopy = (id: string, recordId: string) => {
+    navigator.clipboard.writeText(recordId).then(
+      () => {
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000); // Reset feedback after 2s
+      },
+      (err) => {
+        console.error("Could not copy text: ", err); // Error handling
+      }
+    );
+  };
+
+  return (
+    <TooltipProvider>
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Test Records</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Record ID</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tests.map((test) => (
+                <TableRow key={test.id}>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <span>{test.record_id}</span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() =>
+                              handleCopy(String(test.id), test.record_id)
+                            }
+                          >
+                            {copiedId === String(test.id) ? (
+                              <Check className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            {copiedId === String(test.id)
+                              ? "Copied!"
+                              : "Copy ID"}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TableCell>
+                  <TableCell>{test.status}</TableCell>
+                  <TableCell>
+                    {format(new Date(test.created_at), "PPp")}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
+  );
+};
 
 export default function ProductQualityDetailPage() {
   const params = useParams();

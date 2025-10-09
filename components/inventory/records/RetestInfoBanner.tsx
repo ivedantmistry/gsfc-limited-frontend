@@ -14,7 +14,6 @@ interface RetestInfoBannerProps {
 export default function RetestInfoBanner({
   testRecord,
 }: RetestInfoBannerProps) {
-  // Case 1: This is a retest record.
   if (testRecord.retest_of) {
     return (
       <Alert className="bg-blue-50 border-blue-200 text-blue-800">
@@ -34,7 +33,6 @@ export default function RetestInfoBanner({
     );
   }
 
-  // Case 2: This is an old record that has been superseded by a retest.
   if (testRecord.status === "RETEST_ORDERED" && testRecord.retests.length > 0) {
     const newRetest = testRecord.retests[0]; // Get the first retest
     return (
@@ -42,7 +40,6 @@ export default function RetestInfoBanner({
         <RefreshCw className="h-4 w-4" />
         <AlertTitle>Record Superseded</AlertTitle>
         <AlertDescription>
-          {/* ✅ CHANGED: Update the message to be accurate */}
           This record has been superseded by retest{" "}
           <Link
             href={`/dashboard/records/${newRetest.id}`}

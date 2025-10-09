@@ -2,7 +2,7 @@
 
 "use client";
 
-import React from "react";
+import React, { useState } from "react"; //
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -13,8 +13,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { TestRecord, TestRecordInList } from "@/lib/types/test.types";
 import { format } from "date-fns";
+import { Copy, Check } from "lucide-react";
 
 const getStatusVariant = (
   status: TestRecord["status"] | TestRecordInList["status"]
@@ -38,6 +46,16 @@ interface RecordsTableProps {
 }
 export default function RecordsTable({ records }: RecordsTableProps) {
   const router = useRouter();
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // This function now includes `e.stopPropagation()` to prevent navigation
+  const handleCopy = (e: React.MouseEvent, id: string, recordId: string) => {
+    e.stopPropagation(); // Prevents the row's onClick from firing
+    navigator.clipboard.writeText(recordId).then(() => {
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000); // Reset feedback after 2s
+    });
+  };
   return (
     <div className="rounded-lg border bg-white shadow-sm">
       <Table>
@@ -60,7 +78,35 @@ export default function RecordsTable({ records }: RecordsTableProps) {
                 onClick={() => router.push(`/dashboard/records/${record.id}`)}
               >
                 <TableCell className="font-mono">
-                    {record.record_id}
+                  {/* ✅ 5. Added copy button and functionality */}
+                  <div className="flex items-center gap-2">
+                    <span>{record.record_id}</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={(e) =>
+                            handleCopy(e, String(record.id), record.record_id)
+                          }
+                        >
+                          {copiedId === String(record.id) ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent onClick={(e) => e.stopPropagation()}>
+                        <p>
+                          {copiedId === String(record.id)
+                            ? "Copied!"
+                            : "Copy ID"}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                 </TableCell>
                 <TableCell>{record.product_name}</TableCell>
                 <TableCell>{record.analyst_full_name || "N/A"}</TableCell>

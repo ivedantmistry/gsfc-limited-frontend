@@ -25,14 +25,11 @@ export default function RecordDetailPage() {
     );
   }
 
-  // ✅ 2. The logic is now clear and correct for all cases.
-  // The form should show if the test is PENDING and assigned to the current user.
   const canEdit =
     testRecord.status === "PENDING" &&
     user?.id === testRecord.analyst &&
     testRecord.parameter_values.length === 0;
 
-  // Actions are available if the record is not in a final state.
   const showActions = testRecord.status !== "CLOSED";
 
   return (
@@ -42,7 +39,6 @@ export default function RecordDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          {/* ✅ 3. Conditionally render the correct component */}
           {canEdit ? (
             <ResultsEntryForm testRecord={testRecord} />
           ) : (
