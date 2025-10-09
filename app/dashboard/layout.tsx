@@ -1,4 +1,3 @@
-// /app/dashboard/layout.tsx
 "use client";
 
 import React, { ReactNode, useEffect, useState } from "react";
@@ -7,10 +6,21 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useHasPermission } from "@/context/AuthContext";
 import { navItems } from "@/config/navItems";
-import { LogOut, Settings, Bell, Menu } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LogOut, Menu, Keyboard } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  GlobalModalProvider,
+  useGlobalModal,
+} from "@/context/GlobalModalContext";
+import { useKeyPress } from "@/hooks/useKeyPress";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { KeyboardShortcutsModal } from "@/components/shared/KeyboardShortcutsModal";
 
-// --- Components ---
+const GlobalShortcutHandler = () => {
+  const { openCreateTestModal } = useGlobalModal();
+  useKeyPress("i", openCreateTestModal, "ctrlKey");
+  return null;
+};
 
 const SidebarLink = ({
   href,
@@ -59,18 +69,15 @@ const Sidebar = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
             }`.toUpperCase()}
           </AvatarFallback>
         </Avatar>
-
         <div>
           <p className="text-sm font-semibold text-slate-800">
             {user?.first_name || user?.last_name
               ? `${user?.first_name ?? ""} ${user?.last_name ?? ""}`
               : user?.username}
           </p>
-
           <p className="text-xs text-slate-500">GSFC Laboratory</p>
         </div>
       </div>
-
       <nav className="flex-1 py-4 space-y-1">
         {navItems
           .filter((item) => !item.permission || hasPermission(item.permission))
@@ -78,7 +85,6 @@ const Sidebar = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
             <SidebarLink key={item.href} {...item} />
           ))}
       </nav>
-
       <div className="p-4 border-t border-slate-200">
         <button
           onClick={logout}
@@ -111,23 +117,26 @@ const AppToolbar = ({
         </button>
         <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
       </div>
+      {/* ✅ 3. Replaced the simple button with the Dialog trigger */}
       <div className="flex items-center gap-2">
-        <button className="p-2 rounded-full text-slate-500 hover:bg-slate-200/60 hover:text-slate-700 transition-colors">
-          <Bell className="w-5 h-5" />
-        </button>
-        <button className="p-2 rounded-full text-slate-500 hover:bg-slate-200/60 hover:text-slate-700 transition-colors">
-          <Settings className="w-5 h-5" />
-        </button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <button
+              className="p-2 rounded-full text-slate-500 hover:bg-slate-200/60 hover:text-slate-700 transition-colors"
+              aria-label="Open keyboard shortcuts"
+            >
+              <Keyboard className="w-5 h-5" />
+            </button>
+          </DialogTrigger>
+          <KeyboardShortcutsModal />
+        </Dialog>
       </div>
     </header>
   );
 };
 
-// --- Skeleton Loader Updated for the New Layout ---
-
 const DashboardSkeleton = () => (
   <div className="h-screen w-screen flex bg-slate-100 font-sans">
-    {/* MODIFIED: Sidebar skeleton is now hidden on small screens */}
     <aside className="hidden lg:block h-full w-64 bg-white border-r border-slate-200 animate-pulse"></aside>
     <div className="flex-1 flex flex-col">
       <header className="flex-shrink-0 h-16 bg-white border-b border-slate-200 animate-pulse"></header>
@@ -159,22 +168,24 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    // Main background is light gray, making the white sidebar and content cards pop.
-    <div className="h-screen w-screen flex bg-slate-50 font-sans overflow-hidden">
-      {isSidebarOpen && (
-        <div
-          onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-        />
-      )}
-      <Sidebar isSidebarOpen={isSidebarOpen} />
-      <div className="flex-1 flex flex-col">
-        <AppToolbar
-          isSidebarOpen={isSidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-        />
-        <main className="flex-1 overflow-y-auto p-8">{children}</main>
+    <GlobalModalProvider>
+      <div className="h-screen w-screen flex bg-slate-50 font-sans overflow-hidden">
+        {isSidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          />
+        )}
+        <Sidebar isSidebarOpen={isSidebarOpen} />
+        <div className="flex-1 flex flex-col">
+          <AppToolbar
+            isSidebarOpen={isSidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+          />
+          <main className="flex-1 overflow-y-auto p-8">{children}</main>
+        </div>
+        <GlobalShortcutHandler />
       </div>
-    </div>
+    </GlobalModalProvider>
   );
 }

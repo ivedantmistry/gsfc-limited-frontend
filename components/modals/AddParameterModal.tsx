@@ -51,7 +51,6 @@ const formSchema = z
     unit: z.string().optional(),
     is_required: z.boolean().default(true),
     data_type: z.enum(DATA_TYPE_CHOICES, { error: "Data type is required." }),
-    // This transform will convert empty strings to 'undefined' so they pass validation
     min_value: z
       .union([z.string(), z.number()])
       .optional()

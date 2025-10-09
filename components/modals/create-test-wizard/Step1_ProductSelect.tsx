@@ -2,13 +2,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import {
-  Check,
-  Package,
-  Search,
-  Command as CommandIcon,
-  X,
-} from "lucide-react";
+import { Package, Search, Command as CommandIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,10 +33,31 @@ export default function Step1_ProductSelect({
   const { products, isLoading } = useAllProducts();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [showResults, setShowResults] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     setTimeout(() => searchInputRef.current?.focus(), 100);
   }, []);
+
+  // ✅ 1. New effect to handle the Escape key globally within the component
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // If a product is selected and the user presses Escape...
+      if (e.key === "Escape" && selectedProduct) {
+        e.preventDefault(); // ...prevent the dialog from closing...
+        e.stopPropagation(); // ...stop the event from bubbling further...
+        setSelectedProduct(null); // ...and unselect the product.
+      }
+    };
+
+    // Add the listener in the capture phase to catch it before the dialog does.
+    document.addEventListener("keydown", handleGlobalKeyDown, true);
+
+    // Cleanup listener on component unmount
+    return () => {
+      document.removeEventListener("keydown", handleGlobalKeyDown, true);
+    };
+  }, [selectedProduct]); // Rerun effect if the selectedProduct changes
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -55,22 +70,22 @@ export default function Step1_ProductSelect({
     return () => document.removeEventListener("keydown", down);
   }, []);
 
+  useEffect(() => {
+    const item = document.getElementById(`product-item-${activeIndex}`);
+    item?.scrollIntoView({ block: "nearest" });
+  }, [activeIndex]);
+
   const handleSelect = (product: Product) => {
-    // ✅ FIX: Only update the selected product. Do NOT change the search query.
     setSelectedProduct(product);
   };
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    if (selectedProduct) setSelectedProduct(null); // Clear selection if user types again
-    if (value.length > 0) {
-      setShowResults(true);
-    } else {
-      setShowResults(false);
-    }
+    if (selectedProduct) setSelectedProduct(null);
+    setShowResults(value.length > 0);
+    setActiveIndex(0);
   };
 
-  // ✅ FIX: Added explicit Product[] type to prevent TypeScript 'never' error.
   const filteredProducts: Product[] =
     searchQuery && products
       ? products.filter(
@@ -82,6 +97,28 @@ export default function Step1_ProductSelect({
 
   const isSearching = showResults && searchQuery.length > 0;
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    const resultsCount = filteredProducts.length;
+    if (!isSearching || resultsCount === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((prev) => (prev + 1) % resultsCount);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((prev) => (prev - 1 + resultsCount) % resultsCount);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (selectedProduct) {
+        onSelectProduct(selectedProduct);
+      } else if (filteredProducts[activeIndex]) {
+        handleSelect(filteredProducts[activeIndex]);
+      }
+    }
+    // ✅ 2. Removed the 'Escape' key logic from here since the global handler now manages it.
+  };
+
+  // ... (rest of the component JSX is the same)
   return (
     <div className="flex flex-col h-full">
       <DialogHeader className="p-6 pb-4 border-b bg-white">
@@ -90,11 +127,7 @@ export default function Step1_ProductSelect({
           Step 1: Select a Product
         </DialogTitle>
         <DialogDescription>
-          Search for the product by its name or ID. Press{" "}
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-            <span className="text-xs">⌘</span>K
-          </kbd>{" "}
-          to focus.
+          Search for the product by its name or ID.
         </DialogDescription>
       </DialogHeader>
 
@@ -119,6 +152,7 @@ export default function Step1_ProductSelect({
               onFocus={() => {
                 if (searchQuery) setShowResults(true);
               }}
+              onKeyDown={handleKeyDown}
             />
             {searchQuery && (
               <Button
@@ -130,7 +164,6 @@ export default function Step1_ProductSelect({
                 Clear
               </Button>
             )}
-
             <div className="pointer-events-none absolute right-3 top-1/2 flex -translate-y-1/2 items-center space-x-1 rounded border bg-slate-100 px-2 py-1 text-xs text-slate-500">
               <CommandIcon className="h-3 w-3" />
               <span>K</span>
@@ -152,32 +185,41 @@ export default function Step1_ProductSelect({
                 )}
                 {!isLoading && (
                   <CommandGroup>
-                    {filteredProducts.map((product) => (
-                      <CommandItem
-                        key={product.id}
-                        value={`${product.name} (${product.product_id})`}
-                        onSelect={() => handleSelect(product)}
-                        className={cn(
-                          "flex-col items-start border-b py-2",
-                          selectedProduct?.id === product.id && "bg-indigo-50"
-                        )}
-                      >
-                        <div className="flex items-center">
-                          <Check
+                    {filteredProducts.map((product, index) => {
+                      const isSelected = selectedProduct?.id === product.id;
+                      return (
+                        <CommandItem
+                          id={`product-item-${index}`}
+                          key={product.id}
+                          value={`${product.name} (${product.product_id})`}
+                          onSelect={() => handleSelect(product)}
+                          className={cn(
+                            "flex-col items-start border-b py-2 cursor-pointer rounded-md transition-colors",
+                            {
+                              "bg-indigo-500 text-white": isSelected,
+                              "bg-slate-100":
+                                activeIndex === index && !isSelected,
+                            }
+                          )}
+                        >
+                          <span
                             className={cn(
-                              "mr-2 h-4 w-4",
-                              selectedProduct?.id === product.id
-                                ? "opacity-100 text-indigo-600"
-                                : "opacity-0"
+                              isSelected ? "text-white" : "text-slate-800"
                             )}
-                          />
-                          <span>{product.name}</span>
-                        </div>
-                        <span className="text-xs text-slate-500 ml-6">
-                          {product.product_id}
-                        </span>
-                      </CommandItem>
-                    ))}
+                          >
+                            {product.name}
+                          </span>
+                          <span
+                            className={cn(
+                              "text-xs",
+                              isSelected ? "text-indigo-200" : "text-slate-500"
+                            )}
+                          >
+                            {product.product_id}
+                          </span>
+                        </CommandItem>
+                      );
+                    })}
                   </CommandGroup>
                 )}
               </CommandList>

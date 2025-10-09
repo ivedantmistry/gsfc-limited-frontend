@@ -1,7 +1,7 @@
 // src/context/UserProfileContext.tsx
 "use client";
 import { createContext, useContext } from "react";
-import { User } from "@/lib/api/users";
+import { User } from "@/lib/types";
 
 interface UserProfileContextType {
   user: User | null;

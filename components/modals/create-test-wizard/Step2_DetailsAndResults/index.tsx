@@ -1,15 +1,13 @@
-// src/components/modals/create-test-wizard/Step2_DetailsAndResults/index.tsx
-
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Product, ParameterDefinition } from "@/lib/types/product.types";
-import { TestRecordInput, TestResultInput } from "@/lib/types/test.types";
+import React, { useState } from "react";
+import { Product } from "@/lib/types/product.types";
+import { TestRecordInput } from "@/lib/types/test.types";
 import { useActiveVersionForProduct } from "@/lib/api/version";
 import { useLabs } from "@/lib/api/lab";
+import { useCreateTestForm } from "@/hooks/useCreateTestForm"; // Import the hook
+
+// UI Components
 import {
   DialogHeader,
   DialogTitle,
@@ -54,51 +52,14 @@ const FormSection = ({
 interface Step2Props {
   product: Product;
   onBack: () => void;
-  onSubmit: (data: TestRecordInput) => void;
+  // ✅ FIX: onSubmit prop now correctly expects a Promise
+  onSubmit: (data: TestRecordInput) => Promise<void>;
   isSubmitting: boolean;
   apiError: string | null;
 }
 
-// ✅ FIX: ENSURE THIS HELPER FUNCTION IS IN THIS FILE
-const buildSchema = (parameters: ParameterDefinition[]) => {
-  const parameterSchema = z.object(
-    Object.fromEntries(
-      parameters.map((param) => {
-        let validator: z.ZodTypeAny = z.any();
-        switch (param.data_type) {
-          case "INTEGER":
-          case "DECIMAL":
-            validator = z.coerce.number();
-            break;
-          case "STRING":
-          case "ENUM":
-            validator = z.string();
-            break;
-          case "BOOLEAN":
-            validator = z.boolean().default(false);
-            break;
-        }
-        if (param.is_required) {
-          validator = validator.refine(
-            (val) => val !== "" && val !== undefined && val !== null,
-            { message: "This field is required." }
-          );
-        } else {
-          validator = validator.optional();
-        }
-        return [param.id, validator];
-      })
-    )
-  );
-
-  return z.object({
-    lab: z.string().min(1, "Lab is required."),
-    sample_id: z.string().min(1, "Sample ID is required."),
-    batch_no: z.string().min(1, "Batch Number is required."),
-    product_grade: z.string().optional(),
-    parameters: parameterSchema,
-  });
-};
+// ✅ FIX: Removed the duplicate buildSchema, handleSubmit, and handleFormSubmit functions.
+// All this logic is now inside the useCreateTestForm hook.
 
 export default function Step2_DetailsAndResults({
   product,
@@ -115,61 +76,10 @@ export default function Step2_DetailsAndResults({
   const { labs, isLoading: isLoadingLabs } = useLabs();
   const [selectedGradeId, setSelectedGradeId] = useState<string | null>(null);
 
-  const parametersToRender = selectedGradeId
-    ? activeVersion?.grades.find((g) => g.id === Number(selectedGradeId))
-        ?.parameters || []
-    : activeVersion?.parameters || [];
-
-  const formSchema = useMemo(() => buildSchema(parametersToRender), [parametersToRender]);
-  type FormValues = z.infer<typeof formSchema>;
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema), // This line will now work
-    defaultValues: { sample_id: "", batch_no: "", parameters: {} },
-  });
-
-  // ✅ 2. ADD THIS useEffect HOOK
-  // This hook watches for changes in the list of parameters.
-  // When you select a grade, `parametersToRender` changes, and this effect runs.
-  // `form.reset()` tells React Hook Form to update its internal state and apply
-  // the new validation schema, which makes the new parameter fields work correctly.
-  useEffect(() => {
-    // We get the current values of the static fields so we don't erase them.
-    const currentStaticValues = {
-      lab: form.getValues("lab"),
-      sample_id: form.getValues("sample_id"),
-      batch_no: form.getValues("batch_no"),
-      product_grade: form.getValues("product_grade"),
-    };
-
-    // Reset the form, keeping existing data and re-evaluating the new schema.
-    form.reset({
-      ...currentStaticValues,
-      parameters: {}, // Clear out old parameter values
-    });
-  }, [parametersToRender, form.reset]);
-
-  // ✅ AND ENSURE THIS HELPER FUNCTION IS HERE TOO
-  const handleSubmit = (values: FormValues) => {
-    const results_input: TestResultInput[] = Object.entries(values.parameters)
-      .map(([paramId, value]) => ({
-        parameter: Number(paramId),
-        value: value as any,
-      }))
-      .filter(
-        (r) => r.value !== undefined && r.value !== null && r.value !== ""
-      );
-
-    const finalData: TestRecordInput = {
-      version: activeVersion!.id,
-      lab: Number(values.lab),
-      product_grade: selectedGradeId ? Number(selectedGradeId) : null,
-      sample_id: values.sample_id,
-      batch_no: values.batch_no,
-      results_input: results_input,
-    };
-    onSubmit(finalData);
-  };
+  const { form, parametersToRender, handleFormSubmit } = useCreateTestForm(
+    activeVersion,
+    selectedGradeId
+  );
 
   const isLoading = isLoadingVersion || isLoadingLabs;
 
@@ -205,7 +115,9 @@ export default function Step2_DetailsAndResults({
 
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(handleSubmit)}
+          onSubmit={form.handleSubmit((values) =>
+            handleFormSubmit(values, onSubmit)
+          )}
           className="flex flex-col"
         >
           <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
@@ -220,7 +132,7 @@ export default function Step2_DetailsAndResults({
                   name="product_grade"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Select Grade (Optional)</FormLabel>
+                      <FormLabel>Select Grade</FormLabel>
                       <Select
                         onValueChange={(value) => {
                           field.onChange(value);
@@ -230,7 +142,7 @@ export default function Step2_DetailsAndResults({
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Default parameters are shown. Select a grade to see its specific parameters." />
+                            <SelectValue placeholder="Select a grade to see its parameters" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>

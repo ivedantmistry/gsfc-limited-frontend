@@ -1,18 +1,9 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import {
-  FlaskConical,
-  BarChart,
-  Server,
-  PlusCircle,
-  FileText,
-  Settings,
-} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { FlaskConical, BarChart, PlusCircle, Settings } from "lucide-react";
 
-// --- Re-engineered Components for macOS Style ---
-
-// A highly reusable Widget container component
 const Widget = ({
   title,
   children,
@@ -22,7 +13,6 @@ const Widget = ({
   children: React.ReactNode;
   className?: string;
 }) => (
-  // REVAMPED: macOS-style widget container. Subtle border, no heavy shadows.
   <div
     className={`bg-white/80 rounded-xl border border-slate-200/70 ${className}`}
   >
@@ -33,17 +23,21 @@ const Widget = ({
   </div>
 );
 
-// A component for the large, clickable action buttons
 const QuickActionButton = ({
   icon: Icon,
   label,
   description,
+  onClick,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   description: string;
+  onClick?: () => void;
 }) => (
-  <button className="flex items-center gap-4 w-full p-4 rounded-lg hover:bg-slate-100/80 transition-colors text-left">
+  <button
+    onClick={onClick}
+    className="flex items-center gap-4 w-full p-4 rounded-lg hover:bg-slate-100/80 transition-colors text-left"
+  >
     <div className="bg-indigo-100 text-indigo-600 p-3 rounded-lg">
       <Icon className="w-6 h-6" />
     </div>
@@ -56,10 +50,10 @@ const QuickActionButton = ({
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const router = useRouter();
 
   return (
     <div className="space-y-8">
-      {/* The main page header is now inside the content area */}
       <div>
         <h1 className="text-4xl font-bold text-slate-900">
           Welcome back, {user?.first_name || user?.username}!
@@ -69,7 +63,6 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* REVAMPED: A more dynamic and visually interesting grid layout for widgets */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Widget title="Quick Actions" className="lg:col-span-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -80,19 +73,21 @@ export default function DashboardPage() {
             />
             <QuickActionButton
               icon={BarChart}
-              label="View Products"
-              
-              description="Browse all products."
+              label="View Quality Trend"
+              description="See how products are performing"
+              onClick={() => router.push("/dashboard/quality-trends")}
             />
             <QuickActionButton
-              icon={FileText}
-              label="Generate Report"
-              description="Create a new lab report."
+              icon={FlaskConical}
+              label="View Products"
+              description="Browse all products."
+              onClick={() => router.push("/dashboard/products")}
             />
             <QuickActionButton
               icon={Settings}
-              label="Manage Settings"
-              description="Adjust lab parameters."
+              label="Alerts"
+              description="View & Resolve recent Alerts."
+              onClick={() => router.push("/dashboard/alerts")}
             />
           </div>
         </Widget>
@@ -100,22 +95,22 @@ export default function DashboardPage() {
         <Widget title="System Status">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="font-medium text-slate-600">API Service</span>
-              <div className="flex items-center gap-2 text-sm text-green-600 font-semibold">
-                <div className="w-2.5 h-2.5 bg-green-500 rounded-full"></div>
-                Operational
-              </div>
+              <span className="font-medium text-slate-600">
+                Tests Done Today
+              </span>
+              <span className="font-bold text-2xl text-slate-800">14</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="font-medium text-slate-600">Database</span>
-              <div className="flex items-center gap-2 text-sm text-green-600 font-semibold">
-                <div className="w-2.5 h-2.5 bg-green-500 rounded-full"></div>
-                Connected
-              </div>
+              <span className="font-medium text-slate-600">
+                Pending Results
+              </span>
+              <span className="font-bold text-2xl text-slate-800">8</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="font-medium text-slate-600">Last Backup</span>
-              <p className="text-sm text-slate-500">Today, 1:00 PM</p>
+              <span className="font-medium text-slate-600">
+                Alerts Unresolved
+              </span>
+              <span className="font-bold text-2xl text-red-600">3</span>
             </div>
           </div>
         </Widget>

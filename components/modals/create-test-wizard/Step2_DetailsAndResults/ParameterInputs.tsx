@@ -54,6 +54,10 @@ const renderParameterInput = (
                   type="number"
                   step="any"
                   {...field}
+                  onKeyDown={(evt) =>
+                    ["e", "E", "+", "-", "*"].includes(evt.key) &&
+                    evt.preventDefault()
+                  }
                   onChange={(e) =>
                     field.onChange(
                       e.target.value === "" ? undefined : +e.target.value
