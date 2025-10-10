@@ -48,8 +48,7 @@ const buildSchema = (parameters: ParameterDefinition[]) => {
     lab: z.string().min(1, "Lab is required."),
     sample_id: z.string().min(1, "Sample ID is required."),
     batch_no: z.string().min(1, "Batch Number is required."),
-    // ✅ FIX: Removed the redundant .optional() to resolve the type conflict.
-    product_grade: z.string().default(""),
+    product_grade: z.string().optional().default(""), // Allow empty/optional
     parameters: parameterSchema,
   });
 };

@@ -216,7 +216,7 @@ export default function ProductQualityDetailPage() {
         <Link href="/dashboard/quality-trends" passHref>
           <Button variant="outline" className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Products
+            Back to All Products
           </Button>
         </Link>
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">

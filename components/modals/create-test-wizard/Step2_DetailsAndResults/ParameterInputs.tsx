@@ -26,7 +26,6 @@ interface ParameterInputsProps {
   message: string;
 }
 
-// ✅ FIX: This function was missing. It contains the logic to create the correct input for each parameter.
 const renderParameterInput = (
   param: ParameterDefinition,
   control: Control<any>
@@ -48,12 +47,12 @@ const renderParameterInput = (
                   <span className="text-slate-500">({param.unit})</span>
                 )}
               </FormLabel>
-              {/* ✅ UI FIX: Added focus state styling */}
               <FormControl>
                 <Input
                   type="number"
                   step="any"
                   {...field}
+                  value={field.value ?? ""}
                   onKeyDown={(evt) =>
                     ["e", "E", "+", "-", "*"].includes(evt.key) &&
                     evt.preventDefault()
@@ -80,7 +79,6 @@ const renderParameterInput = (
             <FormItem>
               <FormLabel>{param.name}</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
-                {/* ✅ UI FIX: Added focus state styling */}
                 <FormControl>
                   <SelectTrigger className="focus:ring-2 focus:ring-indigo-500">
                     <SelectValue placeholder="Select an option" />
@@ -105,13 +103,11 @@ const renderParameterInput = (
           control={control}
           name={fieldName}
           render={({ field }) => (
-            // ✅ UI FIX: Improved styling for better alignment and visual appeal
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-white">
               <div className="space-y-0.5">
                 <FormLabel>{param.name}</FormLabel>
               </div>
               <FormControl>
-                {/* ✅ UI FIX: Applied accent color to the checked state */}
                 <Switch
                   checked={field.value}
                   onCheckedChange={field.onChange}
@@ -131,11 +127,11 @@ const renderParameterInput = (
           render={({ field }) => (
             <FormItem>
               <FormLabel>{param.name}</FormLabel>
-              {/* ✅ UI FIX: Added focus state styling */}
               <FormControl>
                 <Input
                   type="text"
                   {...field}
+                  value={field.value ?? ""}
                   className="focus:ring-2 focus:ring-indigo-500"
                 />
               </FormControl>
@@ -153,7 +149,6 @@ export default function ParameterInputs({
   message,
 }: ParameterInputsProps) {
   if (parameters.length === 0) {
-    // ✅ UI FIX: Improved styling for the empty state message
     return (
       <p className="text-sm text-center text-slate-500 py-8 bg-slate-50 rounded-md">
         {message}
@@ -162,7 +157,6 @@ export default function ParameterInputs({
   }
 
   return (
-    // ✅ UI FIX: Changed grid layout for better responsiveness and spacing
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {parameters.map((param) => (
         <div key={param.id}>{renderParameterInput(param, control)}</div>

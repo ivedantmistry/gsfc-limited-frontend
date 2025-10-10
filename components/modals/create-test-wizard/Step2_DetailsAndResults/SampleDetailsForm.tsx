@@ -29,7 +29,6 @@ export default function SampleDetailsForm({
   labs,
 }: SampleDetailsFormProps) {
   return (
-    // ✅ UI FIX: Increased gap for better spacing between fields
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <FormField
         control={control}
@@ -38,7 +37,6 @@ export default function SampleDetailsForm({
           <FormItem>
             <FormLabel>Lab</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
-              {/* ✅ UI FIX: Added focus state styling */}
               <FormControl>
                 <SelectTrigger className="focus:ring-2 focus:ring-indigo-500">
                   <SelectValue placeholder="Select a lab" />
@@ -62,10 +60,10 @@ export default function SampleDetailsForm({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Batch Number</FormLabel>
-            {/* ✅ UI FIX: Added focus state styling */}
             <FormControl>
               <Input
                 {...field}
+                value={field.value ?? ""}
                 className="focus:ring-2 focus:ring-indigo-500"
               />
             </FormControl>
@@ -79,10 +77,10 @@ export default function SampleDetailsForm({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Sample ID</FormLabel>
-            {/* ✅ UI FIX: Added focus state styling */}
             <FormControl>
               <Input
                 {...field}
+                value={field.value ?? ""}
                 className="focus:ring-2 focus:ring-indigo-500"
               />
             </FormControl>
