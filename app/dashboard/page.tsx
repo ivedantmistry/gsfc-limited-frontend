@@ -70,6 +70,7 @@ export default function DashboardPage() {
               icon={PlusCircle}
               label="New Analysis"
               description="Start a new product analysis."
+               onClick={() => router.push("/dashboard/records")}
             />
             <QuickActionButton
               icon={BarChart}
@@ -91,31 +92,7 @@ export default function DashboardPage() {
             />
           </div>
         </Widget>
-
-        <Widget title="System Status">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-slate-600">
-                Tests Done Today
-              </span>
-              <span className="font-bold text-2xl text-slate-800">14</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-slate-600">
-                Pending Results
-              </span>
-              <span className="font-bold text-2xl text-slate-800">8</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-slate-600">
-                Alerts Unresolved
-              </span>
-              <span className="font-bold text-2xl text-red-600">3</span>
-            </div>
-          </div>
-        </Widget>
-
-       
+        
       </div>
     </div>
   );
