@@ -40,7 +40,7 @@ export const ProductGrid = ({ products, isLoading }: ProductGridProps) => {
           key={product.id}
           product={product}
           onClick={() =>
-            router.push(`/dashboard/products/${product.id}/versions`)
+            router.push(`/dashboard/products/${product.id}/`)
           }
         />
       ))}
