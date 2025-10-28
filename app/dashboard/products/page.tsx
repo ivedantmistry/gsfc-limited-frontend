@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { useProducts } from "@/lib/api/product";
 import { useHasPermission } from "@/context/AuthContext";
 import AddProductModal from "@/components/modals/AddProductModal";
-import { ProductTable } from "@/components/inventory/products/ProductTable";
+import { ProductGrid } from "@/components/inventory/products/ProductGrid";
 import PaginationControls from "@/components/shared/PaginationControls";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -105,7 +105,7 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        <ProductTable
+        <ProductGrid
           products={products}
           isLoading={isLoading}
           canManage={canManageProducts}
