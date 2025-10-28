@@ -42,56 +42,128 @@ export default function VersionManagementPage({
     null
   );
 
-  const openLockModal = (versionId: number) => {
+  // ✅ 1. Add state for per-row actions and errors
+  const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
+  const [errorRow, setErrorRow] = useState<{ id: number; message: string } | null>(
+    null
+  );
+
+  // ✅ 2. Helper to clear errors when opening a new modal
+  const openModal = (
+    versionId: number,
+    setModalOpen: (isOpen: boolean) => void
+  ) => {
     const version = versions?.find((v) => v.id === versionId);
     if (version) {
+      setErrorRow(null); // Clear any existing row errors
       setVersionToProcess(version);
-      setIsLockModalOpen(true);
+      setModalOpen(true);
     }
   };
-  const openActivateModal = (versionId: number) => {
-    const version = versions?.find((v) => v.id === versionId);
-    if (version) {
-      setVersionToProcess(version);
-      setIsActivateModalOpen(true);
-    }
-  };
-  const openDeleteModal = (versionId: number) => {
-    const version = versions?.find((v) => v.id === versionId);
-    if (version) {
-      setVersionToProcess(version);
-      setIsDeleteModalOpen(true);
-    }
-  };
-  const handleCreate = async (versionName: string) => {
-    await createVersion({
-      product: Number(productId),
-      version_name: versionName,
-    });
+
+  const openLockModal = (versionId: number) =>
+    openModal(versionId, setIsLockModalOpen);
+  const openActivateModal = (versionId: number) =>
+    openModal(versionId, setIsActivateModalOpen);
+  const openDeleteModal = (versionId: number) =>
+    openModal(versionId, setIsDeleteModalOpen);
+
+  // ✅ 3. Fix for Create Modal
+  // Your CreateVersionModal handles its own API call and error state.
+  // This parent handler just needs to mutate and close on success.
+  const handleCreateSuccess = () => {
     mutateVersions();
     setIsCreateModalOpen(false);
   };
+
+  // ✅ 4. Add try/catch/finally to all API handlers
   const handleConfirmLock = async () => {
     if (!versionToProcess) return;
-    await lockVersion(versionToProcess.id);
-    mutateVersions();
-    setIsLockModalOpen(false);
+
+    setActionLoadingId(versionToProcess.id);
+    setErrorRow(null);
+    try {
+      await lockVersion(versionToProcess.id);
+      mutateVersions();
+      setIsLockModalOpen(false);
+      setVersionToProcess(null);
+    } catch (error: any) {
+      // --- THIS IS THE ERROR HANDLING ---
+      if (error.response?.status === 400 && error.response.data.status) {
+        // Specific validation error from Django!
+        setErrorRow({
+          id: versionToProcess.id,
+          message: error.response.data.status[0],
+        });
+      } else {
+        // Generic error
+        setErrorRow({
+          id: versionToProcess.id,
+          message: "An unexpected error occurred. Please try again.",
+        });
+      }
+      setIsLockModalOpen(false); // Close modal to show the error on the row
+    } finally {
+      setActionLoadingId(null);
+    }
   };
+
   const handleConfirmActivate = async () => {
     if (!versionToProcess) return;
-    await activateVersion(versionToProcess.id);
-    mutateVersions();
-    setIsActivateModalOpen(false);
+
+    setActionLoadingId(versionToProcess.id);
+    setErrorRow(null);
+    try {
+      await activateVersion(versionToProcess.id);
+      mutateVersions();
+      setIsActivateModalOpen(false);
+      setVersionToProcess(null);
+    } catch (error: any) {
+      setErrorRow({
+        id: versionToProcess.id,
+        message: "Failed to activate version. Please try again.",
+      });
+      setIsActivateModalOpen(false);
+    } finally {
+      setActionLoadingId(null);
+    }
   };
+
   const handleConfirmDelete = async () => {
     if (!versionToProcess) return;
-    await deleteVersion(versionToProcess.id);
-    mutateVersions();
-    setIsDeleteModalOpen(false);
+
+    setActionLoadingId(versionToProcess.id);
+    setErrorRow(null);
+    try {
+      await deleteVersion(versionToProcess.id);
+      mutateVersions();
+      setIsDeleteModalOpen(false);
+      setVersionToProcess(null);
+    } catch (error: any) {
+      setErrorRow({
+        id: versionToProcess.id,
+        message: "Failed to delete version. Please try again.",
+      });
+      setIsDeleteModalOpen(false);
+    } finally {
+      setActionLoadingId(null);
+    }
   };
+
   const handleClone = async (versionId: number) => {
-    await createNewVersionFromExisting(versionId);
-    mutateVersions();
+    setActionLoadingId(versionId);
+    setErrorRow(null);
+    try {
+      await createNewVersionFromExisting(versionId);
+      mutateVersions();
+    } catch (error: any) {
+      setErrorRow({
+        id: versionId,
+        message: "Failed to clone version. Please try again.",
+      });
+    } finally {
+      setActionLoadingId(null);
+    }
   };
 
   const isLoading = isProductLoading || areVersionsLoading;
@@ -105,7 +177,7 @@ export default function VersionManagementPage({
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         productId={productId}
-        onSuccess={handleCreate}
+        onSuccess={handleCreateSuccess} // ✅ Use the fixed handler
       />
       <ConfirmLockModal
         isOpen={isLockModalOpen}
@@ -130,17 +202,21 @@ export default function VersionManagementPage({
         <VersionListHeader
           product={product}
           onAddNew={() => setIsCreateModalOpen(true)}
-          canManage={canManageVersions} 
+          canManage={canManageVersions}
         />
         <VersionTable
           versions={versions}
           productId={product.id}
-          isLoading={isLoading}
+          // ✅ 5. Pass the correct props to VersionTable
+          isListLoading={isLoading} // Renamed for clarity (for skeletons)
+          actionLoadingId={actionLoadingId} // For row buttons
+          errorRow={errorRow} // The error object
           onLock={openLockModal}
           onActivate={openActivateModal}
           onClone={handleClone}
           onDelete={openDeleteModal}
-          canManage={canManageVersions} 
+          onClearError={() => setErrorRow(null)} // Handler to clear error
+          canManage={canManageVersions}
         />
       </div>
     </>

@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef } from "react"; // ✅ 1. Import useRef
+import React, { useState, useEffect, useRef } from "react"; 
 import { useSearchParams } from "next/navigation";
 import { useProducts } from "@/lib/api/product";
 import { useHasPermission } from "@/context/AuthContext";
@@ -23,10 +23,8 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(initialSearch);
 
-  // ✅ 2. Create a ref for the search input element
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Debouncing effect (no changes needed here)
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
@@ -34,7 +32,6 @@ export default function ProductsPage() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // ✅ 3. Update the useEffect for the keyboard shortcut
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {

@@ -16,22 +16,28 @@ import { Skeleton } from "@/components/ui/skeleton";
 type VersionTableProps = {
   versions: Version[] | undefined;
   productId: number | string;
-  isLoading: boolean;
+  isListLoading: boolean; // ✅ Renamed for clarity
+  actionLoadingId: number | null; // ✅ NEW: Tracks which row is loading
+  errorRow: { id: number; message: string } | null; // ✅ NEW: Tracks error
   onLock: (id: number) => void;
   onActivate: (id: number) => void;
   onClone: (id: number) => void;
   onDelete: (id: number) => void;
+  onClearError: () => void; // ✅ NEW: Handler to clear error
   canManage?: boolean;
 };
 
 export const VersionTable: React.FC<VersionTableProps> = ({
   versions,
   productId,
-  isLoading,
+  isListLoading, // ✅ Use the renamed prop
+  actionLoadingId, // ✅ Receive new prop
+  errorRow, // ✅ Receive new prop
   onLock,
   onActivate,
   onClone,
   onDelete,
+  onClearError, // ✅ Receive new prop
   canManage,
 }) => {
   return (
@@ -46,42 +52,51 @@ export const VersionTable: React.FC<VersionTableProps> = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {isLoading && (
+          {isListLoading &&
             Array.from({ length: 3 }).map((_, i) => (
               <TableRow key={i}>
-                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                {canManage && <TableCell className="text-right"><Skeleton className="h-8 w-20" /></TableCell>}
-              </TableRow>
-            ))
-          )}
-          {!isLoading && versions && versions.length > 0 ? (
-            versions.map((version) => (
-              <VersionTableRow
-                key={version.id}
-                version={version}
-                productId={productId}
-                isLoading={isLoading} // isLoading is always false here, but we pass for prop conformity
-                onLock={onLock}
-                onActivate={onActivate}
-                onClone={onClone}
-                onDelete={onDelete}
-                canManage={canManage}
-              />
-            ))
-          ) : (
-            !isLoading && (
-              <TableRow>
-                <TableCell
-                  colSpan={canManage ? 4 : 3}
-                  className="h-24 text-center"
-                >
-                  No versions found for this product.
+                <TableCell>
+                  <Skeleton className="h-4 w-32" />
                 </TableCell>
+                <TableCell>
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                {canManage && (
+                  <TableCell className="text-right">
+                    <Skeleton className="h-8 w-20" />
+                  </TableCell>
+                )}
               </TableRow>
-            )
-          )}
+            ))}
+          {!isListLoading && versions && versions.length > 0
+            ? versions.map((version) => (
+                <VersionTableRow
+                  key={version.id}
+                  version={version}
+                  productId={productId}
+                  isLoading={actionLoadingId === version.id}
+                  error={errorRow?.id === version.id ? errorRow.message : null}
+                  onClearError={onClearError}
+                  onLock={onLock}
+                  onActivate={onActivate}
+                  onClone={onClone}
+                  onDelete={onDelete}
+                  canManage={canManage}
+                />
+              ))
+            : !isListLoading && (
+                <TableRow>
+                  <TableCell
+                    colSpan={canManage ? 4 : 3}
+                    className="h-24 text-center"
+                  >
+                    No versions found for this product.
+                  </TableCell>
+                </TableRow>
+              )}
         </TableBody>
       </Table>
     </div>
