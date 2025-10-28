@@ -6,7 +6,7 @@ import { useProduct } from "@/lib/api/product";
 import { ChevronRight, ShieldCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ParameterTable } from "@/components/inventory/parameters/ParameterTable";
-import { ProductGradeList } from "@/components/inventory/grades/ProductGradeList"; // ✅ 1. Import new component
+import { ProductGradeList } from "@/components/inventory/grades/ProductGradeList";
 
 export default function ProductOverviewPage({
   params,
@@ -17,7 +17,6 @@ export default function ProductOverviewPage({
   const { product, isLoading } = useProduct(resolvedParams.productId);
 
   if (isLoading) {
-    // A simple skeleton for the overview page
     return (
       <div className="space-y-6">
         <Skeleton className="h-6 w-1/3" />
@@ -34,7 +33,6 @@ export default function ProductOverviewPage({
 
   const activeVersion = product.versions.find((v) => v.is_active);
 
-  // ✅ 2. Logic flags to check for parameters and grades
   const hasBaseParams =
     activeVersion &&
     activeVersion.parameters &&
@@ -44,10 +42,8 @@ export default function ProductOverviewPage({
 
   return (
     <div className="space-y-6">
-      {/* --- Breadcrumbs --- */}
       <nav className="flex" aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-2">
-          {/* ... breadcrumb items ... */}
           <li className="inline-flex items-center">
             <Link
               href="/dashboard/products"
@@ -67,7 +63,6 @@ export default function ProductOverviewPage({
         </ol>
       </nav>
 
-      {/* --- Header with Manage Button --- */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-slate-900">{product.name}</h1>
         <Link
@@ -77,12 +72,9 @@ export default function ProductOverviewPage({
           Manage All Versions
         </Link>
       </div>
-
-      {/* --- Active Version Details --- */}
       <div className="space-y-2">
         {activeVersion ? (
           <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm">
-            {/* Card Header */}
             <div className="p-4 bg-slate-50 rounded-t-xl flex justify-between items-center border-b border-slate-200/70">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="w-6 h-6 text-indigo-600" />
@@ -97,9 +89,7 @@ export default function ProductOverviewPage({
               </div>
             </div>
 
-            {/* ✅ 3. Conditional content rendering */}
             <div className="p-4">
-              {/* --- Show Base Parameters --- */}
               {hasBaseParams && (
                 <div className="space-y-3">
                   <h3 className="text-lg font-semibold text-slate-700">
@@ -109,7 +99,6 @@ export default function ProductOverviewPage({
                 </div>
               )}
 
-              {/* --- Show Product Grades --- */}
               {hasGrades && (
                 <div className={`space-y-3 ${hasBaseParams ? "mt-6" : ""}`}>
                   <h3 className="text-lg font-semibold text-slate-700">
@@ -119,7 +108,6 @@ export default function ProductOverviewPage({
                 </div>
               )}
 
-              {/* --- Show Empty State --- */}
               {!hasBaseParams && !hasGrades && (
                 <div className="text-center p-6 bg-slate-50 rounded-md border-2 border-dashed border-slate-200">
                   <p className="text-sm text-slate-500">

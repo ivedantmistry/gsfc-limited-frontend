@@ -115,17 +115,7 @@ export default function DashboardPage() {
           </div>
         </Widget>
 
-        <Widget title="Recent Analyses" className="lg:col-span-3">
-          <div className="text-center py-10">
-            <FlaskConical className="mx-auto w-12 h-12 text-slate-300" />
-            <p className="mt-4 font-medium text-slate-600">
-              No recent analyses
-            </p>
-            <p className="text-sm text-slate-400">
-              New analyses will appear here once recorded.
-            </p>
-          </div>
-        </Widget>
+       
       </div>
     </div>
   );

@@ -56,7 +56,7 @@ export interface Version {
   status: "DRAFT" | "LOCKED";
   is_active: boolean;
   created_by_username: string;
-   created_at: string | null;
+  created_at: string | null;
   locked_at: string | null;
   activated_at: string | null;
 }
@@ -83,5 +83,6 @@ export interface Product {
   versions: VersionNested[];
   created_at: string;
   updated_at: string;
-   active_version_name: string | null; // ✅ ADD THIS LINE
+  active_version_name: string | null;
+  created_by_username: string;
 }

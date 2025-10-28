@@ -124,7 +124,7 @@ export default function RecordsTable({ records }: RecordsTableProps) {
           ) : (
             <TableRow>
               <TableCell colSpan={6} className="h-24 text-center">
-                No records have been created today.
+                No records found.
               </TableCell>
             </TableRow>
           )}

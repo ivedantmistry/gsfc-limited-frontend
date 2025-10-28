@@ -12,7 +12,7 @@ import {
 } from "@/lib/api/version";
 import { CreateVersionModal } from "@/components/modals/CreateVersionModal";
 import { VersionListHeader } from "@/components/inventory/versions/VersionListHeader";
-import { VersionTable } from "@/components/inventory/versions/VersionTable";
+import { VersionGrid } from "@/components/inventory/versions/VersionGrid";
 import { ConfirmLockModal } from "@/components/modals/ConfirmLockModal";
 import { ConfirmActivateModal } from "@/components/modals/ConfirmActivateModal";
 import { ConfirmDeleteModal } from "@/components/modals/ConfirmDeleteModal";
@@ -204,10 +204,9 @@ export default function VersionManagementPage({
           onAddNew={() => setIsCreateModalOpen(true)}
           canManage={canManageVersions}
         />
-        <VersionTable
+       <VersionGrid
           versions={versions}
           productId={product.id}
-          // ✅ 5. Pass the correct props to VersionTable
           isListLoading={isLoading} // Renamed for clarity (for skeletons)
           actionLoadingId={actionLoadingId} // For row buttons
           errorRow={errorRow} // The error object
