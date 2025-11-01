@@ -45,6 +45,7 @@ export interface TestRecord {
   sample_id: string;
   batch_no: string;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CLOSED" | "RETEST_ORDERED";
+  decision: "APPROVED" | "REJECTED" | null;
   analyst: number | null;
   analyst_full_name: string | null;
   supervisor_comments: string | null;

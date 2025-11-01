@@ -22,6 +22,18 @@ interface RecordInfoCardProps {
 }
 
 export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
+  let decisionLabel: string | null = null;
+  let decisionDateLabel: string | null = null;
+
+  // This logic uses the permanent 'decision' field
+  if (testRecord.decision === "REJECTED") {
+    decisionLabel = "Rejected By:";
+    decisionDateLabel = "Rejected At:";
+  } else if (testRecord.decision === "APPROVED") {
+    decisionLabel = "Approved By:";
+    decisionDateLabel = "Approved At:";
+  }
+
   return (
     <div className="rounded-lg border bg-white shadow-sm">
       <div className="p-4 border-b">
@@ -73,7 +85,7 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
           }
         />
         <InfoRow label="Product Grade:" value={testRecord.product_grade_name} />
-      <InfoRow
+        <InfoRow
           label="Testing Version:"
           value={
             <Link
@@ -99,21 +111,28 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
             "dd MMM yyyy, hh:mm a"
           )}
         />
-        {testRecord.approved_by_full_name && (
+
+        {/* --- THIS IS THE CORRECTED DECISION BLOCK --- */}
+        {/* It renders the Approval/Rejection info based on the 'decision' field */}
+        {decisionLabel && testRecord.approved_by_full_name && (
           <InfoRow
-            label="Approved By:"
+            label={decisionLabel}
             value={testRecord.approved_by_full_name}
           />
         )}
-        {testRecord.approved_at && (
+        {decisionDateLabel && testRecord.approved_at && (
           <InfoRow
-            label="Approved At:"
+            label={decisionDateLabel}
             value={format(
               new Date(testRecord.approved_at),
               "dd MMM yyyy, hh:mm a"
             )}
           />
         )}
+
+        {/* --- THE DUPLICATE BLOCK HAS BEEN REMOVED --- */}
+
+        {/* Retest Ordered By Block */}
         {testRecord.retest_ordered_by_full_name && (
           <InfoRow
             label="Retest Ordered By:"
@@ -130,6 +149,7 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
           />
         )}
 
+        {/* Closed By Block (This is separate and renders independently) */}
         {testRecord.closed_by_full_name && (
           <InfoRow label="Closed By:" value={testRecord.closed_by_full_name} />
         )}

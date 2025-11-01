@@ -5,8 +5,6 @@ import { ParameterDefinition } from "@/lib/types";
 
 const PARAMETERS_ENDPOINT = "/inventory/parameters/";
 
-// A base type for creating a parameter from the form data.
-// The form provides enum_options as a single string.
 type CreateParameterData = Omit<
   ParameterDefinition,
   "id" | "owner_info" | "enum_options"
@@ -14,11 +12,10 @@ type CreateParameterData = Omit<
   enum_options?: string;
 };
 
-// CreateParameterData before adding the correctly typed one for the final payload.
 type CreateParameterPayload = Omit<CreateParameterData, "enum_options"> & {
   version_id?: number;
   grade_id?: number;
-  enum_options?: string[] | null; // This is now the only definition
+  enum_options?: string[] | null;
 };
 
 /**
@@ -70,11 +67,19 @@ export const createParameterForGrade = async (
  */
 export const updateParameter = async (
   parameterId: number,
-  parameterData: any // Using 'any' to match your create functions
+  parameterData: any
 ) => {
-  const response = await api.patch<ParameterDefinition>(
+  const payload = { ...parameterData };
+
+  if (typeof payload.enum_options === "string") {
+    payload.enum_options = payload.enum_options
+      .split(",")
+      .map((s: string) => s.trim())
+      .filter((s: string) => s.length > 0);
+  }
+ const response = await api.patch<ParameterDefinition>(
     `${PARAMETERS_ENDPOINT}${parameterId}/`,
-    parameterData
+    payload // 👈 --- THE FIX ---
   );
   return response.data;
 };

@@ -13,7 +13,7 @@ interface GradeSectionProps {
   onEditGrade: (grade: ProductGrade) => void;
   onEditParameter: (parameter: ParameterDefinition) => void;
   onDeleteGrade: (grade: ProductGrade) => void;
-  onDeleteParameter: (parameter: ParameterDefinition) => void; // ✅ 1. Add this prop
+  onDeleteParameter: (parameter: ParameterDefinition) => void;
 }
 
 export const GradeSection = ({
@@ -26,7 +26,7 @@ export const GradeSection = ({
   onEditGrade,
   onEditParameter,
   onDeleteGrade,
-  onDeleteParameter, // ✅ 2. Get the prop
+  onDeleteParameter,
 }: GradeSectionProps) => (
   <div className="space-y-4">
     <div className="flex justify-between items-center">
@@ -50,7 +50,7 @@ export const GradeSection = ({
         onEdit={() => onEditGrade(g)}
         onEditParameter={onEditParameter}
         onDelete={() => onDeleteGrade(g)}
-        onDeleteParameter={onDeleteParameter} // ✅ 3. Pass the prop down to GradeCard
+        onDeleteParameter={onDeleteParameter}
       />
     ))}
   </div>

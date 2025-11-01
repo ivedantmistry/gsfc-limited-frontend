@@ -202,6 +202,7 @@ export function VersionDetailView({
             isDraft={isDraft}
             versionId={version.id}
             grades={grades}
+            onOpenGradeModal={openGradeModal}
             onOpenParamModal={openParamModal}
             canManage={canManage}
             onEditGrade={handleOpenEditGradeModal}

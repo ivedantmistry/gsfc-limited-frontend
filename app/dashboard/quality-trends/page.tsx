@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useProducts } from "@/lib/api/product";
 import { Product } from "@/lib/types";
 
+
 // UI Components
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -33,6 +34,7 @@ export default function QualityTrendsProductListPage() {
     page,
     pageSize,
     searchTerm: debouncedSearchTerm,
+    isActive: true,
   });
 
   return (

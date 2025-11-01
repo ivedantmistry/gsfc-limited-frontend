@@ -42,6 +42,7 @@ export default function Step1_ProductSelect({
   } = useProducts({
     searchTerm: debouncedSearchTerm,
     pageSize: 50,
+    isActive: true,
   });
 
   useEffect(() => {
@@ -135,6 +136,8 @@ export default function Step1_ProductSelect({
         </DialogTitle>
         <DialogDescription>
           Search for the product by its name or ID.
+          Note:
+          Products with active versions are shown.
         </DialogDescription>
       </DialogHeader>
 
@@ -198,16 +201,14 @@ export default function Step1_ProductSelect({
                     {filteredProducts.map((product, index) => {
                       const isSelected = selectedProduct?.id === product.id;
                       return (
-                       <CommandItem
+                        <CommandItem
                           id={`product-item-${index}`}
                           key={product.id}
                           value={`${product.name} (${product.product_id})`}
-                          // ✅ FIX: Use onMouseDown for mouse clicks
                           onMouseDown={(e) => {
-                            e.preventDefault(); // This stops the input's onBlur from firing
+                            e.preventDefault();
                             handleSelect(product);
                           }}
-                          // ✅ Keep onSelect for keyboard navigation
                           onSelect={() => handleSelect(product)}
                           className={cn(
                             "flex-col items-start border-b py-2 cursor-pointer rounded-md transition-colors",

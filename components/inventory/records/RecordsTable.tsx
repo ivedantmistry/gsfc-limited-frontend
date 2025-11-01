@@ -23,22 +23,24 @@ import { TestRecord, TestRecordInList } from "@/lib/types/test.types";
 import { format } from "date-fns";
 import { Copy, Check } from "lucide-react";
 
-const getStatusVariant = (
+const getStatusColor = (
   status: TestRecord["status"] | TestRecordInList["status"]
 ) => {
   switch (status) {
     case "APPROVED":
-      return "success";
+      return "bg-green-100 text-green-800 border border-green-300";
     case "PENDING":
-      return "warning";
+      return "bg-yellow-100 text-yellow-800 border border-yellow-300";
     case "REJECTED":
-      return "destructive";
-    case "CLOSED":
+      return "bg-red-100 text-red-800 border border-red-300";
     case "RETEST_ORDERED":
+      return "bg-blue-100 text-blue-800 border border-blue-300";
+    case "CLOSED":
     default:
-      return "secondary";
+      return "bg-gray-100 text-gray-800 border border-gray-300";
   }
 };
+
 
 interface RecordsTableProps {
   records: TestRecordInList[];
@@ -77,7 +79,6 @@ export default function RecordsTable({ records }: RecordsTableProps) {
                 onClick={() => router.push(`/dashboard/records/${record.id}`)}
               >
                 <TableCell className="font-mono">
-                  {/* ✅ 5. Added copy button and functionality */}
                   <div className="flex items-center gap-2">
                     <span>{record.record_id}</span>
                     <Tooltip>
@@ -111,9 +112,10 @@ export default function RecordsTable({ records }: RecordsTableProps) {
                 <TableCell>{record.analyst_full_name || "N/A"}</TableCell>
                 <TableCell>{record.lab_name}</TableCell>
                 <TableCell>
-                  <Badge className={`badge-${getStatusVariant(record.status)}`}>
-                    {record.status}
-                  </Badge>
+                  <Badge className={getStatusColor(record.status)}>
+  {record.status}
+</Badge>
+
                 </TableCell>
                 <TableCell>
                   {format(new Date(record.created_at), "dd MMM yyyy, hh:mm a")}
