@@ -25,7 +25,6 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
   let decisionLabel: string | null = null;
   let decisionDateLabel: string | null = null;
 
-  // This logic uses the permanent 'decision' field
   if (testRecord.decision === "REJECTED") {
     decisionLabel = "Rejected By:";
     decisionDateLabel = "Rejected At:";
@@ -112,8 +111,6 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
           )}
         />
 
-        {/* --- THIS IS THE CORRECTED DECISION BLOCK --- */}
-        {/* It renders the Approval/Rejection info based on the 'decision' field */}
         {decisionLabel && testRecord.approved_by_full_name && (
           <InfoRow
             label={decisionLabel}
@@ -130,9 +127,6 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
           />
         )}
 
-        {/* --- THE DUPLICATE BLOCK HAS BEEN REMOVED --- */}
-
-        {/* Retest Ordered By Block */}
         {testRecord.retest_ordered_by_full_name && (
           <InfoRow
             label="Retest Ordered By:"
@@ -149,7 +143,6 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
           />
         )}
 
-        {/* Closed By Block (This is separate and renders independently) */}
         {testRecord.closed_by_full_name && (
           <InfoRow label="Closed By:" value={testRecord.closed_by_full_name} />
         )}
