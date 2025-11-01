@@ -164,3 +164,38 @@ export const closeTestRecord = async (
   const response = await api.post(`${TESTS_ENDPOINT}${recordId}/close_record/`);
   return response.data;
 };
+
+
+// ✅ NEW FUNCTION: Add this to the end of your file
+/**
+ * Downloads the PDF report for a specific test record.
+ */
+export const downloadTestRecordPdf = async (
+  recordId: number | string
+): Promise<Blob> => {
+  const response = await api.get(
+    `${TESTS_ENDPOINT}${recordId}/download-pdf/`,
+    {
+      // This is the crucial part:
+      // Tell axios to download the response as a file blob
+      responseType: 'blob',
+    }
+  );
+  // The response.data will be the PDF file itself
+  return response.data;
+};
+
+/**
+ * Downloads the Excel report for a specific test record.
+ */
+export const downloadTestRecordExcel = async (
+  recordId: number | string
+): Promise<Blob> => {
+  const response = await api.get(
+    `${TESTS_ENDPOINT}${recordId}/download-excel/`,
+    {
+      responseType: 'blob',
+    }
+  );
+  return response.data;
+};

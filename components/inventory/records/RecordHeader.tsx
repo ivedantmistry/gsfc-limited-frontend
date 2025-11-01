@@ -1,7 +1,7 @@
 // src/components/records/RecordHeader.tsx
 
 "use client";
-
+import { Download, Loader2, FileSpreadsheet } from "lucide-react";
 import React, { useState } from "react";
 import { TestRecord } from "@/lib/types/test.types";
 import { Badge } from "@/components/ui/badge";
@@ -32,9 +32,19 @@ const getStatusVariant = (status: TestRecord["status"]) => {
 
 interface RecordHeaderProps {
   testRecord: TestRecord;
+  onDownloadPdf: () => void;
+  isPdfDownloading: boolean; // 👈 Renamed for clarity
+  onDownloadExcel: () => void; // 👈 Add Excel prop
+  isExcelDownloading: boolean; // 👈 Add Excel prop
 }
 
-export default function RecordHeader({ testRecord }: RecordHeaderProps) {
+export default function RecordHeader({
+  testRecord,
+  onDownloadPdf,
+  isPdfDownloading,
+  onDownloadExcel,
+  isExcelDownloading,
+}: RecordHeaderProps) {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = () => {
@@ -51,7 +61,7 @@ export default function RecordHeader({ testRecord }: RecordHeaderProps) {
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
             {testRecord.product_name}
@@ -93,6 +103,34 @@ export default function RecordHeader({ testRecord }: RecordHeaderProps) {
               </Badge>
             )}
           </div>
+        </div>
+
+        {/* ✅ 2. Add the download button here */}
+        <div className="mt-4 md:mt-0">
+          <Button
+            onClick={onDownloadExcel}
+            disabled={isExcelDownloading}
+            variant="outline"
+          >
+            {isExcelDownloading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+            )}
+            {isExcelDownloading ? "Generating..." : "Excel"}
+          </Button>
+          <Button
+            onClick={onDownloadPdf}
+            disabled={isPdfDownloading} // 👈 Use renamed prop
+            variant="outline"
+          >
+            {isPdfDownloading ? ( // 👈 Use renamed prop
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            {isPdfDownloading ? "Generating..." : "PDF"}
+          </Button>
         </div>
       </div>
     </TooltipProvider>
