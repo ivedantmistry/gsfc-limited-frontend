@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Product } from "@/lib/types/product.types";
 import { TestRecordInput } from "@/lib/types/test.types";
 import { useActiveVersionForProduct } from "@/lib/api/version";
 import { useLabs } from "@/lib/api/lab";
-import { useCreateTestForm } from "@/hooks/useCreateTestForm"; // Import the hook
+import { useCreateTestForm } from "@/hooks/useCreateTestForm"; 
+import { useProduct } from "@/lib/api/product";
 
 // UI Components
 import {
@@ -50,51 +50,48 @@ const FormSection = ({
 );
 
 interface Step2Props {
-  product: Product;
+  productId: number;
+  productName: string;
   onBack: () => void;
-  // ✅ FIX: onSubmit prop now correctly expects a Promise
   onSubmit: (data: TestRecordInput) => Promise<void>;
   isSubmitting: boolean;
   apiError: string | null;
 }
 
-// ✅ FIX: Removed the duplicate buildSchema, handleSubmit, and handleFormSubmit functions.
-// All this logic is now inside the useCreateTestForm hook.
-
 export default function Step2_DetailsAndResults({
-  product,
+  productId,
+  productName,
   onBack,
   onSubmit,
   isSubmitting,
   apiError,
 }: Step2Props) {
+  const { product, isLoading: isLoadingProduct } = useProduct(productId);
   const {
-    activeVersion,
-    isLoading: isLoadingVersion,
     error: versionError,
-  } = useActiveVersionForProduct(product.id);
+  } = useActiveVersionForProduct(productId);
   const { labs, isLoading: isLoadingLabs } = useLabs();
   const [selectedGradeId, setSelectedGradeId] = useState<string | null>(null);
-
+  const realActiveVersion = product?.versions.find((v) => v.is_active);
   const { form, parametersToRender, handleFormSubmit } = useCreateTestForm(
-    activeVersion,
+    realActiveVersion,
     selectedGradeId
   );
 
-  const isLoading = isLoadingVersion || isLoadingLabs;
+  const isLoading = isLoadingProduct || isLoadingLabs;
 
   if (isLoading) {
     return (
       <div className="p-12 text-center flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin mr-2" /> Loading
+        <Loader2 className="h-6 w-6 animate-spin mr-2" /> Loading product
         specification...
       </div>
     );
   }
-  if (versionError || !activeVersion) {
+  if (versionError || !product || !realActiveVersion) {
     return (
       <div className="p-6 text-center text-red-600">
-        Failed to load data entry for this product.
+        Failed to load an active specification for this product.
       </div>
     );
   }
@@ -108,8 +105,10 @@ export default function Step2_DetailsAndResults({
         </DialogTitle>
         <DialogDescription>
           Using specification{" "}
-          <span className="font-semibold">{activeVersion.version_name}</span>{" "}
-          for product <span className="font-semibold">{product.name}</span>.
+          <span className="font-semibold">
+            {realActiveVersion.version_name}
+          </span>{" "}
+          for product <span className="font-semibold">{productName}</span>.
         </DialogDescription>
       </DialogHeader>
 
@@ -125,47 +124,51 @@ export default function Step2_DetailsAndResults({
               <SampleDetailsForm control={form.control} labs={labs} />
             </FormSection>
 
-            {activeVersion.grades && activeVersion.grades.length > 0 && (
-              <FormSection title="Product Grade">
-                <FormField
-                  control={form.control}
-                  name="product_grade"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Select Grade</FormLabel>
-                      <Select
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          setSelectedGradeId(value);
-                        }}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a grade to see its parameters" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {activeVersion.grades.map((grade) => (
-                            <SelectItem key={grade.id} value={String(grade.id)}>
-                              {grade.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </FormSection>
-            )}
+            {realActiveVersion.grades &&
+              realActiveVersion.grades.length > 0 && (
+                <FormSection title="Product Grade">
+                  <FormField
+                    control={form.control}
+                    name="product_grade"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Select Grade</FormLabel>
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setSelectedGradeId(value);
+                          }}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a grade to see its parameters" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {realActiveVersion.grades.map((grade) => (
+                              <SelectItem
+                                key={grade.id}
+                                value={String(grade.id)}
+                              >
+                                {grade.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </FormSection>
+              )}
 
             <FormSection title="Parameters">
               <ParameterInputs
                 control={form.control}
                 parameters={parametersToRender}
                 message={
-                  activeVersion.grades.length > 0 && !selectedGradeId
+                  realActiveVersion.grades.length > 0 && !selectedGradeId
                     ? "Please select a grade to view its parameters."
                     : "No parameters defined for this selection."
                 }

@@ -18,46 +18,51 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useAllProducts } from "@/lib/api/product";
-import { Product } from "@/lib/types/product.types";
+import { useProducts } from "@/lib/api/product";
+import { ProductListItem } from "@/lib/types/product.types";
 
 interface Step1_ProductSelectProps {
-  onSelectProduct: (product: Product) => void;
+  onSelectProduct: (productId: number, productName: string) => void;
 }
 
 export default function Step1_ProductSelect({
   onSelectProduct,
 }: Step1_ProductSelectProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const { products, isLoading } = useAllProducts();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [selectedProduct, setSelectedProduct] =
+    useState<ProductListItem | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [showResults, setShowResults] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const {
+    products,
+    isLoading,
+    error: productsError,
+  } = useProducts({
+    searchTerm: debouncedSearchTerm,
+    pageSize: 50,
+  });
 
   useEffect(() => {
     setTimeout(() => searchInputRef.current?.focus(), 100);
   }, []);
 
-  // ✅ 1. New effect to handle the Escape key globally within the component
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // If a product is selected and the user presses Escape...
       if (e.key === "Escape" && selectedProduct) {
-        e.preventDefault(); // ...prevent the dialog from closing...
-        e.stopPropagation(); // ...stop the event from bubbling further...
-        setSelectedProduct(null); // ...and unselect the product.
+        e.preventDefault();
+        e.stopPropagation();
+        setSelectedProduct(null);
       }
     };
 
-    // Add the listener in the capture phase to catch it before the dialog does.
     document.addEventListener("keydown", handleGlobalKeyDown, true);
 
-    // Cleanup listener on component unmount
     return () => {
       document.removeEventListener("keydown", handleGlobalKeyDown, true);
     };
-  }, [selectedProduct]); // Rerun effect if the selectedProduct changes
+  }, [selectedProduct]);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -71,12 +76,24 @@ export default function Step1_ProductSelect({
   }, []);
 
   useEffect(() => {
+    const timerId = setTimeout(() => {
+      setDebouncedSearchTerm(searchQuery);
+    }, 300);
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [searchQuery]);
+
+  useEffect(() => {
     const item = document.getElementById(`product-item-${activeIndex}`);
     item?.scrollIntoView({ block: "nearest" });
   }, [activeIndex]);
 
-  const handleSelect = (product: Product) => {
+  const handleSelect = (product: ProductListItem) => {
     setSelectedProduct(product);
+    setSearchQuery(product.name);
+    setShowResults(false);
   };
 
   const handleSearchChange = (value: string) => {
@@ -86,20 +103,12 @@ export default function Step1_ProductSelect({
     setActiveIndex(0);
   };
 
-  const filteredProducts: Product[] =
-    searchQuery && products
-      ? products.filter(
-          (product) =>
-            product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            product.product_id.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      : [];
-
-  const isSearching = showResults && searchQuery.length > 0;
+  const filteredProducts: ProductListItem[] = products || [];
+  const isSearching = showResults && (isLoading || filteredProducts.length > 0);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     const resultsCount = filteredProducts.length;
-    if (!isSearching || resultsCount === 0) return;
+    if (resultsCount === 0) return;
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -110,15 +119,13 @@ export default function Step1_ProductSelect({
     } else if (e.key === "Enter") {
       e.preventDefault();
       if (selectedProduct) {
-        onSelectProduct(selectedProduct);
+        onSelectProduct(selectedProduct.id, selectedProduct.name);
       } else if (filteredProducts[activeIndex]) {
         handleSelect(filteredProducts[activeIndex]);
       }
     }
-    // ✅ 2. Removed the 'Escape' key logic from here since the global handler now manages it.
   };
 
-  // ... (rest of the component JSX is the same)
   return (
     <div className="flex flex-col h-full">
       <DialogHeader className="p-6 pb-4 border-b bg-white">
@@ -134,7 +141,7 @@ export default function Step1_ProductSelect({
       <div
         className={cn(
           "flex flex-col transition-all duration-300 ease-in-out",
-          isSearching ? "h-[60vh]" : "h-auto"
+          showResults ? "h-[60vh]" : "h-auto"
         )}
       >
         <div className="p-6">
@@ -151,6 +158,9 @@ export default function Step1_ProductSelect({
               onChange={(e) => handleSearchChange(e.target.value)}
               onFocus={() => {
                 if (searchQuery) setShowResults(true);
+              }}
+              onBlur={() => {
+                setTimeout(() => setShowResults(false), 150);
               }}
               onKeyDown={handleKeyDown}
             />
@@ -171,16 +181,16 @@ export default function Step1_ProductSelect({
           </div>
         </div>
 
-        {isSearching && (
+        {showResults && (
           <div className="flex-1 overflow-y-auto px-6 pb-6">
             <Command className="bg-transparent">
               <CommandList>
                 {isLoading && (
                   <div className="p-4 text-center text-sm">Loading...</div>
                 )}
-                {!isLoading && filteredProducts.length === 0 && (
+                {!isLoading && filteredProducts.length === 0 && searchQuery && (
                   <CommandEmpty>
-                    No results found for "{searchQuery}"
+                    No results found for &quot;{searchQuery}&quot;
                   </CommandEmpty>
                 )}
                 {!isLoading && (
@@ -188,10 +198,16 @@ export default function Step1_ProductSelect({
                     {filteredProducts.map((product, index) => {
                       const isSelected = selectedProduct?.id === product.id;
                       return (
-                        <CommandItem
+                       <CommandItem
                           id={`product-item-${index}`}
                           key={product.id}
                           value={`${product.name} (${product.product_id})`}
+                          // ✅ FIX: Use onMouseDown for mouse clicks
+                          onMouseDown={(e) => {
+                            e.preventDefault(); // This stops the input's onBlur from firing
+                            handleSelect(product);
+                          }}
+                          // ✅ Keep onSelect for keyboard navigation
                           onSelect={() => handleSelect(product)}
                           className={cn(
                             "flex-col items-start border-b py-2 cursor-pointer rounded-md transition-colors",
@@ -230,7 +246,9 @@ export default function Step1_ProductSelect({
 
       <div className="flex justify-end p-4 bg-slate-100 border-t mt-auto">
         <Button
-          onClick={() => onSelectProduct(selectedProduct!)}
+          onClick={() =>
+            onSelectProduct(selectedProduct!.id, selectedProduct!.name)
+          }
           disabled={!selectedProduct}
           className="bg-indigo-600 hover:bg-indigo-700 text-white"
         >

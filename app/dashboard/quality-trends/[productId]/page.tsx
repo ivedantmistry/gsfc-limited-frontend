@@ -5,10 +5,9 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useProductQualityDetail } from "@/lib/api/quality-detail";
 import { RecentTestRecord } from "@/lib/types/quality-detail.types";
-import { getFullApiUrl } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import api from "@/lib/api"; // ✅ 1. Import your configured api client
+import api from "@/lib/api";
 import {
   Table,
   TableBody,

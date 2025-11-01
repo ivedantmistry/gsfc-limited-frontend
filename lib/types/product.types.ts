@@ -86,3 +86,11 @@ export interface Product {
   active_version_name: string | null;
   created_by_username: string;
 }
+
+export interface ProductListItem {
+  id: number;
+  product_id: string;
+  name: string;
+  created_at: string;
+  active_version_name: string | null;
+}

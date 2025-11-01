@@ -15,11 +15,6 @@ import {
   lockVersion,
 } from "@/lib/api/version";
 import {
-  createParameterForVersion,
-  createParameterForGrade,
-} from "@/lib/api/parameter";
-import { createGrade } from "@/lib/api/grade";
-import {
   ChevronRight,
   Plus,
   FileCheck2,
@@ -210,7 +205,7 @@ const VersionSection = ({
           <AlertTriangle className="mx-auto w-12 h-12 text-slate-400" />
           <p className="mt-4 font-semibold text-slate-700">No Versions Found</p>
           <p className="text-sm text-slate-500">
-            Create the first version to define this product's testing blueprint.
+            Create the first version to define this product&apos;s testing blueprint.
           </p>
         </div>
       )}

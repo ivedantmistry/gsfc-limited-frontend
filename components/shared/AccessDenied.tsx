@@ -14,7 +14,7 @@ export default function AccessDenied() {
 
         <h1 className="text-3xl font-bold text-slate-900">Access Denied</h1>
         <p className="text-slate-600 mt-2 max-w-sm mx-auto">
-          You don't have permission to view this page. Please contact
+          You don&apos;t have permission to view this page. Please contact
           administrator if you believe this is an error.
         </p>
       </div>

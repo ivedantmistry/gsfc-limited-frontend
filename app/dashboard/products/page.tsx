@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef } from "react"; 
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useProducts } from "@/lib/api/product";
 import { useHasPermission } from "@/context/AuthContext";
@@ -11,7 +11,7 @@ import { ProductGrid } from "@/components/inventory/products/ProductGrid";
 import PaginationControls from "@/components/shared/PaginationControls";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Command, PlusCircle } from "lucide-react";
+import { Search, Command, PlusCircle } from "lucide-react";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
@@ -48,7 +48,7 @@ export default function ProductsPage() {
     }
   };
 
-  const { products, totalCount, isLoading, error, mutate } = useProducts({
+  const { products, totalCount, isLoading, mutate } = useProducts({
     searchTerm: debouncedSearchTerm,
     page,
     pageSize,
@@ -77,7 +77,7 @@ export default function ProductsPage() {
           </div>
           {canManageProducts && (
             <Button
-             className="text-indigo-600 bg-white hover:bg-indigo-100 hover:text-indigo-700 border border-indigo-300 shadow-sm transition-colors"
+              className="text-indigo-600 bg-white hover:bg-indigo-100 hover:text-indigo-700 border border-indigo-300 shadow-sm transition-colors"
               onClick={() => setIsModalOpen(true)}
             >
               <PlusCircle className="mr-2 h-4 w-4" />

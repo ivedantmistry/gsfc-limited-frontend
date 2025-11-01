@@ -3,21 +3,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { AlertDetail } from "@/lib/types/alert.types";
 import { useHasPermission } from "@/context/AuthContext";
 import { updateAlertStatus } from "@/lib/api/alerts";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"; // ✅ Use Sonner's toast function
 import { Loader2 } from "lucide-react";
-import { KeyedMutator } from "swr"; 
+import { mutate } from "swr";
 
 interface AlertActionsProps {
   alert: AlertDetail;
 }
 
 export default function AlertActions({ alert }: AlertActionsProps) {
-  const router = useRouter();
   const canManageAlerts = useHasPermission(
     "inventory.can_approve_test_records"
   );

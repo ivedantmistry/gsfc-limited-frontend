@@ -71,9 +71,7 @@ export default function AllRecordsPage() {
     if (ordering) params.set("ordering", ordering);
     if (analystId) params.set("analyst", analystId);
 
-    // When a filter changes, always go back to page 1
     params.set("page", "1");
-    // Preserve the current page size
     params.set("page_size", String(pageSize));
 
     router.replace(`${pathname}?${params.toString()}`);
@@ -90,7 +88,6 @@ export default function AllRecordsPage() {
     pageSize, // Note: page is removed from dependencies
   ]);
 
-  // ✅ 2. FIX: Use state variables for the API call, not the initial values from the URL.
   const { testRecords, totalCount, isLoading, error } = useTestRecords({
     view_type: "historical",
     page: page,
@@ -98,7 +95,7 @@ export default function AllRecordsPage() {
     searchTerm: debouncedSearchTerm,
     date_after: dateAfter ? format(dateAfter, "yyyy-MM-dd") : undefined,
     date_before: dateBefore ? format(dateBefore, "yyyy-MM-dd") : undefined,
-    status: status as any,
+    status: status as string,
     labId: labId,
     analystId: analystId,
     ordering: ordering,
@@ -114,7 +111,6 @@ export default function AllRecordsPage() {
     setAnalystId(null);
   };
 
-  // ✅ 3. FIX: Check active state from the current state variables, not the initial ones.
   const areFiltersActive =
     searchTerm ||
     dateAfter ||
@@ -128,14 +124,13 @@ export default function AllRecordsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-         Past Records
+          Past Records
         </h1>
         <p className="mt-1 text-sm text-slate-500">
           Search, filter, and sort all historical test records.
         </p>
       </div>
 
-      {/* ✅ 4. Replace the old component with the new composable filter layout */}
       <FilterContainer>
         <SearchFilter searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         <StatusFilter status={status} setStatus={setStatus} />

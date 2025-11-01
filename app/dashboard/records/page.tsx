@@ -84,7 +84,7 @@ export default function RecentTestsPage() {
     mutate: mutateTestRecords,
   } = useTestRecords({
     searchTerm: debouncedSearchTerm,
-    status: status as any,
+    status: status as string,
     labId: labId,
     analystId: analystId,
     ordering: ordering,

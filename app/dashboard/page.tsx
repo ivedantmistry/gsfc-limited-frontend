@@ -59,7 +59,7 @@ export default function DashboardPage() {
           Welcome back, {user?.first_name || user?.username}!
         </h1>
         <p className="text-slate-500 mt-1 text-lg">
-          Here's what's happening in your lab today.
+          Here&apos;s what&apos;s happening in your lab today.
         </p>
       </div>
 

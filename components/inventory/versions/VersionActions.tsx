@@ -101,7 +101,7 @@ export const VersionActions: React.FC<VersionActionsProps> = ({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Clone to New Draft</p>
+              <p>Clone as New Copy</p>
             </TooltipContent>
           </Tooltip>
         )}

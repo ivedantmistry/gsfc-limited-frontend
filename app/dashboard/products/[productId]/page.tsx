@@ -121,8 +121,8 @@ export default function ProductOverviewPage({
           <div className="text-center p-8 bg-white/80 rounded-xl border-2 border-dashed border-slate-300">
             <p className="font-semibold text-slate-700">No Active Version</p>
             <p className="text-sm text-slate-500">
-              There is no active blueprint for this product. Go to "Manage All
-              Versions" to activate one.
+              There is no active blueprint for this product. Go to &quot;Manage
+              All Versions&quot; to activate one.
             </p>
           </div>
         )}

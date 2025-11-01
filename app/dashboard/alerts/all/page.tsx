@@ -11,8 +11,7 @@ import AlertsTable from "@/components/alerts/AlertsTable";
 import PaginationControls from "@/components/shared/PaginationControls";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { format, isValid } from "date-fns";
-
-// --- 1. Import all the necessary filter components ---
+import { AlertStatus } from "@/lib/types/alert.types";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
   SearchFilter,
@@ -80,7 +79,7 @@ export default function AllAlertsPage() {
     page,
     pageSize,
     searchTerm: debouncedSearchTerm,
-    status: status as any,
+    status: status as AlertStatus,
     date_after: dateAfter ? format(dateAfter, "yyyy-MM-dd") : undefined,
     date_before: dateBefore ? format(dateBefore, "yyyy-MM-dd") : undefined,
   });

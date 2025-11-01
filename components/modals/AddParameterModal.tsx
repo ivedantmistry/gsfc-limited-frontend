@@ -334,7 +334,7 @@ export default function AddParameterModal({
                     control={form.control}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>'True' Label</FormLabel>
+                        <FormLabel>&apos;True&apos; Label</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="e.g., Present"
@@ -351,7 +351,7 @@ export default function AddParameterModal({
                     control={form.control}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>'False' Label</FormLabel>
+                        <FormLabel>&apos;False&apos; Label</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="e.g., Absent"

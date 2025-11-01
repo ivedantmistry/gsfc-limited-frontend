@@ -2,9 +2,8 @@
 
 import useSWR from "swr";
 import api from "@/lib/api";
-import { PaginatedResponse, TestRecordInList, User } from "@/lib/types";
+import { PaginatedResponse, TestRecordInList} from "@/lib/types";
 import { TestRecord, TestRecordInput, TestResultInput } from "@/lib/types/";
-import { format } from "date-fns";
 
 const TESTS_ENDPOINT = "/inventory/tests/";
 
@@ -36,7 +35,6 @@ export function useTestRecords(params: {
   ordering?: string | null; //
 }) {
   const urlParams = new URLSearchParams();
-  // ✅ ADD LOGIC TO HANDLE THE NEW PARAMETER
   if (params.view_type) urlParams.append("view_type", params.view_type);
 
   if (params.status) urlParams.append("status", params.status);
@@ -55,8 +53,6 @@ export function useTestRecords(params: {
   if (params.labId) urlParams.append("lab", params.labId);
   const url = `${TESTS_ENDPOINT}?${urlParams.toString()}`;
 
-  // Use the correct type for the paginated response.
-  // We'll create a new TestRecordInList type for our lightweight serializers.
   const { data, error, isLoading, mutate } = useSWR<
     PaginatedResponse<TestRecordInList>
   >(url, listFetcher, { keepPreviousData: true });

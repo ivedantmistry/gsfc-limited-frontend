@@ -3,15 +3,23 @@
 import useSWR from "swr";
 import api from "@/lib/api";
 import { PaginatedResponse } from "@/lib/types";
-import { Product } from "@/lib/types";
+// ✅ 1. Import BOTH Product and the new ProductListItem
+import { Product, ProductListItem } from "@/lib/types";
 
 const PRODUCTS_ENDPOINT = "/inventory/products/";
 
-const listFetcher = (url: string) => api.get(url).then((res) => res.data);
-const singleFetcher = (url: string) => api.get(url).then((res) => res.data);
+// ✅ 2. Update listFetcher to expect the lightweight type
+const listFetcher = (url: string) =>
+  api.get<PaginatedResponse<ProductListItem>>(url).then((res) => res.data);
+
+// This fetcher is for a single, HEAVY product. It is correct.
+const singleFetcher = (url: string) =>
+  api.get<Product>(url).then((res) => res.data);
 
 /**
  * Fetches a paginated list of all products.
+ * This hook is now lightweight and used by BOTH the
+ * main product list and the search modal.
  */
 export function useProducts(params: {
   searchTerm?: string;
@@ -21,17 +29,18 @@ export function useProducts(params: {
   const urlParams = new URLSearchParams();
   if (params.searchTerm) urlParams.append("search", params.searchTerm);
   if (params.page) urlParams.append("page", params.page.toString());
-  if (params.pageSize) urlParams.append("page_size", params.pageSize.toString());
+  if (params.pageSize)
+    urlParams.append("page_size", params.pageSize.toString());
 
   const url = `${PRODUCTS_ENDPOINT}?${urlParams.toString()}`;
 
-  const { data, error, isLoading, mutate } = useSWR<PaginatedResponse<Product>>(
-    url,
-    listFetcher,
-    { keepPreviousData: true }
-  );
+  // ✅ 3. Update SWR to use the new lightweight type
+  const { data, error, isLoading, mutate } = useSWR<
+    PaginatedResponse<ProductListItem>
+  >(url, listFetcher, { keepPreviousData: true });
 
   return {
+    // data.results is now correctly typed as ProductListItem[]
     products: data?.results,
     totalCount: data?.count,
     isLoading,
@@ -41,9 +50,10 @@ export function useProducts(params: {
 }
 
 /**
- * Fetches a single product by its ID.
+ * Fetches a single HEAVY product by its ID.
+ * (Used by Step 2 of the wizard and product detail pages)
  */
-export function useProduct(productId: string | number) {
+export function useProduct(productId: string | number | null) {
   const { data, error, isLoading, mutate } = useSWR<Product>(
     productId ? `${PRODUCTS_ENDPOINT}${productId}/` : null,
     singleFetcher
@@ -57,23 +67,4 @@ export function useProduct(productId: string | number) {
   };
 }
 
-/**
- * ✅ NEW: Fetches a non-paginated list of all products.
- * Ideal for populating searchable dropdowns where all options are needed at once.
- */
-export function useAllProducts() {
-  // We add a large page_size to simulate fetching all items.
-  // Adjust if your backend supports a specific 'all' parameter.
-  const url = `${PRODUCTS_ENDPOINT}?page_size=1000`; 
-
-  const { data, error, isLoading } = useSWR<PaginatedResponse<Product>>(
-    url,
-    (url: string) => api.get(url).then((res) => res.data)
-  );
-
-  return {
-    products: data?.results,
-    isLoading,
-    error,
-  };
-}
+// ✅ 4. The broken useAllProducts() hook has been deleted.

@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { Product } from "@/lib/types/product.types";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import Step1_ProductSelect from "./Step1_ProductSelect";
 import Step2_DetailsAndResults from "../create-test-wizard/Step2_DetailsAndResults/index";
@@ -24,17 +23,24 @@ export default function CreateTestModal({
 }: CreateTestModalProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(
+    null
+  );
+  const [selectedProductName, setSelectedProductName] = useState<string | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  const handleProductSelect = (product: Product) => {
-    setSelectedProduct(product);
+  const handleProductSelect = (productId: number, productName: string) => {
+    setSelectedProductId(productId);
+    setSelectedProductName(productName);
     setCurrentStep(2);
   };
 
   const handleBack = () => {
-    setSelectedProduct(null);
+    setSelectedProductId(null);
+    setSelectedProductName(null);
     setCurrentStep(1);
   };
 
@@ -52,7 +58,7 @@ export default function CreateTestModal({
         error.response?.data?.detail || "An unexpected error occurred.";
       setApiError(errorMsg);
       console.error(error);
-      toast.error("Failed to create test record."); // Added error toast
+      toast.error("Failed to create test record.");
     } finally {
       setIsLoading(false);
     }
@@ -61,7 +67,8 @@ export default function CreateTestModal({
   const handleClose = () => {
     setTimeout(() => {
       setCurrentStep(1);
-      setSelectedProduct(null);
+      setSelectedProductId(null);
+      setSelectedProductName(null);
       setApiError(null);
     }, 300);
     onClose();
@@ -69,14 +76,14 @@ export default function CreateTestModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      {/* ✅ UI FIX: Added a soft background color to the modal content area */}
       <DialogContent className="sm:max-w-3xl p-0 bg-slate-50">
         {currentStep === 1 && (
           <Step1_ProductSelect onSelectProduct={handleProductSelect} />
         )}
-        {currentStep === 2 && selectedProduct && (
+        {currentStep === 2 && selectedProductId && selectedProductName && (
           <Step2_DetailsAndResults
-            product={selectedProduct}
+            productId={selectedProductId}
+            productName={selectedProductName}
             onBack={handleBack}
             onSubmit={handleFinalSubmit}
             isSubmitting={isLoading}

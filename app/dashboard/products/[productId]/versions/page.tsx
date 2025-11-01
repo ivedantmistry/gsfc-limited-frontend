@@ -4,7 +4,6 @@ import React, { useState, use } from "react";
 import { useProduct } from "@/lib/api/product";
 import {
   useVersions,
-  createVersion,
   lockVersion,
   activateVersion,
   createNewVersionFromExisting,
@@ -42,13 +41,12 @@ export default function VersionManagementPage({
     null
   );
 
-  // ✅ 1. Add state for per-row actions and errors
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
-  const [errorRow, setErrorRow] = useState<{ id: number; message: string } | null>(
-    null
-  );
+  const [errorRow, setErrorRow] = useState<{
+    id: number;
+    message: string;
+  } | null>(null);
 
-  // ✅ 2. Helper to clear errors when opening a new modal
   const openModal = (
     versionId: number,
     setModalOpen: (isOpen: boolean) => void
@@ -68,41 +66,56 @@ export default function VersionManagementPage({
   const openDeleteModal = (versionId: number) =>
     openModal(versionId, setIsDeleteModalOpen);
 
-  // ✅ 3. Fix for Create Modal
-  // Your CreateVersionModal handles its own API call and error state.
-  // This parent handler just needs to mutate and close on success.
   const handleCreateSuccess = () => {
     mutateVersions();
     setIsCreateModalOpen(false);
   };
 
-  // ✅ 4. Add try/catch/finally to all API handlers
   const handleConfirmLock = async () => {
     if (!versionToProcess) return;
 
     setActionLoadingId(versionToProcess.id);
     setErrorRow(null);
+
     try {
       await lockVersion(versionToProcess.id);
       mutateVersions();
       setIsLockModalOpen(false);
       setVersionToProcess(null);
-    } catch (error: any) {
-      // --- THIS IS THE ERROR HANDLING ---
-      if (error.response?.status === 400 && error.response.data.status) {
-        // Specific validation error from Django!
-        setErrorRow({
-          id: versionToProcess.id,
-          message: error.response.data.status[0],
-        });
-      } else {
-        // Generic error
-        setErrorRow({
-          id: versionToProcess.id,
-          message: "An unexpected error occurred. Please try again.",
-        });
+    } catch (error: unknown) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error &&
+        typeof (error as { response?: unknown }).response === "object"
+      ) {
+        const response = (
+          error as {
+            response?: { status?: number; data?: { status?: string[] } };
+          }
+        ).response;
+
+        if (response?.status === 400 && response.data?.status?.[0]) {
+          setErrorRow({
+            id: versionToProcess.id,
+            message: response.data.status[0],
+          });
+          setIsLockModalOpen(false);
+          setActionLoadingId(null);
+          return;
+        }
       }
-      setIsLockModalOpen(false); // Close modal to show the error on the row
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred. Please try again.";
+
+      setErrorRow({
+        id: versionToProcess.id,
+        message,
+      });
+      setIsLockModalOpen(false);
     } finally {
       setActionLoadingId(null);
     }
@@ -113,15 +126,21 @@ export default function VersionManagementPage({
 
     setActionLoadingId(versionToProcess.id);
     setErrorRow(null);
+
     try {
       await activateVersion(versionToProcess.id);
       mutateVersions();
       setIsActivateModalOpen(false);
       setVersionToProcess(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to activate version. Please try again.";
+
       setErrorRow({
         id: versionToProcess.id,
-        message: "Failed to activate version. Please try again.",
+        message,
       });
       setIsActivateModalOpen(false);
     } finally {
@@ -134,15 +153,21 @@ export default function VersionManagementPage({
 
     setActionLoadingId(versionToProcess.id);
     setErrorRow(null);
+
     try {
       await deleteVersion(versionToProcess.id);
       mutateVersions();
       setIsDeleteModalOpen(false);
       setVersionToProcess(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to delete version. Please try again.";
+
       setErrorRow({
         id: versionToProcess.id,
-        message: "Failed to delete version. Please try again.",
+        message,
       });
       setIsDeleteModalOpen(false);
     } finally {
@@ -153,13 +178,19 @@ export default function VersionManagementPage({
   const handleClone = async (versionId: number) => {
     setActionLoadingId(versionId);
     setErrorRow(null);
+
     try {
       await createNewVersionFromExisting(versionId);
       mutateVersions();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to clone version. Please try again.";
+
       setErrorRow({
         id: versionId,
-        message: "Failed to clone version. Please try again.",
+        message,
       });
     } finally {
       setActionLoadingId(null);
@@ -204,7 +235,7 @@ export default function VersionManagementPage({
           onAddNew={() => setIsCreateModalOpen(true)}
           canManage={canManageVersions}
         />
-       <VersionGrid
+        <VersionGrid
           versions={versions}
           productId={product.id}
           isListLoading={isLoading} // Renamed for clarity (for skeletons)
