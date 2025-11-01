@@ -1,5 +1,4 @@
 // src/components/inventory/records/EditableResultsTable.tsx
-
 "use client";
 
 import React from "react";
@@ -26,7 +25,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -40,11 +38,10 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useVersion } from "@/lib/api/version";
+import { useSWRConfig } from "swr";
 
-// Dynamically build the validation schema based on parameters
 const buildSchema = (parameters: ParameterDefinition[]) => {
   const shape: { [key: string]: z.ZodTypeAny } = {};
   parameters.forEach((param) => {
@@ -75,14 +72,11 @@ const buildSchema = (parameters: ParameterDefinition[]) => {
   return z.object({ results: z.object(shape) });
 };
 
-// Helper to render the correct input based on parameter type
 const renderParameterInput = (
   param: ParameterDefinition,
   control: Control<any>
 ) => {
   const fieldName = `results.${param.id}` as const;
-  // ... (This function is the same as the one in your create-test-wizard)
-  // You can copy it from there or use the code below.
   switch (param.data_type) {
     case "INTEGER":
     case "DECIMAL":
@@ -177,14 +171,11 @@ interface ResultsEntryFormProps {
 export default function ResultsEntryForm({
   testRecord,
 }: ResultsEntryFormProps) {
-  const router = useRouter();
-
-  // ✅ 2. Fetch the detailed version data to get parameter definitions
+  const { mutate } = useSWRConfig();
   const { version: versionData, isLoading: isLoadingVersion } = useVersion(
     testRecord.version
   );
 
-  // ✅ 3. Determine which parameters to render from the fetched version data
   const parametersToRender =
     testRecord.product_grade && versionData?.grades
       ? versionData.grades.find((g) => g.id === testRecord.product_grade)
@@ -193,9 +184,8 @@ export default function ResultsEntryForm({
 
   const formSchema = buildSchema(parametersToRender);
 
-  const form = useForm<ResultsFormInput>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
-    // Set default values from existing results if they exist, otherwise empty
     defaultValues: {
       results: testRecord.parameter_values.reduce((acc, pv) => {
         acc[String(pv.parameter.id)] = pv.display_value;
@@ -206,7 +196,7 @@ export default function ResultsEntryForm({
 
   const { isSubmitting } = form.formState;
 
-  const onSubmit = async (data: ResultsFormInput) => {
+const onSubmit = async (data: z.infer<typeof formSchema>) => {
     const results_input: TestResultInput[] = Object.entries(data.results)
       .filter(
         ([, value]) => value !== undefined && value !== null && value !== ""
@@ -215,16 +205,17 @@ export default function ResultsEntryForm({
         parameter: Number(paramId),
         value: value as any,
       }));
-
+    const swrKey = `/inventory/tests/${testRecord.id}/`;
     try {
-      await updateTestRecordResults(testRecord.id, { results_input });
+      const updatedRecord = await updateTestRecordResults(testRecord.id, {
+        results_input,
+      });
       toast.success("Test results have been saved.");
-      router.refresh(); // Refresh the page data
+      mutate(swrKey, updatedRecord, false);
     } catch (error) {
       toast.error("Failed to save results.");
     }
   };
-
   if (isLoadingVersion) {
     return (
       <div className="flex justify-center p-12">
