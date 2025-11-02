@@ -307,14 +307,14 @@ export default function ProductQualityDetailPage() {
               </SelectContent>
             </Select>
           )}
-          <Button onClick={handleExport} disabled={isExporting}>
+          {/* <Button onClick={handleExport} disabled={isExporting}>
             {isExporting ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <FileSpreadsheet className="mr-2 h-4 w-4" />
             )}
             {isExporting ? "Exporting..." : "Export as Excel"}
-          </Button>
+          </Button> */}
         </CardContent>
       </Card>
 
