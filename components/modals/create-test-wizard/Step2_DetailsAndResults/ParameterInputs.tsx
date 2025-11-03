@@ -20,8 +20,13 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
+// ✅ FIX 1: This shape MUST match the FULL form shape from the parent hook
 type ParameterFormShape = {
-  parameters: Record<string, string | number | boolean | null | undefined>;
+  lab: string;
+  batch_no: string;
+  sample_id: string;
+  product_grade: string;
+  parameters: Record<string, unknown>; // Use 'unknown' to match the parent
 };
 
 interface ParameterInputsProps {
@@ -56,6 +61,7 @@ const renderParameterInput = (
                   type="number"
                   step="any"
                   {...field}
+                  // ✅ FIX 2: Add type cast for 'unknown' value
                   value={(field.value as string | number) ?? ""}
                   onKeyDown={(evt) =>
                     ["e", "E", "+", "-", "*"].includes(evt.key) &&
@@ -84,6 +90,7 @@ const renderParameterInput = (
               <FormLabel>{param.name}</FormLabel>
               <Select
                 onValueChange={field.onChange}
+                // ✅ FIX 3: Add type cast for 'unknown' value
                 defaultValue={field.value as string | undefined}
               >
                 <FormControl>
@@ -116,6 +123,7 @@ const renderParameterInput = (
               </div>
               <FormControl>
                 <Switch
+                  // ✅ FIX 4: Add type cast for 'unknown' value
                   checked={field.value as boolean | undefined}
                   onCheckedChange={field.onChange}
                   className="data-[state=checked]:bg-indigo-600"
@@ -138,6 +146,7 @@ const renderParameterInput = (
                 <Input
                   type="text"
                   {...field}
+                  // ✅ FIX 5: Add type cast for 'unknown' value
                   value={(field.value as string) ?? ""}
                   className="focus:ring-2 focus:ring-indigo-500"
                 />

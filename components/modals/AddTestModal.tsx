@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useProducts } from "@/lib/api/product";
-import { Product } from "@/lib/types";
+// ✅ FIX 1: Import 'ProductListItem' and remove 'Product'
+import { ProductListItem } from "@/lib/types";
 import { Search, X, Loader2, FileText, ChevronRight } from "lucide-react";
 
 interface AddTestModalProps {
@@ -17,7 +18,9 @@ interface AddTestModalProps {
  */
 export const AddTestModal = ({ isOpen, onClose }: AddTestModalProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  // ✅ FIX 2: Change state to hold 'ProductListItem'
+  const [selectedProduct, setSelectedProduct] =
+    useState<ProductListItem | null>(null);
 
   // Fetch products using the useProducts hook
   const { products, isLoading, error } = useProducts({
@@ -36,8 +39,9 @@ export const AddTestModal = ({ isOpen, onClose }: AddTestModalProps) => {
   if (!isOpen) {
     return null;
   }
-  
-  const handleProductSelect = (product: Product) => {
+
+  // ✅ FIX 3: Change handler to accept 'ProductListItem'
+  const handleProductSelect = (product: ProductListItem) => {
     setSelectedProduct(product);
     // In the next step, you would fetch versions for this product
     console.log("Selected Product:", product);
@@ -51,7 +55,8 @@ export const AddTestModal = ({ isOpen, onClose }: AddTestModalProps) => {
           Step 1: Find Product for Testing
         </h3>
         <p className="text-sm text-gray-500 mb-4">
-          Search for the product by its name or ID to begin the data entry process.
+          Search for the product by its name or ID to begin the data entry
+          process.
         </p>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -82,7 +87,7 @@ export const AddTestModal = ({ isOpen, onClose }: AddTestModalProps) => {
             {products.map((product) => (
               <li key={product.id}>
                 <button
-                  onClick={() => handleProductSelect(product)}
+                  onClick={() => handleProductSelect(product)} // This is now valid
                   className="w-full flex items-center justify-between text-left px-2 py-3 hover:bg-gray-50 rounded-md transition-colors"
                 >
                   <div className="flex items-center">
@@ -90,8 +95,12 @@ export const AddTestModal = ({ isOpen, onClose }: AddTestModalProps) => {
                       <FileText className="w-5 h-5 text-gray-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-800">{product.name}</p>
-                      <p className="text-sm text-gray-500">{product.product_id}</p>
+                      <p className="font-semibold text-gray-800">
+                        {product.name}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {product.product_id}
+                      </p>
                     </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -102,24 +111,27 @@ export const AddTestModal = ({ isOpen, onClose }: AddTestModalProps) => {
         )}
         {!isLoading && !error && (!products || products.length === 0) && (
           <div className="text-center text-gray-500 pt-10">
-            {searchTerm ? `No products found for "${searchTerm}".` : "Start typing to search for a product."}
+            {searchTerm
+              ? `No products found for "${searchTerm}".`
+              : "Start typing to search for a product."}
           </div>
         )}
       </div>
     </>
   );
 
-   // Render the content for Step 2: Details Entry (Placeholder)
-   const renderDetailsEntry = () => (
+  // Render the content for Step 2: Details Entry (Placeholder)
+  const renderDetailsEntry = () => (
     <div className="p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-2">
         Step 2: Enter Test Details for {selectedProduct?.name}
       </h3>
       <p className="text-sm text-gray-500">
-        This is where the form to select the version, grade, and input parameter values will go.
+        This is where the form to select the version, grade, and input parameter
+        values will go.
       </p>
       {/* Back button to allow changing the product */}
-       <button 
+      <button
         onClick={() => setSelectedProduct(null)}
         className="mt-4 text-sm text-indigo-600 hover:underline"
       >
@@ -127,7 +139,6 @@ export const AddTestModal = ({ isOpen, onClose }: AddTestModalProps) => {
       </button>
     </div>
   );
-
 
   return (
     <div
@@ -151,7 +162,6 @@ export const AddTestModal = ({ isOpen, onClose }: AddTestModalProps) => {
 
         {/* Conditional rendering based on whether a product is selected */}
         {!selectedProduct ? renderProductSelection() : renderDetailsEntry()}
-
       </div>
     </div>
   );

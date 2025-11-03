@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { TestRecordInput } from "@/lib/types/test.types";
 import { useActiveVersionForProduct } from "@/lib/api/version";
 import { useLabs } from "@/lib/api/lab";
-import { useCreateTestForm } from "@/hooks/useCreateTestForm"; 
+import { useCreateTestForm } from "@/hooks/useCreateTestForm";
 import { useProduct } from "@/lib/api/product";
 
 // UI Components
@@ -67,9 +67,7 @@ export default function Step2_DetailsAndResults({
   apiError,
 }: Step2Props) {
   const { product, isLoading: isLoadingProduct } = useProduct(productId);
-  const {
-    error: versionError,
-  } = useActiveVersionForProduct(productId);
+  const { error: versionError } = useActiveVersionForProduct(productId);
   const { labs, isLoading: isLoadingLabs } = useLabs();
   const [selectedGradeId, setSelectedGradeId] = useState<string | null>(null);
   const realActiveVersion = product?.versions.find((v) => v.is_active);

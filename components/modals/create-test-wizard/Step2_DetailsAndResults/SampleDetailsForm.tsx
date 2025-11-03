@@ -19,10 +19,13 @@ import {
 } from "@/components/ui/select";
 import { Lab } from "@/lib/api/lab";
 
+// ✅ FIX: This shape MUST match the FULL form shape from the parent hook
 type SampleDetailsFormShape = {
   lab: string;
   batch_no: string;
   sample_id: string;
+  product_grade: string; // Added to match parent
+  parameters: Record<string, unknown>; // Added to match parent
 };
 
 interface SampleDetailsFormProps {

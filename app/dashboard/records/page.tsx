@@ -93,7 +93,8 @@ export default function RecentTestsPage() {
           | "RETEST_ORDERED")
       : undefined,
     labId: labId,
-    analystId: analystId,
+    // ✅ FIX 1 (Line 96): Convert 'string | null' to 'number | undefined'
+    analystId: analystId ? Number(analystId) : undefined,
     ordering: ordering,
     page: page,
     pageSize: pageSize,
@@ -112,8 +113,14 @@ export default function RecentTestsPage() {
     setAnalystId(null);
   };
 
-  const areFiltersActive =
-    searchTerm || status || labId || ordering || analystId;
+  // ✅ FIX 2 (Line 115): Wrap in !!() to force a boolean
+  const areFiltersActive = !!(
+    searchTerm ||
+    status ||
+    labId ||
+    ordering ||
+    analystId
+  );
   const canViewAllRecords = useHasPermission(
     "inventory.can_view_all_test_records"
   );

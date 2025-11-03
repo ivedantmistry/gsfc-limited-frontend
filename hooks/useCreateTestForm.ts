@@ -4,8 +4,9 @@ import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { ParameterDefinition, VersionNested } from "@/lib/types/product.types";
+import { ParameterDefinition } from "@/lib/types/product.types";
 import { TestRecordInput, TestResultInput } from "@/lib/types/test.types";
+import { VersionNested } from "@/lib/types";
 
 const buildSchema = (parameters: ParameterDefinition[]) => {
   const parameterSchema = z.object(
@@ -48,7 +49,7 @@ const buildSchema = (parameters: ParameterDefinition[]) => {
     lab: z.string().min(1, "Lab is required."),
     sample_id: z.string().min(1, "Sample ID is required."),
     batch_no: z.string().min(1, "Batch Number is required."),
-    product_grade: z.string().optional().default(""), // Allow empty/optional
+    product_grade: z.string().optional().default(""),
     parameters: parameterSchema,
   });
 };
@@ -67,12 +68,13 @@ export const useCreateTestForm = (
       : activeVersion.parameters || [];
   }, [activeVersion, selectedGradeId]);
 
-  const formSchema = useMemo(() => buildSchema(parametersToRender), [
-    parametersToRender,
-  ]);
+  const formSchema = useMemo(
+    () => buildSchema(parametersToRender),
+    [parametersToRender]
+  );
 
   const form = useForm<CreateTestFormValues>({
-   resolver: zodResolver(formSchema) as any,
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       lab: "",
       sample_id: "",
