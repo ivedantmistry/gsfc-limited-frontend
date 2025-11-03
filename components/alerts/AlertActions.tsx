@@ -38,7 +38,8 @@ export default function AlertActions({ alert }: AlertActionsProps) {
       // SWR will then automatically re-fetch data from `/alerts/${alert.id}/`.
       // The page will re-render with the fresh data from the server.
       mutate(swrKey);
-    } catch (error) {
+    } catch (_error) {
+      // Prefixed 'error' with '_' to mark it as unused
       toast.error("Failed to update alert status.");
     } finally {
       setIsSubmitting(false);

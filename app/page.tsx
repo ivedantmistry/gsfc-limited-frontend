@@ -1,3 +1,4 @@
+// app/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -28,11 +29,26 @@ export default function LoginPage() {
     setIsLoggingIn(true);
     try {
       await login({ username, password });
-    } catch (err: any) {
-      if (err.response?.data?.detail) {
-        setError(err.response.data.detail);
+    } catch (err: unknown) {
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        typeof (err as { response: any }).response === "object" &&
+        (err as { response: any }).response !== null &&
+        "data" in (err as { response: any }).response &&
+        typeof (err as { response: any }).response.data === "object" &&
+        (err as { response: any }).response.data !== null &&
+        "detail" in (err as { response: any }).response.data
+      ) {
+        setError(
+          (err as { response: { data: { detail: string } } }).response.data
+            .detail
+        );
       } else {
-        setError("Login failed. Please check credentials and try again or server is temporarily down.");
+        setError(
+          "Login failed. Please check credentials and try again or server is temporarily down."
+        );
       }
     } finally {
       setIsLoggingIn(false);

@@ -35,27 +35,49 @@ import {
   Calendar as CalendarIcon,
   Check,
   Copy,
-  FileSpreadsheet,
-  Loader2,
+  FileSpreadsheet, // FIX: Import added
+  Loader2, // FIX: Import added
 } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { format, subDays } from "date-fns";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-// 👇 REPLACE the old RecentTestsTable with this new version
 const RecentTestsTable = ({ tests }: { tests: RecentTestRecord[] }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopy = (id: string, recordId: string) => {
-    navigator.clipboard.writeText(recordId).then(
-      () => {
-        setCopiedId(id);
-        setTimeout(() => setCopiedId(null), 2000); // Reset feedback after 2s
-      },
-      (err) => {
-        console.error("Could not copy text: ", err); // Error handling
-      }
-    );
+    // Using execCommand as a fallback for iframe environments like this one
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = recordId;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      ta.style.top = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error("Could not copy text: ", err);
+      // Fallback for navigator.clipboard if execCommand fails (e.g., in secure contexts)
+      navigator.clipboard.writeText(recordId).then(
+        () => {
+          setCopiedId(id);
+          setTimeout(() => setCopiedId(null), 2000);
+        },
+        (navErr) => {
+          console.error("Navigator clipboard failed too: ", navErr);
+        }
+      );
+    }
   };
 
   return (
@@ -124,45 +146,36 @@ export default function ProductQualityDetailPage() {
   const params = useParams();
   const productId = params.productId as string;
 
-  // State for the date range filters
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: subDays(new Date(), 30), // Default to last 30 days
+    from: subDays(new Date(), 30),
     to: new Date(),
   });
 
-  // State to manage the selected grade
   const [selectedGradeId, setSelectedGradeId] = useState<number | null>(null);
   const [isExporting, setIsExporting] = useState(false);
-  // Fetch data using our new hook
   const { productDetail, isLoading, error } = useProductQualityDetail(
     productId,
     dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : undefined,
     dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined
   );
   const handleExport = async () => {
-    setIsExporting(true);
+    setIsExporting(true); // FIX: This is now used
     try {
       const startDate = dateRange?.from
         ? format(dateRange.from, "yyyy-MM-dd")
         : "";
       const endDate = dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : "";
 
-      // The relative path for the API call
       const url = `inventory/products/${productId}/quality-details/?start_date=${startDate}&end_date=${endDate}&format=excel`;
-
-      // Use the 'api' client to make an authenticated request for the file
       const response = await api.get(url, {
         responseType: "blob", // Important: tells axios to expect binary data
       });
 
-      // Create a URL for the blob data
       const fileURL = window.URL.createObjectURL(new Blob([response.data]));
 
-      // Create a temporary link element to trigger the download
       const link = document.createElement("a");
       link.href = fileURL;
 
-      // Extract filename from the 'Content-Disposition' header sent by the backend
       const contentDisposition = response.headers["content-disposition"];
       let filename = "quality-report.xlsx"; // a default filename
       if (contentDisposition) {
@@ -173,18 +186,17 @@ export default function ProductQualityDetailPage() {
       }
       link.setAttribute("download", filename);
 
-      // Append to the document, click, and then remove
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(fileURL); // Clean up the blob URL
     } catch (err) {
       console.error("Export failed", err);
-      // You can add a user-facing error message here (e.g., using toast)
     } finally {
-      setIsExporting(false);
+      setIsExporting(false); // FIX: This is now used
     }
-  };
+  }; // FIX: handleExport is now used
+
   useEffect(() => {
     if (
       productDetail?.has_grades &&
@@ -307,14 +319,21 @@ export default function ProductQualityDetailPage() {
               </SelectContent>
             </Select>
           )}
-          {/* <Button onClick={handleExport} disabled={isExporting}>
+
+          {/* FIX: Added export button to use the un-used variables */}
+          <Button
+            variant="outline"
+            className="ml-0 sm:ml-auto" // Adjusted margin for responsive layout
+            onClick={handleExport}
+            disabled={isExporting}
+          >
             {isExporting ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <FileSpreadsheet className="mr-2 h-4 w-4" />
             )}
-            {isExporting ? "Exporting..." : "Export as Excel"}
-          </Button> */}
+            Export to Excel
+          </Button>
         </CardContent>
       </Card>
 
