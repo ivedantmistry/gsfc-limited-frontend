@@ -25,10 +25,11 @@ let isRefreshing = false;
 // A queue to hold requests while the token is being refreshed
 let failedQueue: {
   resolve: (value: unknown) => void;
-  reject: (reason?: any) => void;
+  reject: (reason?: Error | null) => void; // FIX 1: any -> Error | null
 }[] = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: Error | null, token: string | null = null) => {
+  // FIX 2: any -> Error | null
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -115,7 +116,7 @@ api.interceptors.response.use(
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
-        processQueue(refreshError, null);
+        processQueue(refreshError as Error, null); // Cast refreshError to Error
         window.location.href = "/";
         return Promise.reject(refreshError);
       } finally {

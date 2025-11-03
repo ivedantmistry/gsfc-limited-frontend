@@ -90,7 +90,7 @@ export default function AllAlertsPage() {
     setDateAfter(undefined);
     setDateBefore(undefined);
   };
-  const areFiltersActive = searchTerm || status || dateAfter || dateBefore;
+const areFiltersActive = !!(searchTerm || status || dateAfter || dateBefore);
 
   return (
     <div className="space-y-6">

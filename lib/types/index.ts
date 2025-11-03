@@ -13,6 +13,14 @@ export interface Group {
   name: string;
 }
 
+/**
+ * Represents the data sent to the login endpoint.
+ */
+export interface LoginCredentials {
+  username: string;
+  password: string;
+}
+
 // Represents the detailed user object returned from the backend.
 export interface User {
   id: number;

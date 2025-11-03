@@ -10,13 +10,13 @@ import React, {
 } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
-import { User, LoginResponse } from "@/lib/types"; // Import from the single source of truth
+import { User, LoginResponse, LoginCredentials } from "@/lib/types"; // Import LoginCredentials
 
 // --- 1. CONTEXT DEFINITION ---
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (data: any) => Promise<void>;
+  login: (data: LoginCredentials) => Promise<void>; // Use LoginCredentials
   logout: () => void;
 }
 
@@ -44,7 +44,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initializeAuth();
   }, []);
 
-  const login = async (data: any) => {
+  const login = async (data: LoginCredentials) => {
+    // Use LoginCredentials
     const response = await api.post<LoginResponse>("/auth/token/", data);
     const { access, refresh, user: loggedInUser } = response.data;
     localStorage.setItem("accessToken", access);

@@ -9,7 +9,7 @@ import { updateAlertStatus } from "@/lib/api/alerts";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { useSWRConfig } from "swr"; // Correct import
+import { useSWRConfig } from "swr";
 
 interface AlertActionsProps {
   alert: AlertDetail;
@@ -20,26 +20,19 @@ export default function AlertActions({ alert }: AlertActionsProps) {
     "inventory.can_approve_test_records"
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { mutate } = useSWRConfig(); // Get the global mutate function
+  const { mutate } = useSWRConfig();
 
   const handleStatusUpdate = async (newStatus: "ACKNOWLEDGED" | "RESOLVED") => {
     setIsSubmitting(true);
 
-    // This is the SWR cache key for the alert page's main data
-    const swrKey = `/alerts/${alert.id}/`;
+    const swrKey = `/alerts/${alert.id}/context/`;
 
     try {
-      // 1. Call the API to update the status. We don't need the return value.
       await updateAlertStatus(alert.id, newStatus);
       toast.success(`Alert marked as ${newStatus.toLowerCase()}.`);
 
-      // 2. ✅ TELL SWR TO RE-FETCH (REVALIDATE) THE DATA
-      // This call tells SWR "the data for this key is stale, go get it again."
-      // SWR will then automatically re-fetch data from `/alerts/${alert.id}/`.
-      // The page will re-render with the fresh data from the server.
       mutate(swrKey);
-    } catch (_error) {
-      // Prefixed 'error' with '_' to mark it as unused
+    } catch {
       toast.error("Failed to update alert status.");
     } finally {
       setIsSubmitting(false);
@@ -50,7 +43,6 @@ export default function AlertActions({ alert }: AlertActionsProps) {
     return null;
   }
 
-  // ... (rest of the component JSX is unchanged)
   return (
     <div className="rounded-lg border bg-white shadow-sm">
       <div className="p-4 border-b">

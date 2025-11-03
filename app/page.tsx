@@ -7,6 +7,12 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { User, KeyRound, Eye, EyeOff, LoaderCircle } from "lucide-react";
 import logo from "@/public/logo.png";
+import axios from "axios"; // Import the main axios object
+
+// Define the shape of the error data we expect from the API
+interface LoginErrorData {
+  detail: string;
+}
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -30,26 +36,25 @@ export default function LoginPage() {
     try {
       await login({ username, password });
     } catch (err: unknown) {
-      if (
-        typeof err === "object" &&
-        err !== null &&
-        "response" in err &&
-        typeof (err as { response: any }).response === "object" &&
-        (err as { response: any }).response !== null &&
-        "data" in (err as { response: any }).response &&
-        typeof (err as { response: any }).response.data === "object" &&
-        (err as { response: any }).response.data !== null &&
-        "detail" in (err as { response: any }).response.data
-      ) {
-        setError(
-          (err as { response: { data: { detail: string } } }).response.data
-            .detail
-        );
+      // --- THIS IS THE TYPE-SAFE FIX ---
+      if (axios.isAxiosError<LoginErrorData>(err)) {
+        // Check if the response and data exist, and data has a 'detail' property
+        if (
+          err.response &&
+          err.response.data &&
+          typeof err.response.data.detail === "string"
+        ) {
+          setError(err.response.data.detail);
+        } else {
+          // Handle cases where it's an Axios error but not in the expected shape
+          setError("Login failed. Please check credentials or server status.");
+        }
       } else {
-        setError(
-          "Login failed. Please check credentials and try again or server is temporarily down."
-        );
+        // Handle non-Axios errors (e.g., network error, component logic error)
+        console.error("An unexpected error occurred:", err);
+        setError("An unexpected error occurred. Please try again.");
       }
+      // --- END OF FIX ---
     } finally {
       setIsLoggingIn(false);
     }
@@ -68,13 +73,8 @@ export default function LoginPage() {
 
   return (
     <main className="flex items-center justify-center min-h-screen w-full p-4 bg-slate-50 relative overflow-hidden">
-      {/* This background is consistent with our standalone pages like 404 */}
+      {/* (rest of your component's JSX remains the same) */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60rem] h-[60rem] bg-indigo-500/5 rounded-full blur-3xl"></div>
-
-      {/* REVAMPED: Panel styling adjusted to match the macOS widget aesthetic.
-          - Softer rounding (rounded-xl)
-          - More subtle shadow (shadow-lg shadow-slate-900/5)
-          - Cleaner border (border-slate-200/70) */}
       <div className="relative w-full max-w-sm mx-auto p-8 bg-white/80 backdrop-blur-xl rounded-xl border border-slate-200/70 shadow-lg shadow-slate-900/5">
         <div className="text-center mb-10">
           <div className="mb-6">
