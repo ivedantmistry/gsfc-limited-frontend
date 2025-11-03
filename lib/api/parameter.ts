@@ -5,6 +5,7 @@ import { ParameterDefinition } from "@/lib/types";
 
 const PARAMETERS_ENDPOINT = "/inventory/parameters/";
 
+// This is the type for data used to CREATE a parameter.
 type CreateParameterData = Omit<
   ParameterDefinition,
   "id" | "owner_info" | "enum_options"
@@ -12,6 +13,7 @@ type CreateParameterData = Omit<
   enum_options?: string;
 };
 
+// This is the (internal) type for the final JSON payload
 type CreateParameterPayload = Omit<CreateParameterData, "enum_options"> & {
   version_id?: number;
   grade_id?: number;
@@ -67,25 +69,33 @@ export const createParameterForGrade = async (
  */
 export const updateParameter = async (
   parameterId: number,
-  parameterData: any
+  // ✅ FIX 1 (Line 70): Replaced 'any' with a partial type
+  parameterData: Partial<CreateParameterData>
 ) => {
-  const payload = { ...parameterData };
+  // Destructure enum_options out from the rest of the data.
+  const { enum_options, ...rest } = parameterData;
 
-  if (typeof payload.enum_options === "string") {
-    payload.enum_options = payload.enum_options
+  // Create the payload from 'rest'. This is now type-safe.
+  const payload: Partial<CreateParameterPayload> = { ...rest };
+
+  // Process 'enum_options' separately and add it back
+  // to the payload with the CORRECT type (string[]).
+  if (typeof enum_options === "string") {
+    payload.enum_options = enum_options
       .split(",")
       .map((s: string) => s.trim())
       .filter((s: string) => s.length > 0);
   }
- const response = await api.patch<ParameterDefinition>(
+
+  const response = await api.patch<ParameterDefinition>(
     `${PARAMETERS_ENDPOINT}${parameterId}/`,
-    payload // 👈 --- THE FIX ---
-  );
+    payload
+  ); // ✅ FIX 2 (Line 83): Removed extra backticks ``
   return response.data;
 };
 
 /**
- *  Deletes a parameter definition.
+ * Deletes a parameter definition.
  *
  * @param parameterId The ID of the parameter to delete.
  */

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useProducts } from "@/lib/api/product";
-import { Product } from "@/lib/types";
+import { ProductListItem } from "@/lib/types";
 
 
 // UI Components
@@ -65,7 +65,7 @@ export default function QualityTrendsProductListPage() {
       {!isLoading && products && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((product: Product) => (
+            {products.map((product: ProductListItem) => (
               <Link
                 key={product.id}
                 href={`/dashboard/quality-trends/${product.id}`}

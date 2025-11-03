@@ -20,15 +20,19 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
+type ParameterFormShape = {
+  parameters: Record<string, string | number | boolean | null | undefined>;
+};
+
 interface ParameterInputsProps {
-  control: Control<any>;
+  control: Control<ParameterFormShape>;
   parameters: ParameterDefinition[];
   message: string;
 }
 
 const renderParameterInput = (
   param: ParameterDefinition,
-  control: Control<any>
+  control: Control<ParameterFormShape>
 ) => {
   const fieldName = `parameters.${param.id}` as const;
 
@@ -52,7 +56,7 @@ const renderParameterInput = (
                   type="number"
                   step="any"
                   {...field}
-                  value={field.value ?? ""}
+                  value={(field.value as string | number) ?? ""}
                   onKeyDown={(evt) =>
                     ["e", "E", "+", "-", "*"].includes(evt.key) &&
                     evt.preventDefault()
@@ -78,7 +82,10 @@ const renderParameterInput = (
           render={({ field }) => (
             <FormItem>
               <FormLabel>{param.name}</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value as string | undefined}
+              >
                 <FormControl>
                   <SelectTrigger className="focus:ring-2 focus:ring-indigo-500">
                     <SelectValue placeholder="Select an option" />
@@ -109,7 +116,7 @@ const renderParameterInput = (
               </div>
               <FormControl>
                 <Switch
-                  checked={field.value}
+                  checked={field.value as boolean | undefined}
                   onCheckedChange={field.onChange}
                   className="data-[state=checked]:bg-indigo-600"
                 />
@@ -131,7 +138,7 @@ const renderParameterInput = (
                 <Input
                   type="text"
                   {...field}
-                  value={field.value ?? ""}
+                  value={(field.value as string) ?? ""}
                   className="focus:ring-2 focus:ring-indigo-500"
                 />
               </FormControl>

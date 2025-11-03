@@ -2,13 +2,13 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Product } from "@/lib/types/";
+import { ProductListItem } from "@/lib/types/";
 import { ProductCard, ProductCardSkeleton } from "./ProductCard";
 
 interface ProductGridProps {
-  products?: Product[];
+  products?: ProductListItem[];
   isLoading: boolean;
-  canManage: boolean; // Kept prop in case you need it for other logic
+  canManage: boolean;
 }
 
 export const ProductGrid = ({ products, isLoading }: ProductGridProps) => {
@@ -17,7 +17,6 @@ export const ProductGrid = ({ products, isLoading }: ProductGridProps) => {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {/* Show 8 skeleton cards while loading */}
         {Array.from({ length: 8 }).map((_, i) => (
           <ProductCardSkeleton key={i} />
         ))}
@@ -39,9 +38,7 @@ export const ProductGrid = ({ products, isLoading }: ProductGridProps) => {
         <ProductCard
           key={product.id}
           product={product}
-          onClick={() =>
-            router.push(`/dashboard/products/${product.id}/`)
-          }
+          onClick={() => router.push(`/dashboard/products/${product.id}/`)}
         />
       ))}
     </div>

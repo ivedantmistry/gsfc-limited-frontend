@@ -84,7 +84,14 @@ export default function RecentTestsPage() {
     mutate: mutateTestRecords,
   } = useTestRecords({
     searchTerm: debouncedSearchTerm,
-    status: status as string,
+    status: status
+      ? (status as
+          | "PENDING"
+          | "APPROVED"
+          | "REJECTED"
+          | "CLOSED"
+          | "RETEST_ORDERED")
+      : undefined,
     labId: labId,
     analystId: analystId,
     ordering: ordering,

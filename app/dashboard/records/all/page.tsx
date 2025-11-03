@@ -95,9 +95,17 @@ export default function AllRecordsPage() {
     searchTerm: debouncedSearchTerm,
     date_after: dateAfter ? format(dateAfter, "yyyy-MM-dd") : undefined,
     date_before: dateBefore ? format(dateBefore, "yyyy-MM-dd") : undefined,
-    status: status as string,
+    status: status
+      ? (status as
+          | "PENDING"
+          | "APPROVED"
+          | "REJECTED"
+          | "CLOSED"
+          | "RETEST_ORDERED")
+      : undefined,
     labId: labId,
-    analystId: analystId,
+    // ✅ FIX 1 (Line 107): Convert 'string | null' to 'number | undefined'
+    analystId: analystId ? Number(analystId) : undefined,
     ordering: ordering,
   });
 
@@ -111,14 +119,16 @@ export default function AllRecordsPage() {
     setAnalystId(null);
   };
 
-  const areFiltersActive =
+  // ✅ FIX 2 (Line 122 & 155): Wrap in !!() to force a boolean
+  const areFiltersActive = !!(
     searchTerm ||
     dateAfter ||
     dateBefore ||
     status ||
     labId ||
     ordering ||
-    analystId;
+    analystId
+  );
 
   return (
     <div className="space-y-6">

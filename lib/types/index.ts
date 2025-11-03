@@ -5,8 +5,9 @@ export * from "./product.types";
 export * from "./test.types";
 export * from "./lab.types";
 export * from "./alert.types";
-export * from "./stats.types"; 
-export * from "./quality-detail.types"
+export * from "./stats.types";
+export * from "./quality-detail.types";
+export * from "./version.types";
 
 // Represents the structure of a Group object.
 export interface Group {

@@ -38,7 +38,7 @@ export default function Step1_ProductSelect({
   const {
     products,
     isLoading,
-    error: productsError,
+    // ✅ FIX 1 (Line 41): Removed 'error: productsError' as it was unused
   } = useProducts({
     searchTerm: debouncedSearchTerm,
     pageSize: 50,
@@ -105,7 +105,7 @@ export default function Step1_ProductSelect({
   };
 
   const filteredProducts: ProductListItem[] = products || [];
-  const isSearching = showResults && (isLoading || filteredProducts.length > 0);
+  // ✅ FIX 2 (Line 108): Removed unused 'isSearching' variable
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     const resultsCount = filteredProducts.length;
@@ -135,9 +135,8 @@ export default function Step1_ProductSelect({
           Step 1: Select a Product
         </DialogTitle>
         <DialogDescription>
-          Search for the product by its name or ID.
-          Note:
-          Products with active versions are shown.
+          Search for the product by its name or ID. Note: Products with active
+          versions are shown.
         </DialogDescription>
       </DialogHeader>
 

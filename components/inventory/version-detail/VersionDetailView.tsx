@@ -1,3 +1,5 @@
+// src/components/inventory/version-detail/VersionDetailView.tsx
+
 "use client";
 
 import React, { useState } from "react";
@@ -91,7 +93,8 @@ export function VersionDetailView({
       toast.success(`Grade "${deletingGrade.name}" deleted successfully.`);
       onDataChange(); // Re-fetch version data
       handleCloseDeleteModal();
-    } catch (error) {
+      // ✅ FIX: Removed unused 'error' variable from catch block (line 94)
+    } catch {
       toast.error("Failed to delete grade. Please try again.");
     } finally {
       setIsDeleting(false);
@@ -116,7 +119,8 @@ export function VersionDetailView({
       );
       onDataChange(); // Re-fetch version data
       handleCloseDeleteParamModal();
-    } catch (error) {
+      // ✅ FIX: Removed unused 'error' variable from catch block (line 119)
+    } catch {
       toast.error("Failed to delete parameter. Please try again.");
     } finally {
       setIsDeleting(false);
@@ -172,9 +176,9 @@ export function VersionDetailView({
         <VersionHeader
           version={version}
           isDraft={isDraft}
-          onAddGrade={openGradeModal}
-          onAddParameter={() => openParamModal({ versionId: version.id })}
           onNameUpdate={onNameUpdate}
+          // ✅ FIX: Removed 'onAddGrade' prop
+          // ✅ FIX: Removed 'onAddParameter' prop
         />
 
         {isEmptyDraft && (
@@ -186,7 +190,7 @@ export function VersionDetailView({
             canManage={canManage}
           />
         )}
-      {hasParameters && (
+        {hasParameters && (
           <ParameterSection
             isDraft={isDraft}
             versionId={version.id}
@@ -194,7 +198,7 @@ export function VersionDetailView({
             onOpenParamModal={openParamModal}
             canManage={canManage}
             onEditParameter={openEditParamModal}
-            onDeleteParameter={handleOpenDeleteParamModal} 
+            onDeleteParameter={handleOpenDeleteParamModal}
           />
         )}
         {hasGrades && (
@@ -208,7 +212,7 @@ export function VersionDetailView({
             onEditGrade={handleOpenEditGradeModal}
             onDeleteGrade={handleOpenDeleteModal}
             onEditParameter={openEditParamModal}
-            onDeleteParameter={handleOpenDeleteParamModal} 
+            onDeleteParameter={handleOpenDeleteParamModal}
           />
         )}
       </div>

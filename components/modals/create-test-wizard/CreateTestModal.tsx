@@ -9,11 +9,16 @@ import { TestRecordInput } from "@/lib/types/test.types";
 import { createTestRecord } from "@/lib/api/test";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { AxiosError } from "axios";
 
 interface CreateTestModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+}
+
+interface ApiErrorResponse {
+  detail?: string;
 }
 
 export default function CreateTestModal({
@@ -49,13 +54,18 @@ export default function CreateTestModal({
     setApiError(null);
     try {
       const newTestRecord = await createTestRecord(data);
-      toast.success("Test record created successfully!"); // Changed for better feedback
+      toast.success("Test record created successfully!");
 
       onSuccess();
       router.push(`/dashboard/records/${newTestRecord.id}`);
-    } catch (error: any) {
-      const errorMsg =
-        error.response?.data?.detail || "An unexpected error occurred.";
+    } catch (error) {
+      let errorMsg = "An unexpected error occurred.";
+      if (error instanceof AxiosError && error.response) {
+        const data = error.response.data as ApiErrorResponse;
+        if (data.detail) {
+          errorMsg = data.detail;
+        }
+      }
       setApiError(errorMsg);
       console.error(error);
       toast.error("Failed to create test record.");

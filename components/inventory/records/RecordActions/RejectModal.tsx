@@ -21,14 +21,14 @@ interface RejectModalProps {
   isOpen: boolean;
   onClose: () => void;
   recordId: number;
-   onSuccess: () => void; 
+  onSuccess: () => void;
 }
 
 export default function RejectModal({
   isOpen,
   onClose,
   recordId,
-    onSuccess,
+  onSuccess,
 }: RejectModalProps) {
   const router = useRouter();
   const {
@@ -44,16 +44,14 @@ export default function RejectModal({
         status: "REJECTED",
         supervisor_comments: data.comments,
       });
-      // ✅ 3. Update the toast call
       toast.success("Success", {
         description: "Test record has been rejected.",
       });
       reset();
       onClose();
-        onSuccess();
+      onSuccess();
       router.refresh();
-    } catch (error) {
-      // ✅ 3. Update the toast call
+    } catch {
       toast.error("Error", { description: "Failed to reject record." });
     }
   };

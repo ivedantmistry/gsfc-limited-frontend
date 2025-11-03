@@ -13,7 +13,7 @@ interface InfoRowProps {
 const InfoRow = ({ label, value }: InfoRowProps) => (
   <div className="flex justify-between items-center">
     <p className="text-sm font-medium text-slate-500">{label}</p>
-  <div className="text-sm text-slate-800 text-right">{value || "N/A"}</div>
+    <div className="text-sm text-slate-800 text-right">{value || "N/A"}</div>
   </div>
 );
 
@@ -57,7 +57,7 @@ export default function RecordInfoCard({ testRecord }: RecordInfoCardProps) {
             label="Retest Order: "
             value={
               <div className="flex flex-col items-end gap-1">
-                {testRecord.retests.map((retest, index) => (
+                {testRecord.retests.map((retest) => (
                   <Link
                     key={retest.id}
                     href={`/dashboard/records/${retest.id}`}

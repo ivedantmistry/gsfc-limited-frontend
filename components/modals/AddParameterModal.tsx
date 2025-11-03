@@ -1,3 +1,4 @@
+// src/components/modals/AddParameterModal.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -34,7 +35,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
-import { ParameterDefinition } from "@/lib/types"; // Import the type
+import { ParameterDefinition } from "@/lib/types";
+import { AxiosError } from "axios"; // ✅ FIX: Import AxiosError
 
 const DATA_TYPE_CHOICES = [
   "DECIMAL",
@@ -77,19 +79,9 @@ const formSchema = z
     }
   );
 
+// ✅ FIX 1: Use the OUTPUT type (z.infer) for the form data
 type ParameterFormData = z.infer<typeof formSchema>;
-const defaultFormValues: ParameterFormData = {
-  name: "",
-  description: "",
-  unit: "",
-  is_required: true,
-  data_type: "STRING",
-  min_value: "",
-  max_value: "",
-  enum_options: "",
-  boolean_true_label: "",
-  boolean_false_label: "",
-};
+
 interface AddParameterModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -106,39 +98,54 @@ export default function AddParameterModal({
   editingParameter,
 }: AddParameterModalProps) {
   const [apiError, setApiError] = useState<string | null>(null);
-  const isEditMode = !!editingParameter; // Determine if we are in "edit" mode
+  const isEditMode = !!editingParameter;
 
-  const form = useForm<ParameterFormData>({
-    resolver: zodResolver(formSchema) as any,
-    defaultValues: defaultFormValues,
+  // ✅ FIX 2 (Line 112): Use the OUTPUT type for useForm and remove 'as any'
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    // Provide defaults for fields that are required in the *output*
+    defaultValues: {
+      is_required: true,
+      data_type: "STRING",
+    },
   });
+
   useEffect(() => {
     if (isOpen) {
       if (isEditMode && editingParameter) {
+        // Reset with existing values, parsing them to the OUTPUT type
         form.reset({
           name: editingParameter.name,
-          description: editingParameter.description || "",
+          description: editingParameter.description || undefined,
           data_type: editingParameter.data_type,
-          unit: editingParameter.unit || "",
+          unit: editingParameter.unit || undefined,
           is_required: editingParameter.is_required,
-          enum_options: editingParameter.enum_options?.join(", ") || "",
+          enum_options: editingParameter.enum_options?.join(", ") || undefined,
+          // Parse string from API to number for the form's (output) type
           min_value: editingParameter.min_value
             ? parseFloat(editingParameter.min_value)
             : undefined,
           max_value: editingParameter.max_value
             ? parseFloat(editingParameter.max_value)
             : undefined,
-          boolean_true_label: editingParameter.boolean_true_label || "",
-          boolean_false_label: editingParameter.boolean_false_label || "",
+          boolean_true_label: editingParameter.boolean_true_label || undefined,
+          boolean_false_label: editingParameter.boolean_false_label || undefined,
         });
       } else {
-        form.reset(defaultFormValues);
+        // Reset to the base default values
+        form.reset({
+          is_required: true,
+          data_type: "STRING",
+        });
       }
     }
-  }, [isOpen, isEditMode, editingParameter, form.reset]);
+    // ✅ FIX 3 (Line 138): Add 'form' to the dependency array
+  }, [isOpen, isEditMode, editingParameter, form]);
+
   const dataType = form.watch("data_type");
   const { isSubmitting } = form.formState;
 
+  // ✅ FIX 4: Use the OUTPUT type (ParameterFormData) for onSubmit
   const onSubmit = async (values: ParameterFormData) => {
     setApiError(null);
     try {
@@ -168,9 +175,17 @@ export default function AddParameterModal({
       onSuccess();
       onClose();
       form.reset();
-    } catch (error: any) {
+      // ✅ FIX 5 (Line 171): Make the catch block type-safe
+    } catch (error) {
       console.error(error);
-      setApiError("An unexpected error occurred. Please try again.");
+      if (error instanceof AxiosError && error.response) {
+        // You can add specific error handling here
+        setApiError(
+          `API Error: ${error.response.data?.detail || error.message}`
+        );
+      } else {
+        setApiError("An unexpected error occurred. Please try again.");
+      }
     }
   };
 
@@ -192,6 +207,8 @@ export default function AddParameterModal({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto pr-5">
+              {/* --- (All FormField components remain the same) --- */}
+              {/* ... (Omitted for brevity) ... */}
               <FormField
                 name="name"
                 control={form.control}

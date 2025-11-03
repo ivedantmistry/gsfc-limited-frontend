@@ -1,4 +1,4 @@
-// src/components/inventory/records/EditableResultsTable.tsx
+// src/components/inventory/records/ResultsEntryForm.tsx
 "use client";
 
 import React from "react";
@@ -8,7 +8,7 @@ import * as z from "zod";
 import {
   TestRecord,
   TestResultInput,
-  ResultsFormInput,
+  // ✅ FIX 1: Removed unused 'ResultsFormInput'
 } from "@/lib/types/test.types";
 import { ParameterDefinition } from "@/lib/types/product.types";
 import { updateTestRecordResults } from "@/lib/api/test";
@@ -42,6 +42,7 @@ import { Loader2 } from "lucide-react";
 import { useVersion } from "@/lib/api/version";
 import { useSWRConfig } from "swr";
 
+// This builds the schema as before
 const buildSchema = (parameters: ParameterDefinition[]) => {
   const shape: { [key: string]: z.ZodTypeAny } = {};
   parameters.forEach((param) => {
@@ -72,9 +73,12 @@ const buildSchema = (parameters: ParameterDefinition[]) => {
   return z.object({ results: z.object(shape) });
 };
 
+// Create a type from the Zod schema's return type
+type FormSchemaType = z.input<ReturnType<typeof buildSchema>>;
+
 const renderParameterInput = (
   param: ParameterDefinition,
-  control: Control<any>
+  control: Control<FormSchemaType>
 ) => {
   const fieldName = `results.${param.id}` as const;
   switch (param.data_type) {
@@ -91,6 +95,8 @@ const renderParameterInput = (
                   type="number"
                   step="any"
                   {...field}
+                  // ✅ FIX 2 (Line 94): Cast 'value' to what the Input expects
+                  value={(field.value as string | number) ?? ""}
                   onChange={(e) =>
                     field.onChange(
                       e.target.value === "" ? undefined : +e.target.value
@@ -110,7 +116,11 @@ const renderParameterInput = (
           name={fieldName}
           render={({ field }) => (
             <FormItem>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select
+                onValueChange={field.onChange}
+                // ✅ FIX 3 (Line 117): Cast 'defaultValue' to what Select expects
+                defaultValue={field.value as string | undefined}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select..." />
@@ -138,7 +148,8 @@ const renderParameterInput = (
             <FormItem className="flex items-center">
               <FormControl>
                 <Switch
-                  checked={field.value}
+                  // ✅ FIX 4 (Line 145): Cast 'checked' to what Switch expects
+                  checked={field.value as boolean | undefined}
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
@@ -154,7 +165,12 @@ const renderParameterInput = (
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <Input type="text" {...field} />
+                <Input
+                  type="text"
+                  {...field}
+                  // ✅ FIX 5 (Line 161): Cast 'value' to what Input expects
+                  value={(field.value as string) ?? ""}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -184,26 +200,33 @@ export default function ResultsEntryForm({
 
   const formSchema = buildSchema(parametersToRender);
 
-  const form = useForm({
+  const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      results: testRecord.parameter_values.reduce((acc, pv) => {
-        acc[String(pv.parameter.id)] = pv.display_value;
-        return acc;
-      }, {} as { [key: string]: any }),
+      results: testRecord.parameter_values.reduce(
+        (
+          acc: Record<string, string | number | boolean | null | undefined>,
+          pv
+        ) => {
+          acc[String(pv.parameter.id)] = pv.display_value;
+          return acc;
+        },
+        {}
+      ),
     },
   });
 
   const { isSubmitting } = form.formState;
 
-const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     const results_input: TestResultInput[] = Object.entries(data.results)
       .filter(
         ([, value]) => value !== undefined && value !== null && value !== ""
       )
       .map(([paramId, value]) => ({
         parameter: Number(paramId),
-        value: value as any,
+        // ✅ FIX 6 (Line 206): Remove 'as any'
+        value: value as string | number | boolean | null,
       }));
     const swrKey = `/inventory/tests/${testRecord.id}/`;
     try {
@@ -212,7 +235,8 @@ const onSubmit = async (data: z.infer<typeof formSchema>) => {
       });
       toast.success("Test results have been saved.");
       mutate(swrKey, updatedRecord, false);
-    } catch (error) {
+      // ✅ FIX 7 (Line 215): Remove unused 'error' variable
+    } catch {
       toast.error("Failed to save results.");
     }
   };

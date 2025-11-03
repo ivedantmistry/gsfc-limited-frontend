@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { Combobox } from "@/components/ui/combobox"; // Import our new component
+import { Combobox } from "@/components/ui/combobox";
 
 interface RetestModalProps {
   isOpen: boolean;
@@ -35,7 +35,6 @@ export default function RetestModal({
 
   const handleSubmit = async () => {
     if (!selectedAnalystId) {
-      // ✅ 3. Update the toast call
       toast.error("Error", {
         description: "Please select an analyst to assign the retest.",
       });
@@ -47,15 +46,13 @@ export default function RetestModal({
         recordId,
         Number(selectedAnalystId)
       );
-      // ✅ 3. Update the toast call
       toast.success("Success", {
         description: `Retest ordered. New record ID: ${newTestRecord.record_id}`,
       });
       setSelectedAnalystId("");
       onClose();
       router.push(`/dashboard/records/${newTestRecord.id}`);
-    } catch (error) {
-      // ✅ 3. Update the toast call
+    } catch {
       toast.error("Error", { description: "Failed to order retest." });
     } finally {
       setIsSubmitting(false);

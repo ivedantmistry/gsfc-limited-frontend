@@ -1,3 +1,4 @@
+// src/components/quality-trends/QualityChart.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -20,7 +21,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ZoomOut } from "lucide-react";
 
-// The main component that maps over the data
 export default function QualityChart({ data }: { data: AggregatedTrend[] }) {
   if (!data || data.length === 0) {
     return <p>No data available to display.</p>;
@@ -37,7 +37,17 @@ export default function QualityChart({ data }: { data: AggregatedTrend[] }) {
   );
 }
 
-// A stateful component for an individual chart with zoom capabilities
+type ZoomStateType = {
+  x1: string | null;
+  x2: string | null;
+};
+type ZoomDomainType = {
+  x: [string, string] | ["auto", "auto"];
+};
+type ChartEvent = {
+  activeLabel?: string;
+};
+
 const ChartForParameter = ({
   parameterData,
 }: {
@@ -54,23 +64,21 @@ const ChartForParameter = ({
     ? parseFloat(parameterData.max_value)
     : null;
 
-  // State to manage the zoom selection area
-  const [zoomArea, setZoomArea] = useState<{ x1: any; x2: any }>({
+  const [zoomArea, setZoomArea] = useState<ZoomStateType>({
     x1: null,
     x2: null,
   });
-  // State to hold the final zoomed-in domain for the axes
-  const [zoomDomain, setZoomDomain] = useState({
-    x: ["auto" as const, "auto" as const],
+  const [zoomDomain, setZoomDomain] = useState<ZoomDomainType>({
+    x: ["auto", "auto"],
   });
 
-  const handleMouseDown = (e: any) => {
+  const handleMouseDown = (e: ChartEvent) => {
     if (e?.activeLabel) {
       setZoomArea({ ...zoomArea, x1: e.activeLabel });
     }
   };
 
-  const handleMouseMove = (e: any) => {
+  const handleMouseMove = (e: ChartEvent) => {
     if (zoomArea.x1 && e?.activeLabel) {
       setZoomArea({ ...zoomArea, x2: e.activeLabel });
     }
@@ -79,7 +87,10 @@ const ChartForParameter = ({
   const handleMouseUp = () => {
     const { x1, x2 } = zoomArea;
     if (x1 && x2) {
-      const newXDomain = [x1 < x2 ? x1 : x2, x1 > x2 ? x1 : x2] as [any, any];
+      const newXDomain = [x1 < x2 ? x1 : x2, x1 > x2 ? x1 : x2] as [
+        string,
+        string
+      ];
       if (newXDomain[0] !== newXDomain[1]) {
         setZoomDomain({ x: newXDomain });
       }
@@ -94,7 +105,6 @@ const ChartForParameter = ({
 
   const isZoomed = zoomDomain.x[0] !== "auto";
 
-  // ✅ 1. Create the formatted title string with the spec range
   const specRange =
     minSpec !== null && maxSpec !== null
       ? `(${minSpec.toFixed(2)} - ${maxSpec.toFixed(2)})`
@@ -128,13 +138,13 @@ const ChartForParameter = ({
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="date"
-              domain={zoomDomain.x} // Apply the zoom domain
+              domain={zoomDomain.x}
               allowDataOverflow
               type="category"
               tickFormatter={(dateStr) => format(new Date(dateStr), "MMM dd")}
             />
             <YAxis
-              domain={["auto", "auto"]} // Let Y-axis auto-adjust to the visible data
+              domain={["auto", "auto"]}
               allowDataOverflow
               type="number"
               label={{ value: yAxisLabel, angle: -90, position: "insideLeft" }}
@@ -182,7 +192,6 @@ const ChartForParameter = ({
               dot={false}
             />
 
-            {/* The ReferenceArea for selecting zoom on the X-axis */}
             {zoomArea.x1 && zoomArea.x2 && (
               <ReferenceArea
                 x1={zoomArea.x1}

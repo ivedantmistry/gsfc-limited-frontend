@@ -24,11 +24,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
+import { AxiosError } from "axios";
 
 const formSchema = z.object({
   version_name: z.string().min(1, { message: "Version name is required." }),
   description: z.string().optional(),
 });
+
+interface ApiErrorResponse {
+  non_field_errors?: string[];
+}
 
 interface CreateVersionModalProps {
   isOpen: boolean;
@@ -44,7 +49,6 @@ export function CreateVersionModal({
   onSuccess,
 }: CreateVersionModalProps) {
   const [apiError, setApiError] = useState<string | null>(null);
-  // ✅ 1. Add our own loading state to prevent double submission.
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -55,7 +59,6 @@ export function CreateVersionModal({
   const { isSubmitting } = form.formState;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    // ✅ 2. Set loading to true immediately.
     setIsLoading(true);
     setApiError(null);
     try {
@@ -63,14 +66,22 @@ export function CreateVersionModal({
       onSuccess();
       onClose();
       form.reset();
-    } catch (error: any) {
-      if (error.response?.data?.non_field_errors) {
-        setApiError(`Error: ${error.response.data.non_field_errors[0]}`);
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        const data = error.response.data as ApiErrorResponse;
+        if (
+          data.non_field_errors &&
+          Array.isArray(data.non_field_errors) &&
+          data.non_field_errors.length > 0
+        ) {
+          setApiError(`Error: ${data.non_field_errors[0]}`);
+        } else {
+          setApiError("An unexpected API error occurred. Please try again.");
+        }
       } else {
         setApiError("An unexpected error occurred. Please try again.");
       }
     } finally {
-      // Ensure loading is set to false even if there's an error.
       setIsLoading(false);
     }
   };
@@ -145,7 +156,6 @@ export function CreateVersionModal({
               </Button>
               <Button
                 type="submit"
-                // ✅ 3. Disable the button using our state as well.
                 disabled={isSubmitting || isLoading}
                 className="bg-indigo-600 text-white hover:bg-indigo-700"
               >

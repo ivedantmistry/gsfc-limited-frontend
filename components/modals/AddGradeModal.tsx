@@ -1,3 +1,4 @@
+// src/components/modals/AddGradeModal.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -24,11 +25,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
+import { AxiosError } from "axios"; // ✅ FIX 1: Import AxiosError
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Grade name is required." }),
   description: z.string().optional(),
 });
+
+// ✅ FIX 2: Define the expected error shape from the API
+interface ApiErrorResponse {
+  name?: string[];
+  // Add other potential error fields if necessary
+}
 
 interface AddGradeModalProps {
   isOpen: boolean;
@@ -69,9 +77,15 @@ export default function AddGradeModal({
       await createGrade(versionId, values);
       onSuccess();
       onClose();
-    } catch (error: any) {
-      if (error.response?.data?.name) {
-        setApiError(`Error: ${error.response.data.name[0]}`);
+      // ✅ FIX 3: Change 'error: any' to a type-safe block
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        const data = error.response.data as ApiErrorResponse;
+        if (data.name && Array.isArray(data.name) && data.name.length > 0) {
+          setApiError(`Error: ${data.name[0]}`);
+        } else {
+          setApiError("An unexpected API error occurred. Please try again.");
+        }
       } else {
         setApiError("An unexpected error occurred. Please try again.");
       }

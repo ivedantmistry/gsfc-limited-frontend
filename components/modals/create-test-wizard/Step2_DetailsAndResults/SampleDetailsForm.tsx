@@ -19,8 +19,14 @@ import {
 } from "@/components/ui/select";
 import { Lab } from "@/lib/api/lab";
 
+type SampleDetailsFormShape = {
+  lab: string;
+  batch_no: string;
+  sample_id: string;
+};
+
 interface SampleDetailsFormProps {
-  control: Control<any>;
+  control: Control<SampleDetailsFormShape>;
   labs: Lab[] | undefined;
 }
 

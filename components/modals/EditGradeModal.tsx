@@ -1,3 +1,4 @@
+// src/components/modals/EditGradeModal.tsx
 "use client";
 
 import React, { useEffect } from "react";
@@ -58,10 +59,9 @@ export default function EditGradeModal({
     try {
       await updateGrade(grade.id, data);
       toast.success("Grade updated successfully.");
-      // Re-fetch the version data to show the updated grade in the list
       mutate(`/inventory/versions/${versionId}/`);
       onClose();
-    } catch (error) {
+    } catch {
       toast.error("Failed to update grade. Please try again.");
     }
   };

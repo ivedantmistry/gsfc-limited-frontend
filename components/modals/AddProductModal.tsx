@@ -1,3 +1,4 @@
+// src/components/modals/AddProductModal.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -26,6 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
+import { AxiosError } from "axios"; // ✅ FIX 1: Import AxiosError
 
 const formSchema = z.object({
   name: z
@@ -33,6 +35,11 @@ const formSchema = z.object({
     .min(2, { message: "Product name must be at least 2 characters." }),
   description: z.string().optional(),
 });
+
+// ✅ FIX 2: Define the expected error shape
+interface ApiErrorResponse {
+  name?: string[];
+}
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -60,9 +67,15 @@ export default function AddProductModal({
       const newProduct = response.data;
       onClose();
       router.push(`/dashboard/products/${newProduct.id}/versions`);
-    } catch (error: any) {
-      if (error.response?.data?.name) {
-        setApiError(`Error: ${error.response.data.name[0]}`);
+      // ✅ FIX 3: Make the catch block type-safe
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        const data = error.response.data as ApiErrorResponse;
+        if (data.name && Array.isArray(data.name) && data.name.length > 0) {
+          setApiError(`Error: ${data.name[0]}`);
+        } else {
+          setApiError("An unexpected API error occurred. Please try again.");
+        }
       } else {
         setApiError("An unexpected error occurred. Please try again.");
       }
@@ -86,6 +99,7 @@ export default function AddProductModal({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="p-6 space-y-4">
+              {/* ... (rest of the form is unchanged) ... */}
               <FormField
                 control={form.control}
                 name="name"

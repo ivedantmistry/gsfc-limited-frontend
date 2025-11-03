@@ -1,4 +1,5 @@
-// src/types/product.types.ts
+// src/lib/types/product.types.ts
+import { VersionNested } from "./version.types";
 
 /**
  * Represents the owner of a parameter, which can be a Version or a ProductGrade.
@@ -41,34 +42,6 @@ export interface ProductGrade {
   name: string;
   description: string | null;
   parameters: ParameterDefinition[];
-}
-
-/**
- * Represents a product specification version for lists and forms.
- * Matches the VersionSerializer.
- */
-export interface Version {
-  id: number;
-  product: number;
-  product_name: string;
-  version_name: string;
-  description: string | null;
-  status: "DRAFT" | "LOCKED";
-  is_active: boolean;
-  created_by_username: string;
-  created_at: string | null;
-  locked_at: string | null;
-  activated_at: string | null;
-}
-
-/**
- * Represents a detailed, nested version for display inside a Product.
- * Matches the VersionNestedSerializer.
- */
-export interface VersionNested
-  extends Omit<Version, "product" | "product_name" | "created_by_username"> {
-  parameters: ParameterDefinition[];
-  grades: ProductGrade[];
 }
 
 /**

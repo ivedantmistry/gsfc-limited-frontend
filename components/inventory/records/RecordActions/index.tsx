@@ -37,7 +37,7 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
       });
       mutate();
       router.refresh();
-    } catch (error) {
+    } catch {
       toast.error("Error", { description: "Failed to approve record." });
     } finally {
       setIsApproving(false);
@@ -53,7 +53,7 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
       });
       mutate();
       router.refresh();
-    } catch (error) {
+    } catch {
       toast.error("Error", { description: "Failed to close record." });
     } finally {
       setIsClosing(false);
@@ -93,7 +93,6 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
             </div>
           )}
 
-          {/* ✅ 1. SHOW "ORDER RETEST" FOR APPROVED/REJECTED */}
           {(testRecord.status === "APPROVED" ||
             testRecord.status === "REJECTED") && (
             <Button
@@ -104,7 +103,6 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
             </Button>
           )}
 
-          {/* ✅ 2. SHOW "CLOSE RECORD" FOR APPROVED, REJECTED, OR RETEST_ORDERED */}
           {(testRecord.status === "APPROVED" ||
             testRecord.status === "REJECTED" ||
             testRecord.status === "RETEST_ORDERED") && (
@@ -137,7 +135,6 @@ export default function RecordActions({ testRecord }: RecordActionsProps) {
         isOpen={isRetestModalOpen}
         onClose={() => setIsRetestModalOpen(false)}
         recordId={testRecord.id}
-        onSuccess={mutate}
       />
     </>
   );
