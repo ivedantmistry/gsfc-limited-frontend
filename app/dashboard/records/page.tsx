@@ -1,4 +1,3 @@
-// src/app/dashboard/records/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -7,7 +6,14 @@ import { useTestRecords } from "@/lib/api/test";
 import { useDailyRecordStats } from "@/lib/api/userstats";
 import { useHasPermission } from "@/context/AuthContext";
 import Link from "next/link";
-import { PlusCircle, Loader2, ListChecks, Clock, History } from "lucide-react";
+import {
+  PlusCircle,
+  Loader2,
+  ListChecks,
+  Clock,
+  History,
+  FlaskConical,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CreateTestModal from "@/components/modals/create-test-wizard/CreateTestModal";
 import TestRecordsTable from "@/components/inventory/records/RecordsTable";
@@ -39,6 +45,10 @@ export default function RecentTestsPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const canCreateTest = useHasPermission("inventory.add_testrecord");
+  const canViewAllRecords = useHasPermission(
+    "inventory.can_view_all_test_records"
+  );
+
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [status, setStatus] = useState(initialStatus);
   const [labId, setLabId] = useState<string | null>(initialLabId);
@@ -58,10 +68,8 @@ export default function RecentTestsPage() {
     if (labId) params.set("lab", labId);
     if (ordering) params.set("ordering", ordering);
     if (analystId) params.set("analyst", analystId);
-
     params.set("page", "1");
     params.set("page_size", String(pageSize));
-
     router.replace(`${pathname}?${params.toString()}`);
   }, [
     debouncedSearchTerm,
@@ -92,12 +100,11 @@ export default function RecentTestsPage() {
           | "CLOSED"
           | "RETEST_ORDERED")
       : undefined,
-    labId: labId,
-    // ✅ FIX 1 (Line 96): Convert 'string | null' to 'number | undefined'
+    labId,
     analystId: analystId ? Number(analystId) : undefined,
-    ordering: ordering,
-    page: page,
-    pageSize: pageSize,
+    ordering,
+    page,
+    pageSize,
   });
 
   const handleCreateSuccess = () => {
@@ -113,7 +120,6 @@ export default function RecentTestsPage() {
     setAnalystId(null);
   };
 
-  // ✅ FIX 2 (Line 115): Wrap in !!() to force a boolean
   const areFiltersActive = !!(
     searchTerm ||
     status ||
@@ -121,26 +127,31 @@ export default function RecentTestsPage() {
     ordering ||
     analystId
   );
-  const canViewAllRecords = useHasPermission(
-    "inventory.can_view_all_test_records"
-  );
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Recent Test Records
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            An overview of all test records created today.
-          </p>
+    <div className="space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center w-9 h-9 rounded-md bg-indigo-100">
+            <FlaskConical className="h-5 w-5 text-indigo-700" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+              Recent Test Records
+            </h1>
+            <p className="mt-0.5 text-sm text-slate-500">
+              An overview of all test records created today.
+            </p>
+          </div>
         </div>
+
         {canCreateTest && (
           <div className="flex items-center gap-2">
             <Link href="/dashboard/records/all">
               <Button
                 variant="outline"
-                className="text-indigo-600 bg-white hover:bg-indigo-100 hover:text-indigo-700 border border-indigo-300 shadow-sm transition-colors"
+                className="border border-slate-300 text-slate-700 bg-white hover:bg-slate-100 shadow-sm transition-colors"
               >
                 <History className="mr-2 h-4 w-4" />
                 Historical Records
@@ -148,7 +159,7 @@ export default function RecentTestsPage() {
             </Link>
             <Button
               onClick={() => setIsModalOpen(true)}
-              className="text-indigo-600 bg-white hover:bg-indigo-100 hover:text-indigo-700 border border-indigo-300 shadow-sm transition-colors"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-colors"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
               Create New Test
@@ -157,26 +168,27 @@ export default function RecentTestsPage() {
         )}
       </div>
 
+      {/* Stat Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Today's Total Tests"
           value={stats?.total_tests}
           isLoading={isLoadingStats}
-          icon={<ListChecks className="h-4 w-4 text-muted-foreground" />}
+          icon={<ListChecks className="h-4 w-4 text-indigo-600" />}
         />
         <StatCard
           title="Pending Review"
           value={stats?.pending_tests}
           isLoading={isLoadingStats}
-          icon={<Clock className="h-4 w-4 text-muted-foreground" />}
+          icon={<Clock className="h-4 w-4 text-amber-500" />}
         />
       </div>
 
+      {/* Filters */}
       <FilterContainer>
         <SearchFilter searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         <StatusFilter status={status} setStatus={setStatus} />
         <LabFilter labId={labId} setLabId={setLabId} />
-
         {canViewAllRecords && (
           <AnalystFilter analystId={analystId} setAnalystId={setAnalystId} />
         )}
@@ -189,17 +201,23 @@ export default function RecentTestsPage() {
         </div>
       </FilterContainer>
 
+      {/* Content */}
       {isLoadingTable && (
         <div className="flex justify-center p-12">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
         </div>
       )}
-      {error && <div className="text-red-600">Failed to load records.</div>}
+
+      {error && (
+        <div className="text-center text-red-600 p-4 border border-red-200 bg-red-50 rounded-md">
+          Failed to load records. Please try again.
+        </div>
+      )}
 
       {testRecords && (
         <>
           <TestRecordsTable records={testRecords} />
-          {filteredTotal != null && (
+          {filteredTotal != null && filteredTotal > 0 && (
             <PaginationControls
               totalCount={filteredTotal}
               currentPage={page}

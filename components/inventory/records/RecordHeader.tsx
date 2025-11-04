@@ -1,7 +1,7 @@
 // src/components/records/RecordHeader.tsx
 
 "use client";
-import { Download, Loader2, FileSpreadsheet } from "lucide-react";
+import { Download, Loader2, FileSpreadsheet, Copy, Check } from "lucide-react";
 import React, { useState } from "react";
 import { TestRecord } from "@/lib/types/test.types";
 import { Badge } from "@/components/ui/badge";
@@ -12,9 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Copy, Check } from "lucide-react";
 
-// Helper to get status colors and variants
 const getStatusVariant = (status: TestRecord["status"]) => {
   switch (status) {
     case "APPROVED":
@@ -33,9 +31,9 @@ const getStatusVariant = (status: TestRecord["status"]) => {
 interface RecordHeaderProps {
   testRecord: TestRecord;
   onDownloadPdf: () => void;
-  isPdfDownloading: boolean; // 👈 Renamed for clarity
-  onDownloadExcel: () => void; // 👈 Add Excel prop
-  isExcelDownloading: boolean; // 👈 Add Excel prop
+  isPdfDownloading: boolean;
+  onDownloadExcel: () => void;
+  isExcelDownloading: boolean;
 }
 
 export default function RecordHeader({
@@ -51,7 +49,7 @@ export default function RecordHeader({
     navigator.clipboard.writeText(testRecord.record_id).then(
       () => {
         setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
+        setTimeout(() => setIsCopied(false), 2000);
       },
       (err) => {
         console.error("Failed to copy ID: ", err);
@@ -62,13 +60,14 @@ export default function RecordHeader({
   return (
     <TooltipProvider>
       <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
+        {/* Left side: record info */}
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
             {testRecord.product_name}
           </h1>
-          <div className="mt-2 flex items-center gap-4">
-            {/* ✅ Record ID with Copy Button */}
-            <div className="flex items-center gap-1 text-sm text-slate-500">
+
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500">
+            <div className="flex items-center gap-1">
               <span className="font-mono">ID: {testRecord.record_id}</span>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -94,6 +93,7 @@ export default function RecordHeader({
             <Badge className={`badge-${getStatusVariant(testRecord.status)}`}>
               {testRecord.status}
             </Badge>
+
             {testRecord.retest_record_id && (
               <Badge
                 variant="outline"
@@ -105,31 +105,34 @@ export default function RecordHeader({
           </div>
         </div>
 
-        {/* ✅ 2. Add the download button here */}
-        <div className="mt-4 md:mt-0">
+        {/* Right side: action buttons */}
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row md:mt-0 md:gap-3">
           <Button
             onClick={onDownloadExcel}
             disabled={isExcelDownloading}
             variant="outline"
+            className="min-w-[170px]"
           >
             {isExcelDownloading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              <FileSpreadsheet className="mr-2 h-4 w-4 text-green-600" />
             )}
-            {isExcelDownloading ? "Generating..." : "Excel"}
+            {isExcelDownloading ? "Exporting..." : "Export as Excel"}
           </Button>
+
           <Button
             onClick={onDownloadPdf}
-            disabled={isPdfDownloading} // 👈 Use renamed prop
+            disabled={isPdfDownloading}
             variant="outline"
+            className="min-w-[200px]"
           >
-            {isPdfDownloading ? ( // 👈 Use renamed prop
+            {isPdfDownloading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <Download className="mr-2 h-4 w-4" />
+              <Download className="mr-2 h-4 w-4 text-blue-600" />
             )}
-            {isPdfDownloading ? "Generating..." : "PDF"}
+            {isPdfDownloading ? "Generating..." : "Generate PDF Report"}
           </Button>
         </div>
       </div>

@@ -5,11 +5,7 @@ import React from "react";
 import { useForm, Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import {
-  TestRecord,
-  TestResultInput,
-  // ✅ FIX 1: Removed unused 'ResultsFormInput'
-} from "@/lib/types/test.types";
+import { TestRecord, TestResultInput } from "@/lib/types/test.types";
 import { ParameterDefinition } from "@/lib/types/product.types";
 import { updateTestRecordResults } from "@/lib/api/test";
 import {
@@ -42,7 +38,6 @@ import { Loader2 } from "lucide-react";
 import { useVersion } from "@/lib/api/version";
 import { useSWRConfig } from "swr";
 
-// This builds the schema as before
 const buildSchema = (parameters: ParameterDefinition[]) => {
   const shape: { [key: string]: z.ZodTypeAny } = {};
   parameters.forEach((param) => {
@@ -73,7 +68,6 @@ const buildSchema = (parameters: ParameterDefinition[]) => {
   return z.object({ results: z.object(shape) });
 };
 
-// Create a type from the Zod schema's return type
 type FormSchemaType = z.input<ReturnType<typeof buildSchema>>;
 
 const renderParameterInput = (
@@ -118,7 +112,6 @@ const renderParameterInput = (
             <FormItem>
               <Select
                 onValueChange={field.onChange}
-                // ✅ FIX 3 (Line 117): Cast 'defaultValue' to what Select expects
                 defaultValue={field.value as string | undefined}
               >
                 <FormControl>
@@ -148,7 +141,6 @@ const renderParameterInput = (
             <FormItem className="flex items-center">
               <FormControl>
                 <Switch
-                  // ✅ FIX 4 (Line 145): Cast 'checked' to what Switch expects
                   checked={field.value as boolean | undefined}
                   onCheckedChange={field.onChange}
                 />
@@ -168,7 +160,6 @@ const renderParameterInput = (
                 <Input
                   type="text"
                   {...field}
-                  // ✅ FIX 5 (Line 161): Cast 'value' to what Input expects
                   value={(field.value as string) ?? ""}
                 />
               </FormControl>
@@ -225,7 +216,6 @@ export default function ResultsEntryForm({
       )
       .map(([paramId, value]) => ({
         parameter: Number(paramId),
-        // ✅ FIX 6 (Line 206): Remove 'as any'
         value: value as string | number | boolean | null,
       }));
     const swrKey = `/inventory/tests/${testRecord.id}/`;
@@ -235,7 +225,6 @@ export default function ResultsEntryForm({
       });
       toast.success("Test results have been saved.");
       mutate(swrKey, updatedRecord, false);
-      // ✅ FIX 7 (Line 215): Remove unused 'error' variable
     } catch {
       toast.error("Failed to save results.");
     }
@@ -251,32 +240,48 @@ export default function ResultsEntryForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="rounded-lg border bg-white shadow-sm">
-          <div className="p-4 border-b flex justify-between items-center">
+        <div className="rounded-lg border bg-white shadow-sm overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-3 border-b bg-slate-50">
             <h3 className="text-lg font-semibold text-slate-800">
               Enter Test Results
             </h3>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="min-w-[120px] flex items-center justify-center"
+            >
               {isSubmitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
               Save Results
             </Button>
           </div>
+
+          {/* Results Table */}
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Parameter</TableHead>
-                <TableHead>Expected Range</TableHead>
-                <TableHead>Actual Result</TableHead>
+              <TableRow className="bg-slate-50 hover:bg-slate-50">
+                <TableHead className="font-semibold text-slate-700">
+                  Parameter
+                </TableHead>
+                <TableHead className="font-semibold text-slate-700">
+                  Expected Range
+                </TableHead>
+                <TableHead className="font-semibold text-slate-700">
+                  Actual Result
+                </TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
               {parametersToRender.length > 0 ? (
                 parametersToRender.map((param) => (
-                  <TableRow key={param.id}>
-                    <TableCell className="font-medium">{param.name}</TableCell>
-                    <TableCell>
+                  <TableRow key={param.id} className="hover:bg-slate-50">
+                    <TableCell className="font-medium text-slate-800">
+                      {param.name}
+                    </TableCell>
+                    <TableCell className="text-slate-600">
                       {param.min_value && param.max_value
                         ? `${param.min_value} - ${param.max_value} ${
                             param.unit || ""
@@ -290,7 +295,10 @@ export default function ResultsEntryForm({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={3} className="h-24 text-center">
+                  <TableCell
+                    colSpan={3}
+                    className="h-24 text-center text-slate-500"
+                  >
                     No parameters defined for this test specification.
                   </TableCell>
                 </TableRow>

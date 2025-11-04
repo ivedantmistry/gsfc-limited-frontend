@@ -19,10 +19,8 @@ export default function UserProfilePage() {
         </p>
       </div>
 
-      {/* The Chart and Stats component will go here */}
       <UserPerformanceChart />
 
-      {/* The powerful search and table will go here later */}
     </div>
   );
 }

@@ -204,11 +204,12 @@ export default function VersionManagementPage({
 
   return (
     <>
+      {/* Modals */}
       <CreateVersionModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         productId={productId}
-        onSuccess={handleCreateSuccess} // ✅ Use the fixed handler
+        onSuccess={handleCreateSuccess}
       />
       <ConfirmLockModal
         isOpen={isLockModalOpen}
@@ -229,23 +230,27 @@ export default function VersionManagementPage({
         versionName={versionToProcess?.version_name}
       />
 
+      {/* Page Content */}
       <div className="space-y-6">
+        {/* Header */}
         <VersionListHeader
           product={product}
           onAddNew={() => setIsCreateModalOpen(true)}
           canManage={canManageVersions}
         />
+
+        {/* Version Grid */}
         <VersionGrid
           versions={versions}
           productId={product.id}
-          isListLoading={isLoading} // Renamed for clarity (for skeletons)
-          actionLoadingId={actionLoadingId} // For row buttons
-          errorRow={errorRow} // The error object
+          isListLoading={isLoading}
+          actionLoadingId={actionLoadingId}
+          errorRow={errorRow}
           onLock={openLockModal}
           onActivate={openActivateModal}
           onClone={handleClone}
           onDelete={openDeleteModal}
-          onClearError={() => setErrorRow(null)} // Handler to clear error
+          onClearError={() => setErrorRow(null)}
           canManage={canManageVersions}
         />
       </div>

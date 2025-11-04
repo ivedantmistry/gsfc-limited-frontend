@@ -150,12 +150,12 @@ export default function UserPerformanceChart() {
           </div>
         ) : (
           <>
-            <div className="text-4xl font-bold">
+            {/* <div className="text-4xl font-bold">
               {displayCount.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground mb-4">
               Total records in the last selected period
-            </p>
+            </p> */}
             {timeRange === "custom" && (
               <div className="grid grid-cols-2 gap-4 my-4">
                 <DatePicker

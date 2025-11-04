@@ -1,9 +1,10 @@
+// app/dashboard/products/[productId]/page.tsx
 "use client";
 
 import React, { use } from "react";
 import Link from "next/link";
 import { useProduct } from "@/lib/api/product";
-import { ChevronRight, ShieldCheck } from "lucide-react";
+import { ChevronRight, Database, ShieldCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ParameterTable } from "@/components/inventory/parameters/ParameterTable";
 import { ProductGradeList } from "@/components/inventory/grades/ProductGradeList";
@@ -42,9 +43,10 @@ export default function ProductOverviewPage({
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
       <nav className="flex" aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-2">
-          <li className="inline-flex items-center">
+          <li>
             <Link
               href="/dashboard/products"
               className="text-sm font-medium text-slate-700 hover:text-indigo-600"
@@ -52,29 +54,31 @@ export default function ProductOverviewPage({
               Products
             </Link>
           </li>
-          <li>
-            <div className="flex items-center">
-              <ChevronRight className="h-4 w-4 text-slate-400" />
-              <span className="ml-1 text-sm font-medium text-slate-500 md:ml-2">
-                {product.name}
-              </span>
-            </div>
+          <li className="flex items-center">
+            <ChevronRight className="h-4 w-4 text-slate-400" />
+            <span className="ml-1 text-sm font-medium text-slate-500 md:ml-2">
+              {product.name}
+            </span>
           </li>
         </ol>
       </nav>
 
-      <div className="flex justify-between items-center">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <h1 className="text-3xl font-bold text-slate-900">{product.name}</h1>
         <Link
           href={`/dashboard/products/${product.id}/versions`}
-          className="inline-flex items-center gap-2 rounded-md bg-indigo-600 text-white font-medium px-4 py-2 text-sm hover:bg-indigo-700"
+          className="inline-flex items-center gap-2 rounded-md bg-indigo-600 text-white font-medium px-3 py-2 text-sm hover:bg-indigo-700"
         >
           Manage All Versions
         </Link>
       </div>
+
+      {/* Active Version Section */}
       <div className="space-y-2">
         {activeVersion ? (
           <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm">
+            {/* Version Header */}
             <div className="p-4 bg-slate-50 rounded-t-xl flex justify-between items-center border-b border-slate-200/70">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="w-6 h-6 text-indigo-600" />
@@ -89,18 +93,20 @@ export default function ProductOverviewPage({
               </div>
             </div>
 
-            <div className="p-4">
+            {/* Parameters & Grades */}
+            <div className="p-4 space-y-6">
               {hasBaseParams && (
                 <div className="space-y-3">
-                  <h3 className="text-lg font-semibold text-slate-700">
-                    Base Parameters
+                  <h3 className="text-lg font-semibold text-slate-700 flex items-center gap-2">
+                    <Database className="h-4 w-4 text-slate-400" /> Base
+                    Parameters
                   </h3>
                   <ParameterTable parameters={activeVersion.parameters} />
                 </div>
               )}
 
               {hasGrades && (
-                <div className={`space-y-3 ${hasBaseParams ? "mt-6" : ""}`}>
+                <div className="space-y-3">
                   <h3 className="text-lg font-semibold text-slate-700">
                     Product Grades
                   </h3>

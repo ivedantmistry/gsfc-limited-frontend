@@ -14,41 +14,59 @@ interface RetestInfoBannerProps {
 export default function RetestInfoBanner({
   testRecord,
 }: RetestInfoBannerProps) {
+  // Case 1: This record IS a retest
   if (testRecord.retest_of) {
     return (
-      <Alert className="bg-blue-50 border-blue-200 text-blue-800">
-        <Info className="h-4 w-4 !text-blue-800" />
-        <AlertTitle className="font-semibold">This is a Retest</AlertTitle>
-        <AlertDescription>
-          This test is a retest for the original record{" "}
-          <Link
-            href={`/dashboard/records/${testRecord.retest_of.id}`}
-            className="font-medium underline hover:no-underline"
-          >
-            {testRecord.retest_of.record_id}
-          </Link>
-          Please perform the analysis and enter the results below.
-        </AlertDescription>
+      <Alert className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg shadow-sm">
+        <div className="flex items-start gap-3">
+          <Info className="h-5 w-5 mt-0.5 text-blue-700" />
+          <div>
+            <AlertTitle className="font-semibold text-blue-800">
+              This is a Retest
+            </AlertTitle>
+            <AlertDescription className="text-sm text-blue-700">
+              This test is a retest for the original record{" "}
+              <Link
+                href={`/dashboard/records/${testRecord.retest_of.id}`}
+                className="font-medium text-blue-700 underline hover:text-blue-900 transition-colors"
+              >
+                {testRecord.retest_of.record_id}
+              </Link>
+              . Please perform the analysis and enter the results below.
+            </AlertDescription>
+          </div>
+        </div>
       </Alert>
     );
   }
 
+  // Case 2: This record has been superseded by a retest
   if (testRecord.status === "RETEST_ORDERED" && testRecord.retests.length > 0) {
-    const newRetest = testRecord.retests[0]; // Get the first retest
+    const newRetest = testRecord.retests[0];
     return (
-      <Alert variant="destructive">
-        <RefreshCw className="h-4 w-4" />
-        <AlertTitle>Record Superseded</AlertTitle>
-        <AlertDescription>
-          This record has been superseded by retest{" "}
-          <Link
-            href={`/dashboard/records/${newRetest.id}`}
-            className="font-medium underline hover:no-underline"
-          >
-            {newRetest.record_id}
-          </Link>
-          . This original record can now be closed.
-        </AlertDescription>
+      <Alert className="bg-red-50 border border-red-200 text-red-800 rounded-lg shadow-sm">
+        <div className="flex items-start gap-3">
+          <RefreshCw className="h-5 w-5 mt-0.5 text-red-700" />
+          <div>
+            <AlertTitle className="font-semibold text-red-800">
+              Record Superseded
+            </AlertTitle>
+            <AlertDescription className="text-sm text-red-700">
+              <span>
+                This record has been superseded by retest{" "}
+                <Link
+                  href={`/dashboard/records/${newRetest.id}`}
+                  className="font-medium text-red-700 underline hover:text-red-900 transition-colors"
+                >
+                  {newRetest.record_id}
+                </Link>
+                .
+              </span>
+              <br />
+              <span>This original record can now be closed.</span>
+            </AlertDescription>
+          </div>
+        </div>
       </Alert>
     );
   }
