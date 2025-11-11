@@ -141,7 +141,9 @@ const ChartForParameter = ({
               domain={zoomDomain.x}
               allowDataOverflow
               type="category"
-              tickFormatter={(dateStr) => format(new Date(dateStr), "MMM dd")}
+              tickFormatter={(dateStr) =>
+                format(new Date(`${dateStr}T00:00:00`), "MMM dd")
+              }
             />
             <YAxis
               domain={["auto", "auto"]}
@@ -150,7 +152,9 @@ const ChartForParameter = ({
               label={{ value: yAxisLabel, angle: -90, position: "insideLeft" }}
             />
             <Tooltip
-              labelFormatter={(label) => format(new Date(label), "PPpp")}
+              labelFormatter={(label) =>
+                format(new Date(`${label}T00:00:00`), "PP")
+              }
               formatter={(value, name) => {
                 if (
                   Array.isArray(value) &&
@@ -159,7 +163,7 @@ const ChartForParameter = ({
                 ) {
                   return [
                     `${value[0].toFixed(2)} - ${value[1].toFixed(2)}`,
-                    "Range",
+                    " Daily Range",
                   ];
                 }
                 if (typeof value === "number") {

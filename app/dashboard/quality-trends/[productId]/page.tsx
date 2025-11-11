@@ -242,11 +242,12 @@ export default function ProductQualityDetailPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <h2 className="text-lg font-semibold">Filters & Export</h2>
-        </CardHeader>
+     
 
-        <CardContent className="pt-6 flex flex-wrap items-center gap-2">
+        <CardContent className="flex flex-wrap items-center gap-2">
+          <h3>
+            Filter by: 
+          </h3>
           <Button
             variant="outline"
             onClick={() => setDateRange({ from: new Date(), to: new Date() })}
@@ -320,20 +321,7 @@ export default function ProductQualityDetailPage() {
             </Select>
           )}
 
-          {/* FIX: Added export button to use the un-used variables */}
-          <Button
-            variant="outline"
-            className="ml-0 sm:ml-auto" // Adjusted margin for responsive layout
-            onClick={handleExport}
-            disabled={isExporting}
-          >
-            {isExporting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <FileSpreadsheet className="mr-2 h-4 w-4" />
-            )}
-            Export to Excel
-          </Button>
+         
         </CardContent>
       </Card>
 

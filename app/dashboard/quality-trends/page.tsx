@@ -6,10 +6,13 @@ import Link from "next/link";
 import { useProducts } from "@/lib/api/product";
 import { ProductListItem } from "@/lib/types";
 
-
-// UI Components
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import PaginationControls from "@/components/shared/PaginationControls";
 import { Search } from "lucide-react";
 
@@ -22,11 +25,10 @@ export default function QualityTrendsProductListPage() {
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(initialSearch);
 
-  // Debouncing for search input
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 500); // 500ms delay
+    }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
@@ -40,7 +42,7 @@ export default function QualityTrendsProductListPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-         <div>
+        <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
             Product Health Dashboard
           </h1>
@@ -60,8 +62,10 @@ export default function QualityTrendsProductListPage() {
       </div>
 
       {isLoading && <p className="text-center">Loading products...</p>}
-      {error && <p className="text-center text-red-500">Failed to load products.</p>}
-      
+      {error && (
+        <p className="text-center text-red-500">Failed to load products.</p>
+      )}
+
       {!isLoading && products && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -71,7 +75,14 @@ export default function QualityTrendsProductListPage() {
                 href={`/dashboard/quality-trends/${product.id}`}
                 passHref
               >
-                <Card className="h-full hover:shadow-md hover:border-primary transition-all">
+                <Card
+                  className="
+    h-full 
+    hover:shadow-md hover:border 
+    transition-all 
+    bg-gradient-to-br from-indigo-50 via-white to-indigo-100
+  "
+                >
                   <CardHeader>
                     <CardTitle>{product.name}</CardTitle>
                     <CardDescription>{product.product_id}</CardDescription>
