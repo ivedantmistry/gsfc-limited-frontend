@@ -7,7 +7,6 @@ import { useProductQualityDetail } from "@/lib/api/quality-detail";
 import { RecentTestRecord } from "@/lib/types/quality-detail.types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import api from "@/lib/api";
 import {
   Table,
   TableBody,
@@ -30,14 +29,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  ArrowLeft,
-  Calendar as CalendarIcon,
-  Check,
-  Copy,
-  FileSpreadsheet, // FIX: Import added
-  Loader2, // FIX: Import added
-} from "lucide-react";
+import { ArrowLeft, Calendar as CalendarIcon, Check, Copy } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { format, subDays } from "date-fns";
 import {
@@ -51,7 +43,6 @@ const RecentTestsTable = ({ tests }: { tests: RecentTestRecord[] }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopy = (id: string, recordId: string) => {
-    // Using execCommand as a fallback for iframe environments like this one
     try {
       const ta = document.createElement("textarea");
       ta.value = recordId;
@@ -67,7 +58,6 @@ const RecentTestsTable = ({ tests }: { tests: RecentTestRecord[] }) => {
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
       console.error("Could not copy text: ", err);
-      // Fallback for navigator.clipboard if execCommand fails (e.g., in secure contexts)
       navigator.clipboard.writeText(recordId).then(
         () => {
           setCopiedId(id);
@@ -152,50 +142,11 @@ export default function ProductQualityDetailPage() {
   });
 
   const [selectedGradeId, setSelectedGradeId] = useState<number | null>(null);
-  const [isExporting, setIsExporting] = useState(false);
   const { productDetail, isLoading, error } = useProductQualityDetail(
     productId,
     dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : undefined,
     dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined
   );
-  const handleExport = async () => {
-    setIsExporting(true); // FIX: This is now used
-    try {
-      const startDate = dateRange?.from
-        ? format(dateRange.from, "yyyy-MM-dd")
-        : "";
-      const endDate = dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : "";
-
-      const url = `inventory/products/${productId}/quality-details/?start_date=${startDate}&end_date=${endDate}&format=excel`;
-      const response = await api.get(url, {
-        responseType: "blob", // Important: tells axios to expect binary data
-      });
-
-      const fileURL = window.URL.createObjectURL(new Blob([response.data]));
-
-      const link = document.createElement("a");
-      link.href = fileURL;
-
-      const contentDisposition = response.headers["content-disposition"];
-      let filename = "quality-report.xlsx"; // a default filename
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-        if (filenameMatch && filenameMatch.length > 1) {
-          filename = filenameMatch[1];
-        }
-      }
-      link.setAttribute("download", filename);
-
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(fileURL); // Clean up the blob URL
-    } catch (err) {
-      console.error("Export failed", err);
-    } finally {
-      setIsExporting(false); // FIX: This is now used
-    }
-  }; // FIX: handleExport is now used
 
   useEffect(() => {
     if (
@@ -242,12 +193,8 @@ export default function ProductQualityDetailPage() {
       </div>
 
       <Card>
-     
-
         <CardContent className="flex flex-wrap items-center gap-2">
-          <h3>
-            Filter by: 
-          </h3>
+          <h3>Filter by:</h3>
           <Button
             variant="outline"
             onClick={() => setDateRange({ from: new Date(), to: new Date() })}
@@ -320,8 +267,6 @@ export default function ProductQualityDetailPage() {
               </SelectContent>
             </Select>
           )}
-
-         
         </CardContent>
       </Card>
 

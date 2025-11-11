@@ -3,8 +3,7 @@
 import React, { ReactNode, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
-import { useHasPermission } from "@/context/AuthContext";
+import { useAuth, useHasPermission } from "@/context/AuthContext";
 import { navItems } from "@/config/navItems";
 import { LogOut, Menu, Keyboard } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
