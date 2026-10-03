@@ -1,7 +1,7 @@
 // lib/api/users.ts
 import useSWR from "swr";
 import api from "@/lib/api";
-import { User, PaginatedResponse } from "@/lib/types"; // Import from your central types file
+import { User, PaginatedResponse } from "@/lib/types";
 
 const fetcher = (url: string) => api.get(url).then((res) => res.data);
 
@@ -18,7 +18,7 @@ export interface UserSummaryCounts {
   count_3_months: number;
   count_6_months: number;
   count_year: number;
-  count_custom:number;
+  count_custom: number;
 }
 
 // --- HOOKS ---
@@ -33,28 +33,29 @@ export function useUsers(page = 1, pageSize = 25, searchTerm?: string) {
   });
   if (searchTerm) urlParams.append("search", searchTerm);
 
-  const url = `/auth/users/?${urlParams.toString()}`;
+  // Removed trailing slash to prevent 308 redirect
+  const url = `/auth/users?${urlParams.toString()}`;
 
-  // ✅ FIX: Destructure the response from useSWR here
   const { data, error, isLoading, mutate } = useSWR<PaginatedResponse<User>>(
     url,
     fetcher
   );
 
-  // ✅ And then return a new object with the desired shape
   return {
-    users: data?.results, // 'data.results' becomes 'users'
-    totalCount: data?.count, // 'data.count' becomes 'totalCount'
+    users: data?.results,
+    totalCount: data?.count,
     isLoading,
     error,
     mutate,
   };
 }
+
 /**
  * Fetches a single system user by their ID.
  */
 export function useUser(userId: number | string | null) {
-  const url = userId ? `/auth/users/${userId}/` : null;
+  // Removed trailing slash to prevent 308 redirect
+  const url = userId ? `/auth/users/${userId}` : null;
   return useSWR<User>(url, fetcher);
 }
 
@@ -74,7 +75,7 @@ export function useUserPerformanceChart(
   if (params.date_before) urlParams.append("date_before", params.date_before);
 
   const url = userId
-    ? `/inventory/stats/users/${userId}/performance-chart/?${urlParams.toString()}`
+    ? `/inventory/stats/users/${userId}/performance-chart?${urlParams.toString()}`
     : null;
 
   return useSWR<UserPerformanceDataPoint[]>(url, fetcher);
@@ -95,7 +96,7 @@ export function useUserSummaryCounts(
   const queryString = urlParams.toString();
 
   const url = userId
-    ? `/inventory/stats/users/${userId}/summary-counts/${
+    ? `/inventory/stats/users/${userId}/summary-counts${
         queryString ? "?" + queryString : ""
       }`
     : null;
