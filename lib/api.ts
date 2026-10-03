@@ -2,17 +2,19 @@
 import axios from "axios";
 import { LoginResponse, User } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL || "";
+
 /**
  * Constructs the full API URL for a given path.
- * @param path - The relative path for the API endpoint (e.g., 'inventory/products/').
+ * @param path - The relative path for the API endpoint (e.g., 'inventory/products').
  */
 export const getFullApiUrl = (path: string) => {
   const baseUrl = process.env.NEXT_PUBLIC_DJANGO_API_URL || "";
-  return `${baseUrl.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
+  return `${baseUrl.replace(/\/$/, "")}/${path.replace(/^\/|\/$/g, "")}`;
 };
+
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_URL.replace(/\/$/, ""), // Ensure no trailing slash on base URL
   headers: {
     "Content-Type": "application/json",
   },
@@ -52,13 +54,16 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    const url = originalRequest.url;
+    const url = originalRequest.url || "";
+
+    // Normalize URL for comparison (remove trailing slashes)
+    const cleanUrl = url.replace(/\/$/, "");
 
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      url !== "/auth/token/" &&
-      url !== "/auth/token/refresh/"
+      cleanUrl !== "/auth/token" &&
+      cleanUrl !== "/auth/token/refresh"
     ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -79,8 +84,9 @@ api.interceptors.response.use(
       }
 
       try {
+        const refreshEndpoint = `${API_URL.replace(/\/$/, "")}/auth/token/refresh`;
         const refreshResponse = await axios.post<Pick<LoginResponse, "access">>(
-          `${API_URL}/auth/token/refresh/`,
+          refreshEndpoint,
           { refresh: refreshToken }
         );
 
@@ -91,7 +97,7 @@ api.interceptors.response.use(
         ] = `Bearer ${newAccessToken}`;
         originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
 
-        const userResponse = await api.get<User>(`/auth/user/`);
+        const userResponse = await api.get<User>(`/auth/user`);
         const updatedUser = userResponse.data;
         localStorage.setItem("user", JSON.stringify(updatedUser));
         window.dispatchEvent(new Event("user-updated"));
