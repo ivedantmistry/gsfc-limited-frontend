@@ -20,7 +20,6 @@ export default function UnresolvedAlertsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // --- 1. State Management for Pagination and Search ---
   const page = Number(searchParams.get("page") ?? "1");
   const pageSize = Number(searchParams.get("page_size") ?? "25");
   const initialSearch = searchParams.get("search") ?? "";
@@ -28,7 +27,6 @@ export default function UnresolvedAlertsPage() {
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(initialSearch);
 
-  // --- 2. Effects to Sync State with URL ---
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 500);
     return () => clearTimeout(timer);
@@ -36,7 +34,7 @@ export default function UnresolvedAlertsPage() {
 
   useEffect(() => {
     const params = new URLSearchParams();
-    params.set("page", "1"); // Reset to page 1 on search
+    params.set("page", "1");
     params.set("page_size", String(pageSize));
 
     if (debouncedSearchTerm) {
@@ -45,7 +43,6 @@ export default function UnresolvedAlertsPage() {
     router.replace(`${pathname}?${params.toString()}`);
   }, [debouncedSearchTerm, pathname, router, pageSize]);
 
-  // --- 3. Data Fetching with Search Term ---
   const { alerts, totalCount, isLoading, error } = useAlerts({
     status__in: ["NEW", "ACKNOWLEDGED"],
     page,
@@ -53,7 +50,6 @@ export default function UnresolvedAlertsPage() {
     searchTerm: debouncedSearchTerm,
   });
 
-  // --- 4. Helper functions for the filter ---
   const clearFilters = () => {
     setSearchTerm("");
   };
@@ -82,7 +78,6 @@ export default function UnresolvedAlertsPage() {
         </Link>
       </div>
 
-      {/* --- 5. Add the Search Filter UI --- */}
       <div className="p-4 border bg-card rounded-lg shadow-sm flex items-center gap-4">
         <div className="flex-grow">
           <SearchFilter searchTerm={searchTerm} setSearchTerm={setSearchTerm} />

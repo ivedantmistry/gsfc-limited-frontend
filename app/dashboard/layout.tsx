@@ -116,7 +116,7 @@ const AppToolbar = ({
         </button>
         <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
       </div>
-      {/* ✅ 3. Replaced the simple button with the Dialog trigger */}
+      
       <div className="flex items-center gap-2">
         <Dialog>
           <DialogTrigger asChild>
